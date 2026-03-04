@@ -1,316 +1,196 @@
 import React, { useState } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth, type RegisterData, type UserRole } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { UserPlus, Mail, Lock, Phone, Building2, Stethoscope } from 'lucide-react';
-import { UserRole, RegistrationData } from '@/types/user';
-import { Doctor } from '@/types/doctor';
-import DoctorSelection from './DoctorSelection';
+import {
+  UserPlus, Mail, Lock, Phone, Building2, Stethoscope,
+  ArrowLeft, ArrowRight, Eye, EyeOff, Heart, Users
+} from 'lucide-react';
 
-interface RegisterFormProps {
-  onRegister: (data: RegistrationData) => Promise<void>;
+interface Props {
   onBack: () => void;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onBack }) => {
-  const { language, t } = useLanguage();
-  const [step, setStep] = useState<'role' | 'details' | 'doctor-selection'>('role');
-  const [loading, setLoading] = useState(false);
+const ROLES: { role: UserRole; icon: React.ReactNode; label: string; desc: string }[] = [
+  { role: 'patient', icon: <Heart className="w-7 h-7" />, label: 'Patient', desc: 'Manage your PD care' },
+  { role: 'doctor', icon: <Stethoscope className="w-7 h-7" />, label: 'Doctor', desc: 'Monitor your patients' },
+  { role: 'caregiver', icon: <Users className="w-7 h-7" />, label: 'Caregiver', desc: 'Support a loved one' },
+  { role: 'coordinator', icon: <Building2 className="w-7 h-7" />, label: 'Coordinator', desc: 'Hospital staff' },
+];
+
+const RegisterForm: React.FC<Props> = ({ onBack }) => {
+  const [step, setStep] = useState<'role' | 'details'>('role');
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
-  const [formData, setFormData] = useState<Partial<RegistrationData>>({
-    language: language,
-  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ fullName: '', email: '', password: '', phone: '', hospital: '' });
+  const { register } = useAuth();
 
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
-    setFormData(prev => ({ ...prev, role }));
     setStep('details');
   };
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (selectedRole === 'patient' && !formData.referralCode && !formData.selectedDoctorId) {
-      setStep('doctor-selection');
-      return;
-    }
-
+    if (!selectedRole) return;
     setLoading(true);
     try {
-      await onRegister(formData as RegistrationData);
-    } catch (error) {
-      console.error('Registration failed:', error);
+      await register({
+        ...form,
+        role: selectedRole,
+        language: 'en',
+      });
+    } catch {
+      // toast in context
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDoctorSelect = (doctor: Doctor) => {
-    setFormData(prev => ({ ...prev, selectedDoctorId: doctor.id }));
-    handleFormSubmit(new Event('submit') as any);
-  };
-
-  const renderRoleSelection = () => (
-    <div className="space-y-4">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {language === 'en' ? 'Join as' : 'यसरी सामेल हुनुहोस्'}
-        </h2>
-        <p className="text-gray-600">
-          {language === 'en' ? 'Select your role to get started' : 'सुरु गर्न आफ्नो भूमिका छान्नुहोस्'}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleRoleSelect('patient')}>
-          <CardContent className="p-6 text-center">
-            <UserPlus className="w-12 h-12 text-blue-600 mx-auto mb-3" />
-            <h3 className="font-semibold text-lg">
-              {language === 'en' ? 'Patient' : 'बिरामी'}
-            </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              {language === 'en' ? 'Manage your dialysis care' : 'आफ्नो डायलाइसिस हेरचाह व्यवस्थापन गर्नुहोस्'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleRoleSelect('doctor')}>
-          <CardContent className="p-6 text-center">
-            <Stethoscope className="w-12 h-12 text-green-600 mx-auto mb-3" />
-            <h3 className="font-semibold text-lg">
-              {language === 'en' ? 'Doctor' : 'डाक्टर'}
-            </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              {language === 'en' ? 'Care for your patients' : 'आफ्ना बिरामीहरूको हेरचाह गर्नुहोस्'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleRoleSelect('caregiver')}>
-          <CardContent className="p-6 text-center">
-            <UserPlus className="w-12 h-12 text-purple-600 mx-auto mb-3" />
-            <h3 className="font-semibold text-lg">
-              {language === 'en' ? 'Caregiver' : 'हेरचाहकर्ता'}
-            </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              {language === 'en' ? 'Support a patient' : 'बिरामीलाई सहयोग गर्नुहोस्'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleRoleSelect('coordinator')}>
-          <CardContent className="p-6 text-center">
-            <Building2 className="w-12 h-12 text-orange-600 mx-auto mb-3" />
-            <h3 className="font-semibold text-lg">
-              {language === 'en' ? 'Coordinator' : 'संयोजक'}
-            </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              {language === 'en' ? 'Hospital staff member' : 'अस्पताल कर्मचारी सदस्य'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Button variant="outline" onClick={onBack} className="w-full">
-        {language === 'en' ? 'Back to Login' : 'लगइनमा फर्कनुहोस्'}
-      </Button>
-    </div>
-  );
-
-  const renderDetailsForm = () => (
-    <form onSubmit={handleFormSubmit} className="space-y-4">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {language === 'en' ? `Register as ${selectedRole}` : `${selectedRole} को रूपमा दर्ता गर्नुहोस्`}
-        </h2>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="name" className="flex items-center space-x-2">
-          <UserPlus className="w-4 h-4" />
-          <span>{language === 'en' ? 'Full Name' : 'पूरा नाम'}</span>
-        </Label>
-        <Input
-          id="name"
-          required
-          value={formData.name || ''}
-          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-          placeholder={language === 'en' ? 'Enter your full name' : 'आफ्नो पूरा नाम प्रविष्ट गर्नुहोस्'}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="email" className="flex items-center space-x-2">
-          <Mail className="w-4 h-4" />
-          <span>{t('email')}</span>
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          required
-          value={formData.email || ''}
-          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-          placeholder={language === 'en' ? 'Enter your email' : 'आफ्नो इमेल प्रविष्ट गर्नुहोस्'}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="phone" className="flex items-center space-x-2">
-          <Phone className="w-4 h-4" />
-          <span>{language === 'en' ? 'Phone Number' : 'फोन नम्बर'}</span>
-        </Label>
-        <Input
-          id="phone"
-          value={formData.phone || ''}
-          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-          placeholder={language === 'en' ? '+977-9xxxxxxxxx' : '+977-9xxxxxxxxx'}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password" className="flex items-center space-x-2">
-          <Lock className="w-4 h-4" />
-          <span>{t('password')}</span>
-        </Label>
-        <Input
-          id="password"
-          type="password"
-          required
-          value={formData.password || ''}
-          onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-          placeholder={language === 'en' ? 'Create a password' : 'पासवर्ड बनाउनुहोस्'}
-        />
-      </div>
-
-      {/* Role-specific fields */}
-      {selectedRole === 'doctor' && (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="hospital">
-              {language === 'en' ? 'Hospital/Clinic' : 'अस्पताल/क्लिनिक'}
-            </Label>
-            <Input
-              id="hospital"
-              value={formData.hospital || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, hospital: e.target.value }))}
-              placeholder={language === 'en' ? 'Your workplace' : 'तपाईंको कार्यस्थल'}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="specialization">
-              {language === 'en' ? 'Specialization' : 'विशेषज्ञता'}
-            </Label>
-            <Textarea
-              id="specialization"
-              value={formData.specialization?.join(', ') || ''}
-              onChange={(e) => setFormData(prev => ({ 
-                ...prev, 
-                specialization: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-              }))}
-              placeholder={language === 'en' ? 'Nephrology, Peritoneal Dialysis...' : 'नेफ्रोलोजी, पेरिटोनियल डायलाइसिस...'}
-            />
-          </div>
-        </>
-      )}
-
-      {selectedRole === 'patient' && (
-        <div className="space-y-2">
-          <Label htmlFor="referralCode">
-            {language === 'en' ? 'Doctor Referral Code (Optional)' : 'डाक्टर रेफरल कोड (वैकल्पिक)'}
-          </Label>
-          <Input
-            id="referralCode"
-            value={formData.referralCode || ''}
-            onChange={(e) => setFormData(prev => ({ ...prev, referralCode: e.target.value }))}
-            placeholder={language === 'en' ? 'Enter referral code' : 'रेफरल कोड प्रविष्ट गर्नुहोस्'}
-          />
-          <p className="text-sm text-gray-600">
-            {language === 'en' 
-              ? 'If you don\'t have a referral code, you can choose a doctor from our list.' 
-              : 'यदि तपाईंसँग रेफरल कोड छैन भने, तपाईं हाम्रो सूचीबाट डाक्टर छान्न सक्नुहुन्छ।'}
-          </p>
-        </div>
-      )}
-
-      {(selectedRole === 'coordinator' || selectedRole === 'caregiver') && (
-        <div className="space-y-2">
-          <Label htmlFor="hospital">
-            {language === 'en' ? 'Hospital/Organization' : 'अस्पताल/संस्था'}
-          </Label>
-          <Input
-            id="hospital"
-            value={formData.hospital || ''}
-            onChange={(e) => setFormData(prev => ({ ...prev, hospital: e.target.value }))}
-            placeholder={language === 'en' ? 'Your affiliated organization' : 'तपाईंको सम्बद्ध संस्था'}
-          />
-        </div>
-      )}
-
-      <div className="flex space-x-3">
-        <Button type="button" variant="outline" onClick={() => setStep('role')} className="flex-1">
-          {language === 'en' ? 'Back' : 'पछाडि'}
-        </Button>
-        <Button type="submit" disabled={loading} className="flex-1">
-          {loading ? (
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>{language === 'en' ? 'Registering...' : 'दर्ता गर्दै...'}</span>
-            </div>
-          ) : (
-            language === 'en' ? 'Continue' : 'जारी राख्नुहोस्'
-          )}
-        </Button>
-      </div>
-    </form>
-  );
-
-  if (step === 'doctor-selection') {
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {language === 'en' ? 'Choose Your Doctor' : 'आफ्नो डाक्टर छान्नुहोस्'}
-          </h2>
-          <p className="text-gray-600">
-            {language === 'en' 
-              ? 'Select a nephrologist to manage your dialysis care'
-              : 'आफ्नो डायलाइसिस हेरचाह व्यवस्थापन गर्न नेफ्रोलोजिस्ट छान्नुहोस्'}
-          </p>
-        </div>
-        <DoctorSelection 
-          onDoctorSelect={handleDoctorSelect}
-          selectedDoctorId={formData.selectedDoctorId}
-        />
-        <Button variant="outline" onClick={() => setStep('details')} className="w-full">
-          {language === 'en' ? 'Back to Registration' : 'दर्तामा फर्कनुहोस्'}
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <Card className="w-full max-w-md mx-auto shadow-xl border-0">
-      <CardHeader className="text-center pb-8">
-        <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <span className="text-white font-bold text-2xl">PD</span>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center space-y-3">
+          <div className="w-16 h-16 gradient-medical rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-primary/25">
+            <span className="text-primary-foreground font-bold text-2xl">PD</span>
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">Create Account</h1>
         </div>
-        <CardTitle className="text-2xl font-bold text-gray-900">Dialyze Buddy</CardTitle>
-        <CardDescription className="text-gray-600">
-          {language === 'en' 
-            ? 'Peritoneal Dialysis Companion' 
-            : 'पेरिटोनियल डायलाइसिस साथी'
-          }
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent>
-        {step === 'role' ? renderRoleSelection() : renderDetailsForm()}
-      </CardContent>
-    </Card>
+
+        <Card className="shadow-xl border-border/50">
+          <CardContent className="pt-6">
+            {step === 'role' ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground text-center mb-2">Select your role to get started</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {ROLES.map(({ role, icon, label, desc }) => (
+                    <button
+                      key={role}
+                      onClick={() => handleRoleSelect(role)}
+                      className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all touch-target text-left"
+                    >
+                      <div className="text-primary">{icon}</div>
+                      <span className="font-semibold text-sm">{label}</span>
+                      <span className="text-xs text-muted-foreground text-center">{desc}</span>
+                    </button>
+                  ))}
+                </div>
+                <Button variant="ghost" onClick={onBack} className="w-full mt-2">
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Back to Sign In
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <button type="button" onClick={() => setStep('role')} className="text-muted-foreground hover:text-foreground">
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <span className="text-sm font-medium text-muted-foreground capitalize">
+                    Registering as {selectedRole}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Full Name</Label>
+                  <div className="relative">
+                    <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      required
+                      value={form.fullName}
+                      onChange={(e) => setForm(f => ({ ...f, fullName: e.target.value }))}
+                      className="h-12 pl-10 touch-target"
+                      placeholder="Your full name"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      required
+                      value={form.email}
+                      onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
+                      className="h-12 pl-10 touch-target"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Phone (optional)</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      value={form.phone}
+                      onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))}
+                      className="h-12 pl-10 touch-target"
+                      placeholder="+977-9xxxxxxxxx"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      minLength={8}
+                      value={form.password}
+                      onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
+                      className="h-12 pl-10 pr-10 touch-target"
+                      placeholder="Min. 8 characters"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {(selectedRole === 'doctor' || selectedRole === 'coordinator') && (
+                  <div className="space-y-2">
+                    <Label>Hospital / Clinic</Label>
+                    <div className="relative">
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        value={form.hospital}
+                        onChange={(e) => setForm(f => ({ ...f, hospital: e.target.value }))}
+                        className="h-12 pl-10 touch-target"
+                        placeholder="Your workplace"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <Button type="submit" className="w-full h-12 touch-target text-base" disabled={loading}>
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                      Creating account...
+                    </div>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      Create Account <ArrowRight className="w-4 h-4" />
+                    </span>
+                  )}
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 
