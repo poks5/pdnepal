@@ -33,7 +33,7 @@ const ExchangePlanEditor: React.FC<ExchangePlanEditorProps> = ({ plan, onSave, o
     doctorId: plan?.doctorId || user?.id || 'doc1',
     schedules: plan?.schedules || [],
     notes: plan?.notes || '',
-    modifiedBy: user?.name || 'Unknown User'
+    modifiedBy: user?.fullName || 'Unknown User'
   });
 
   const addSchedule = () => {

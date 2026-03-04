@@ -1,175 +1,141 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Globe, Mail, Lock } from 'lucide-react';
+import { Globe, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import RegisterForm from './RegisterForm';
-import { RegistrationData } from '@/types/user';
+import ForgotPasswordForm from './ForgotPasswordForm';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
-  const { login, register } = useAuth();
-  const { language, setLanguage, t } = useLanguage();
+  const [view, setView] = useState<'login' | 'register' | 'forgot'>('login');
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
     try {
       await login(email, password);
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch {
+      // toast handled in context
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRegister = async (data: RegistrationData) => {
-    try {
-      await register(data);
-    } catch (error) {
-      console.error('Registration failed:', error);
-      throw error;
-    }
-  };
+  if (view === 'register') {
+    return <RegisterForm onBack={() => setView('login')} />;
+  }
 
-  if (showRegister) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="flex justify-center mb-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLanguage(language === 'en' ? 'ne' : 'en')}
-              className="flex items-center space-x-2"
-            >
-              <Globe className="w-4 h-4" />
-              <span>{language === 'en' ? 'नेपाली' : 'English'}</span>
-            </Button>
-          </div>
-          
-          <RegisterForm 
-            onRegister={handleRegister}
-            onBack={() => setShowRegister(false)}
-          />
-        </div>
-      </div>
-    );
+  if (view === 'forgot') {
+    return <ForgotPasswordForm onBack={() => setView('login')} />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Language Toggle */}
-        <div className="flex justify-center mb-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setLanguage(language === 'en' ? 'ne' : 'en')}
-            className="flex items-center space-x-2"
-          >
-            <Globe className="w-4 h-4" />
-            <span>{language === 'en' ? 'नेपाली' : 'English'}</span>
-          </Button>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Brand */}
+        <div className="text-center space-y-3">
+          <div className="w-16 h-16 gradient-medical rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-primary/25">
+            <span className="text-primary-foreground font-bold text-2xl">PD</span>
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">PDsathi</h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              Peritoneal Dialysis Companion
+            </p>
+          </div>
         </div>
 
-        <Card className="shadow-xl border-0">
-          <CardHeader className="text-center pb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-2xl">PD</span>
-            </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">Dialyze Buddy</CardTitle>
-            <CardDescription className="text-gray-600">
-              {language === 'en' 
-                ? 'Peritoneal Dialysis Companion' 
-                : 'पेरिटोनियल डायलाइसिस साथी'
-              }
-            </CardDescription>
+        <Card className="shadow-xl border-border/50">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl">Welcome back</CardTitle>
+            <CardDescription>Sign in to your account</CardDescription>
           </CardHeader>
-          
-          <CardContent className="space-y-6">
+
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center space-x-2">
-                  <Mail className="w-4 h-4" />
-                  <span>{t('email')}</span>
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-12"
-                  placeholder={language === 'en' ? 'Enter your email' : 'आफ्नो इमेल प्रविष्ट गर्नुहोस्'}
-                />
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="h-12 pl-10 touch-target"
+                    placeholder="you@example.com"
+                  />
+                </div>
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="password" className="flex items-center space-x-2">
-                  <Lock className="w-4 h-4" />
-                  <span>{t('password')}</span>
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="h-12"
-                  placeholder={language === 'en' ? 'Enter your password' : 'आफ्नो पासवर्ड प्रविष्ट गर्नुहोस्'}
-                />
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="password">Password</Label>
+                  <button
+                    type="button"
+                    onClick={() => setView('forgot')}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-12 pl-10 pr-10 touch-target"
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+
+              <Button
+                type="submit"
+                className="w-full h-12 touch-target text-base font-medium"
                 disabled={loading}
               >
                 {loading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>{language === 'en' ? 'Signing in...' : 'साइन इन गर्दै...'}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    Signing in...
                   </div>
                 ) : (
-                  t('login')
+                  <span className="flex items-center gap-2">
+                    Sign In <ArrowRight className="w-4 h-4" />
+                  </span>
                 )}
               </Button>
             </form>
 
-            {/* Register Button */}
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-3">
-                {language === 'en' ? "Don't have an account?" : 'खाता छैन?'}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Don't have an account?{' '}
+                <button
+                  onClick={() => setView('register')}
+                  className="text-primary font-medium hover:underline"
+                >
+                  Create Account
+                </button>
               </p>
-              <Button
-                variant="outline"
-                onClick={() => setShowRegister(true)}
-                className="w-full"
-              >
-                {language === 'en' ? 'Create Account' : 'खाता सिर्जना गर्नुहोस्'}
-              </Button>
-            </div>
-            
-            {/* Demo Credentials */}
-            <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-700 mb-2">
-                {language === 'en' ? 'Demo Credentials:' : 'डेमो क्रेडेन्शियलहरू:'}
-              </p>
-              <div className="text-xs text-gray-600 space-y-1">
-                <p><strong>Admin:</strong> admin@example.com / password</p>
-                <p><strong>Patient:</strong> patient@example.com / password</p>
-                <p><strong>Doctor:</strong> doctor@example.com / password</p>
-                <p><strong>Caregiver:</strong> caregiver@example.com / password</p>
-                <p><strong>Coordinator:</strong> coordinator@example.com / password</p>
-              </div>
             </div>
           </CardContent>
         </Card>
