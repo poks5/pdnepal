@@ -106,8 +106,8 @@ const AdminDashboard: React.FC = () => {
           </h1>
           <p className="text-gray-600 mt-1">
             {language === 'en' 
-              ? `Welcome back, ${user?.name}. System overview and management tools.`
-              : `फिर्ता स्वागत छ, ${user?.name}। प्रणाली अवलोकन र व्यवस्थापन उपकरणहरू।`
+              ? `Welcome back, ${user?.fullName}. System overview and management tools.`
+              : `फिर्ता स्वागत छ, ${user?.fullName}। प्रणाली अवलोकन र व्यवस्थापन उपकरणहरू।`
             }
           </p>
         </div>
