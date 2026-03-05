@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Droplets, AlertTriangle, Filter } from 'lucide-react';
@@ -28,152 +27,118 @@ const ExchangeHistory: React.FC<ExchangeHistoryProps> = ({ exchanges = [] }) => 
   const { t } = useLanguage();
   const [filter, setFilter] = useState<'all' | 'concerns'>('all');
 
-  console.log('ExchangeHistory: exchanges prop:', exchanges);
-
-  const getExchangeTypeColor = (type: string) => {
-    switch (type) {
-      case 'morning': return 'bg-yellow-100 text-yellow-800';
-      case 'afternoon': return 'bg-orange-100 text-orange-800';
-      case 'evening': return 'bg-purple-100 text-purple-800';
-      case 'night': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const typeConfig: Record<string, { bg: string; text: string }> = {
+    morning: { bg: 'bg-amber-500/10', text: 'text-amber-600' },
+    afternoon: { bg: 'bg-orange-500/10', text: 'text-orange-600' },
+    evening: { bg: 'bg-violet-500/10', text: 'text-violet-600' },
+    night: { bg: 'bg-primary/10', text: 'text-primary' },
   };
 
-  const getColorIndicator = (color: string) => {
-    switch (color) {
-      case 'normal': return 'bg-green-500';
-      case 'yellow': return 'bg-yellow-500';
-      case 'red': return 'bg-red-500';
-      case 'brown': return 'bg-amber-800';
-      default: return 'bg-gray-500';
-    }
+  const colorDot: Record<string, string> = {
+    normal: 'bg-emerald-500',
+    yellow: 'bg-amber-500',
+    red: 'bg-destructive',
+    brown: 'bg-amber-800',
   };
 
-  const hasConcerns = (exchange: Exchange) => {
-    return exchange.clarity === 'cloudy' || 
-           exchange.color !== 'normal' || 
-           exchange.pain > 3 ||
-           exchange.ultrafiltration < -100; // Poor UF
-  };
+  const hasConcerns = (ex: Exchange) =>
+    ex.clarity === 'cloudy' || ex.color !== 'normal' || ex.pain > 3 || ex.ultrafiltration < -100;
 
-  const filteredExchanges = exchanges.filter(exchange => {
-    if (filter === 'concerns') {
-      return hasConcerns(exchange);
-    }
-    return true;
-  });
+  const filtered = exchanges.filter(ex => filter === 'all' || hasConcerns(ex));
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5" />
-              <span>Exchange History</span>
-            </CardTitle>
-            <CardDescription>Your recent dialysis exchanges</CardDescription>
-          </div>
-          <div className="flex space-x-2">
-            <Button
-              variant={filter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilter('all')}
-            >
-              All
-            </Button>
-            <Button
-              variant={filter === 'concerns' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilter('concerns')}
-              className="flex items-center space-x-1"
-            >
-              <AlertTriangle className="w-3 h-3" />
-              <span>Concerns</span>
-            </Button>
-          </div>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-bold text-foreground">Exchange History</h2>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {filteredExchanges.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              {filter === 'concerns' ? 'No concerning exchanges found' : 'No exchanges recorded yet'}
-            </div>
-          ) : (
-            filteredExchanges.map((exchange) => (
-              <div
-                key={exchange.id}
-                className={`p-4 rounded-lg border-2 ${
-                  hasConcerns(exchange) ? 'border-orange-200 bg-orange-50' : 'border-gray-200 bg-gray-50'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <Badge className={getExchangeTypeColor(exchange.type)}>
-                      {t(exchange.type)}
-                    </Badge>
-                    <div className="flex items-center space-x-1 text-sm text-gray-600">
-                      <Clock className="w-3 h-3" />
-                      <span>{exchange.time}</span>
+        <div className="flex gap-1.5">
+          <Button variant={filter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('all')} className="rounded-full text-xs h-8 px-3">
+            All
+          </Button>
+          <Button variant={filter === 'concerns' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('concerns')} className="rounded-full text-xs h-8 px-3">
+            <AlertTriangle className="w-3 h-3 mr-1" /> Concerns
+          </Button>
+        </div>
+      </div>
+
+      {/* List */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <Droplets className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">{filter === 'concerns' ? 'No concerning exchanges found' : 'No exchanges recorded yet'}</p>
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {filtered.map((ex) => {
+            const concern = hasConcerns(ex);
+            const tc = typeConfig[ex.type] || { bg: 'bg-muted', text: 'text-muted-foreground' };
+            return (
+              <Card key={ex.id} className={`border-border/50 shadow-sm ${concern ? 'border-l-4 border-l-amber-400' : ''}`}>
+                <CardContent className="p-3 sm:p-4">
+                  {/* Top row */}
+                  <div className="flex items-center justify-between mb-2.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className={`${tc.bg} ${tc.text} border-0 text-[10px] px-1.5 py-0`}>
+                        {t(ex.type)}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {ex.time}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{ex.date}</span>
                     </div>
-                    <span className="text-sm text-gray-500">{exchange.date}</span>
+                    {concern && <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />}
                   </div>
-                  {hasConcerns(exchange) && (
-                    <AlertTriangle className="w-4 h-4 text-orange-500" />
-                  )}
-                </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                  <div className="text-sm">
-                    <span className="text-gray-600">Drain:</span>
-                    <span className="ml-1 font-medium">{exchange.drainVolume}ml</span>
+                  {/* Stats grid — 2x2 on mobile, 4 col on desktop */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                    <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
+                      <span className="text-[10px] text-muted-foreground block">Drain</span>
+                      <span className="font-semibold text-foreground">{ex.drainVolume}ml</span>
+                    </div>
+                    <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
+                      <span className="text-[10px] text-muted-foreground block">Fill</span>
+                      <span className="font-semibold text-foreground">{ex.fillVolume}ml</span>
+                    </div>
+                    <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
+                      <span className="text-[10px] text-muted-foreground block">UF</span>
+                      <span className={`font-semibold ${ex.ultrafiltration >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
+                        {ex.ultrafiltration > 0 ? '+' : ''}{ex.ultrafiltration}ml
+                      </span>
+                    </div>
+                    <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
+                      <span className="text-[10px] text-muted-foreground block">Pain</span>
+                      <span className={`font-semibold ${ex.pain > 3 ? 'text-destructive' : 'text-emerald-600'}`}>
+                        {ex.pain}/10
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-sm">
-                    <span className="text-gray-600">Fill:</span>
-                    <span className="ml-1 font-medium">{exchange.fillVolume}ml</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-gray-600">UF:</span>
-                    <span className={`ml-1 font-medium ${exchange.ultrafiltration >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {exchange.ultrafiltration > 0 ? '+' : ''}{exchange.ultrafiltration}ml
-                    </span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-gray-600">Pain:</span>
-                    <span className={`ml-1 font-medium ${exchange.pain > 3 ? 'text-red-600' : 'text-green-600'}`}>
-                      {exchange.pain}/10
-                    </span>
-                  </div>
-                </div>
 
-                <div className="flex items-center space-x-4 mb-2">
-                  <div className="flex items-center space-x-1">
-                    <span className="text-sm text-gray-600">Clarity:</span>
-                    <Badge variant={exchange.clarity === 'clear' ? 'default' : 'destructive'}>
-                      {t(exchange.clarity)}
+                  {/* Clarity & color */}
+                  <div className="flex items-center gap-3 mt-2.5">
+                    <Badge className={`border-0 text-[10px] ${ex.clarity === 'clear' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-destructive/10 text-destructive'}`}>
+                      {t(ex.clarity)}
                     </Badge>
+                    <div className="flex items-center gap-1.5">
+                      <div className={`w-2.5 h-2.5 rounded-full ${colorDot[ex.color] ?? 'bg-muted-foreground'}`} />
+                      <span className="text-xs text-muted-foreground capitalize">{ex.color}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">Color:</span>
-                    <div className={`w-3 h-3 rounded-full ${getColorIndicator(exchange.color)}`} />
-                    <span className="text-sm">{exchange.color}</span>
-                  </div>
-                </div>
 
-                {exchange.notes && (
-                  <div className="mt-2 p-2 bg-white rounded text-sm">
-                    <span className="text-gray-600">Notes:</span>
-                    <p className="mt-1">{exchange.notes}</p>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
+                  {ex.notes && (
+                    <div className="mt-2.5 p-2.5 bg-muted/30 rounded-lg">
+                      <p className="text-xs text-muted-foreground">{ex.notes}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

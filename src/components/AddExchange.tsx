@@ -1,12 +1,11 @@
-
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Save, X } from 'lucide-react';
+import { Save, X, Droplets } from 'lucide-react';
 import { useExchangeForm, ExchangeData } from '@/hooks/useExchangeForm';
 import { TimeTypeSection } from '@/components/exchange/TimeTypeSection';
 import { VolumeSection } from '@/components/exchange/VolumeSection';
@@ -20,103 +19,81 @@ interface AddExchangeProps {
 const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const {
-    formData,
-    updateField,
-    previousFillVolume,
-    isUFAutoCalculated,
-    setIsUFAutoCalculated
-  } = useExchangeForm();
+  const { formData, updateField, previousFillVolume, isUFAutoCalculated, setIsUFAutoCalculated } = useExchangeForm();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Basic validation
     if (formData.drainVolume < 0 || formData.fillVolume <= 0) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter valid volumes",
-        variant: "destructive"
-      });
+      toast({ title: 'Validation Error', description: 'Please enter valid volumes', variant: 'destructive' });
       return;
     }
-
-    // Use current UF calculation or fallback to standard calculation
     let finalUF = formData.ultrafiltration;
     if (!finalUF && !isUFAutoCalculated) {
       finalUF = formData.drainVolume - formData.fillVolume;
     }
-
-    const finalData = {
-      ...formData,
-      ultrafiltration: finalUF
-    };
-
-    onSave(finalData);
-    toast({
-      title: "Exchange Logged",
-      description: "Your dialysis exchange has been recorded successfully"
-    });
+    onSave({ ...formData, ultrafiltration: finalUF });
   };
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>{t('addExchange')}</span>
-          <Button variant="ghost" size="sm" onClick={onCancel}>
-            <X className="w-4 h-4" />
-          </Button>
-        </CardTitle>
-        <CardDescription>Record your peritoneal dialysis exchange details</CardDescription>
-        {previousFillVolume && (
-          <div className="bg-blue-50 p-3 rounded-lg">
-            <p className="text-sm text-blue-700">
-              Previous fill volume: <strong>{previousFillVolume}ml</strong> 
-              {isUFAutoCalculated && " (used for UF calculation)"}
-            </p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Droplets className="w-4 h-4 text-primary" />
           </div>
-        )}
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <TimeTypeSection formData={formData} updateField={updateField} />
-          
-          <VolumeSection 
-            formData={formData} 
-            updateField={updateField}
-            previousFillVolume={previousFillVolume}
-            isUFAutoCalculated={isUFAutoCalculated}
-            setIsUFAutoCalculated={setIsUFAutoCalculated}
-          />
-
-          <AssessmentSection formData={formData} updateField={updateField} />
-
-          {/* Notes */}
           <div>
-            <Label htmlFor="notes">Additional Notes</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => updateField('notes', e.target.value)}
-              placeholder="Any concerns, symptoms, or observations..."
-              rows={3}
-            />
+            <h2 className="text-lg font-bold text-foreground">{t('addExchange')}</h2>
+            <p className="text-xs text-muted-foreground">Record your dialysis exchange</p>
           </div>
+        </div>
+        <Button variant="ghost" size="icon" onClick={onCancel} className="rounded-full">
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
 
-          {/* Submit Buttons */}
-          <div className="flex space-x-3">
-            <Button type="submit" className="flex-1">
-              <Save className="w-4 h-4 mr-2" />
-              {t('save')}
-            </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
-              {t('cancel')}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+      {previousFillVolume && (
+        <div className="bg-primary/5 border border-primary/10 p-3 rounded-xl">
+          <p className="text-sm text-primary font-medium">
+            Previous fill: <strong>{previousFillVolume}ml</strong>
+            {isUFAutoCalculated && ' (used for UF calculation)'}
+          </p>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <TimeTypeSection formData={formData} updateField={updateField} />
+        <VolumeSection
+          formData={formData}
+          updateField={updateField}
+          previousFillVolume={previousFillVolume}
+          isUFAutoCalculated={isUFAutoCalculated}
+          setIsUFAutoCalculated={setIsUFAutoCalculated}
+        />
+        <AssessmentSection formData={formData} updateField={updateField} />
+
+        <div className="space-y-1.5">
+          <Label htmlFor="notes" className="text-sm font-medium">Notes</Label>
+          <Textarea
+            id="notes"
+            value={formData.notes}
+            onChange={(e) => updateField('notes', e.target.value)}
+            placeholder="Any concerns, symptoms, or observations..."
+            rows={3}
+            className="rounded-xl resize-none"
+          />
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <Button type="submit" className="flex-1 h-12 rounded-xl font-semibold shadow-md shadow-primary/20 active:scale-[0.98] transition-transform">
+            <Save className="w-4 h-4 mr-2" />
+            {t('save')}
+          </Button>
+          <Button type="button" variant="outline" onClick={onCancel} className="rounded-xl h-12">
+            {t('cancel')}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 
