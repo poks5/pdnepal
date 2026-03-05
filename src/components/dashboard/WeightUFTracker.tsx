@@ -1,104 +1,71 @@
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Droplets, Weight, Clock, Plus } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Droplets, Weight, TrendingUp } from 'lucide-react';
 import { usePatient } from '@/contexts/PatientContext';
 import { DailyExchangeLog } from '@/types/patient';
 
 const WeightUFTracker: React.FC = () => {
-  const {
-    exchangeLogs,
-    patientProfile
-  } = usePatient();
+  const { exchangeLogs } = usePatient();
 
-  // Calculate UF for last 24 hours (6 AM to 6 AM)
   const calculate24HourUF = (): number => {
     const now = new Date();
-    
-    // Calculate the most recent 6 AM boundary
     let endTime = new Date(now);
     endTime.setHours(6, 0, 0, 0);
-    
-    // If current time is before 6 AM today, use yesterday's 6 AM
-    if (now.getHours() < 6) {
-      endTime.setDate(endTime.getDate() - 1);
-    }
-    
-    // Start time is 24 hours before end time
+    if (now.getHours() < 6) endTime.setDate(endTime.getDate() - 1);
     const startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
-    
-    console.log('UF Calculation:', {
-      now: now.toISOString(),
-      startTime: startTime.toISOString(),
-      endTime: endTime.toISOString(),
-      totalLogs: exchangeLogs.length
-    });
 
-    const relevantExchanges = exchangeLogs.filter((log: DailyExchangeLog) => {
-      const logTime = new Date(log.timestamp);
-      const isInRange = logTime >= startTime && logTime < endTime;
-      
-      if (isInRange) {
-        console.log('Including exchange:', {
-          timestamp: log.timestamp,
-          ultrafiltration: log.ultrafiltration
-        });
-      }
-      
-      return isInRange;
-    });
-    
-    const totalUF = relevantExchanges.reduce((total, log) => total + log.ultrafiltration, 0);
-    
-    console.log('24hr UF Total:', {
-      relevantExchanges: relevantExchanges.length,
-      totalUF
-    });
-    
-    return totalUF;
+    return exchangeLogs
+      .filter((log: DailyExchangeLog) => {
+        const logTime = new Date(log.timestamp);
+        return logTime >= startTime && logTime < endTime;
+      })
+      .reduce((total, log) => total + log.ultrafiltration, 0);
   };
 
   const totalUF = calculate24HourUF();
-  const currentWeight = 65.5; // This would come from patient data in real implementation
+  const currentWeight = 65.5;
+
+  const items = [
+    {
+      label: '24hr UF Total',
+      value: `${totalUF}ml`,
+      sub: '6 AM to 6 AM',
+      icon: Droplets,
+      iconBg: 'bg-primary/10',
+      iconColor: 'text-primary',
+    },
+    {
+      label: 'Current Weight',
+      value: `${currentWeight} kg`,
+      sub: 'Weigh after draining',
+      icon: Weight,
+      iconBg: 'bg-emerald-500/10',
+      iconColor: 'text-emerald-600',
+    },
+    {
+      label: 'Trend',
+      value: '↓ 0.3 kg',
+      sub: 'This week',
+      icon: TrendingUp,
+      iconBg: 'bg-violet-500/10',
+      iconColor: 'text-violet-600',
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <Card className="p-3">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-0">
-          <CardTitle className="text-xs font-medium">24hr UF Total</CardTitle>
-          <Droplets className="h-3 w-3 text-blue-500" />
-        </CardHeader>
-        <CardContent className="p-0 pt-1">
-          <div className="text-lg font-bold text-blue-600">{totalUF}ml</div>
-          <p className="text-xs text-muted-foreground">6 AM to 6 AM</p>
-        </CardContent>
-      </Card>
-
-      <Card className="p-3">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-0">
-          <CardTitle className="text-xs font-medium">Current Weight</CardTitle>
-          <Weight className="h-3 w-3 text-green-500" />
-        </CardHeader>
-        <CardContent className="p-0 pt-1">
-          <div className="text-lg font-bold text-green-600">{currentWeight} kg</div>
-          <p className="text-xs text-muted-foreground">Last recorded</p>
-          <div className="mt-2 pt-2 border-t border-gray-100">
-            <p className="text-xs text-orange-600 font-medium">Weigh after draining</p>
-            <p className="text-xs text-muted-foreground">Each exchange</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="p-3">
-        <CardContent className="p-0 pt-1">
-          <div className="text-sm font-medium text-purple-600">
-            {/* Placeholder for future content */}
-          </div>
-          <div className="mt-1">
-            {/* Placeholder for future content */}
-          </div>
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      {items.map(({ label, value, sub, icon: Icon, iconBg, iconColor }) => (
+        <Card key={label} className="border-border/50 shadow-sm">
+          <CardContent className="p-3 sm:p-4">
+            <div className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center mb-2`}>
+              <Icon className={`w-4 h-4 ${iconColor}`} />
+            </div>
+            <p className="text-sm sm:text-base font-bold text-foreground leading-none">{value}</p>
+            <p className="text-[10px] text-muted-foreground mt-1 font-medium">{label}</p>
+            <p className="text-[10px] text-muted-foreground/70">{sub}</p>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };

@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Users, Phone, FileText, Settings } from 'lucide-react';
+import { Users, Phone, FileText, Settings, ChevronRight, AlertTriangle } from 'lucide-react';
 
 interface Patient {
   id: number;
@@ -28,90 +27,69 @@ interface PatientListProps {
 const PatientList: React.FC<PatientListProps> = ({ patients, onViewPatient, onManagePlan }) => {
   const { t } = useLanguage();
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'good': return 'bg-green-100 text-green-800';
-      case 'stable': return 'bg-blue-100 text-blue-800';
-      case 'attention': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
+    good: { bg: 'bg-emerald-500/10', text: 'text-emerald-600', label: 'Good' },
+    stable: { bg: 'bg-primary/10', text: 'text-primary', label: 'Stable' },
+    attention: { bg: 'bg-destructive/10', text: 'text-destructive', label: 'Attention' },
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Users className="w-5 h-5" />
-          <span>{t('patients')}</span>
-        </CardTitle>
-        <CardDescription>Monitor your patients' dialysis progress</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {patients.map((patient) => (
-            <div
-              key={patient.id}
-              className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{patient.name}</h3>
-                      <p className="text-sm text-gray-600">
-                        Age {patient.age} • Last exchange: {patient.lastExchange}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Weekly UF: {patient.weeklyUF}ml • Missed: {patient.missedExchanges}
-                      </p>
-                    </div>
+    <div className="space-y-3">
+      {patients.map((patient) => {
+        const status = statusConfig[patient.status] || statusConfig.stable;
+        return (
+          <Card
+            key={patient.id}
+            className="border-border/50 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-[0.99]"
+            onClick={() => onViewPatient(patient)}
+          >
+            <CardContent className="p-4">
+              {/* Mobile-first layout */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{patient.name}</h3>
+                    <Badge className={`${status.bg} ${status.text} border-0 text-[10px] px-1.5 py-0`}>
+                      {status.label}
+                    </Badge>
                     {patient.alerts > 0 && (
-                      <Badge variant="destructive" className="ml-2">
-                        {patient.alerts} alerts
+                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                        <AlertTriangle className="w-2.5 h-2.5 mr-0.5" />
+                        {patient.alerts}
                       </Badge>
                     )}
                   </div>
-                  
-                  <div className="mt-3 space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>Adherence</span>
-                      <span className="font-medium">{patient.adherence}%</span>
-                    </div>
-                    <Progress value={patient.adherence} className="h-2" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Age {patient.age} · Last: {patient.lastExchange} · UF: {patient.weeklyUF}ml/wk
+                  </p>
+
+                  {/* Adherence bar */}
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <Progress value={patient.adherence} className="h-1.5 flex-1" />
+                    <span className="text-xs font-semibold text-muted-foreground w-8 text-right">{patient.adherence}%</span>
                   </div>
                 </div>
-                
-                <div className="flex items-center space-x-2 ml-4">
-                  <Badge className={getStatusColor(patient.status)}>
-                    {patient.status}
-                  </Badge>
-                  <Button 
-                    variant="default" 
-                    size="sm"
-                    onClick={() => onViewPatient(patient)}
-                  >
-                    <FileText className="w-4 h-4 mr-1" />
-                    View Details
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => onManagePlan(patient)}
-                  >
-                    <Settings className="w-4 h-4 mr-1" />
-                    Plan
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Phone className="w-4 h-4 mr-1" />
-                    Call
-                  </Button>
-                </div>
+
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
               </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+
+              {/* Action buttons — hidden on mobile, show on tap/desktop */}
+              <div className="hidden sm:flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
+                <Button variant="default" size="sm" className="rounded-xl text-xs" onClick={(e) => { e.stopPropagation(); onViewPatient(patient); }}>
+                  <FileText className="w-3.5 h-3.5 mr-1" /> Details
+                </Button>
+                <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={(e) => { e.stopPropagation(); onManagePlan(patient); }}>
+                  <Settings className="w-3.5 h-3.5 mr-1" /> Plan
+                </Button>
+                <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={(e) => e.stopPropagation()}>
+                  <Phone className="w-3.5 h-3.5 mr-1" /> Call
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
   );
 };
 
