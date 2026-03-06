@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { usePatient } from '@/contexts/PatientContext';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,111 +8,126 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { User, Phone, Mail, Calendar, FileText, UserPlus, Save } from 'lucide-react';
-import { PatientProfile as PatientProfileType } from '@/types/patient';
+import { User, Phone, FileText, UserPlus, Save, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface ProfileFormData {
+  full_name: string;
+  phone: string;
+  date_of_birth: string;
+  language: string;
+  hospital: string;
+  address: string;
+  emergency_contact_name: string;
+  emergency_contact_phone: string;
+}
 
 const PatientProfile: React.FC = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { patientProfile, updatePatientProfile } = usePatient();
-  
-  const [formData, setFormData] = useState<Partial<PatientProfileType>>(
-    patientProfile || {
-      name: '',
-      dateOfBirth: '',
-      diagnosis: '',
-      contactPhone: '',
-      contactEmail: '',
-      language: 'en'
-    }
-  );
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const handleInputChange = (field: keyof PatientProfileType, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const [formData, setFormData] = useState<ProfileFormData>({
+    full_name: '',
+    phone: '',
+    date_of_birth: '',
+    language: 'en',
+    hospital: '',
+    address: '',
+    emergency_contact_name: '',
+    emergency_contact_phone: '',
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (error) throw error;
+        if (data) {
+          setFormData({
+            full_name: data.full_name || '',
+            phone: data.phone || '',
+            date_of_birth: data.date_of_birth || '',
+            language: data.language || 'en',
+            hospital: data.hospital || '',
+            address: data.address || '',
+            emergency_contact_name: data.emergency_contact_name || '',
+            emergency_contact_phone: data.emergency_contact_phone || '',
+          });
+        }
+      } catch (err: any) {
+        toast({ title: 'Error loading profile', description: err.message, variant: 'destructive' });
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [user]);
+
+  const handleChange = (field: keyof ProfileFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleEmergencyContactChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      emergencyContact: {
-        ...prev.emergencyContact,
-        [field]: value
-      } as any
-    }));
-  };
-
-  const validateForm = () => {
-    const requiredFields = ['name', 'dateOfBirth', 'diagnosis', 'contactPhone'];
-    const missingFields = requiredFields.filter(field => !formData[field as keyof PatientProfileType]);
-    
-    if (missingFields.length > 0) {
-      toast({
-        title: "Missing Required Fields",
-        description: `Please fill in: ${missingFields.join(', ')}`,
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    // Email validation if provided
-    if (formData.contactEmail && !/\S+@\S+\.\S+/.test(formData.contactEmail)) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSave = () => {
-    if (!validateForm()) {
+  const handleSave = async () => {
+    if (!user) return;
+    if (!formData.full_name.trim()) {
+      toast({ title: 'Missing Required Fields', description: 'Please enter your full name.', variant: 'destructive' });
       return;
     }
-
-    const profileData: PatientProfileType = {
-      id: patientProfile?.id || Date.now().toString(),
-      name: formData.name || '',
-      dateOfBirth: formData.dateOfBirth || '',
-      diagnosis: formData.diagnosis || '',
-      contactPhone: formData.contactPhone || '',
-      contactEmail: formData.contactEmail || '',
-      language: formData.language || 'en',
-      emergencyContact: formData.emergencyContact,
-      nephrologist: formData.nephrologist,
-      treatmentStartDate: formData.treatmentStartDate,
-      insuranceDetails: formData.insuranceDetails,
-      profilePhoto: formData.profilePhoto
-    };
-    
-    updatePatientProfile(profileData);
-    toast({
-      title: "Profile Saved",
-      description: "Your patient profile has been saved successfully.",
-    });
-    console.log('Patient profile saved:', profileData);
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: formData.full_name,
+          phone: formData.phone || null,
+          date_of_birth: formData.date_of_birth || null,
+          language: formData.language,
+          hospital: formData.hospital || null,
+          address: formData.address || null,
+          emergency_contact_name: formData.emergency_contact_name || null,
+          emergency_contact_phone: formData.emergency_contact_phone || null,
+        })
+        .eq('user_id', user.id);
+      if (error) throw error;
+      toast({ title: 'Profile Saved', description: 'Your profile has been updated successfully.' });
+    } catch (err: any) {
+      toast({ title: 'Error saving profile', description: err.message, variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Patient Profile</h2>
-          <p className="text-gray-600">Manage your personal and medical information</p>
+          <p className="text-muted-foreground">Manage your personal and medical information</p>
         </div>
-        <Button onClick={handleSave} className="flex items-center space-x-2">
-          <Save className="w-4 h-4" />
-          <span>Save Profile</span>
+        <Button onClick={handleSave} disabled={saving} className="flex items-center space-x-2">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          <span>{saving ? 'Saving...' : 'Save Profile'}</span>
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Personal Information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -124,57 +139,20 @@ const PatientProfile: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name *</Label>
-              <Input
-                id="name"
-                value={formData.name || ''}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="Enter your full name"
-                required
-              />
+              <Input id="name" value={formData.full_name} onChange={(e) => handleChange('full_name', e.target.value)} placeholder="Enter your full name" />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="dob">Date of Birth *</Label>
-              <Input
-                id="dob"
-                type="date"
-                value={formData.dateOfBirth || ''}
-                onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                required
-              />
+              <Label htmlFor="dob">Date of Birth</Label>
+              <Input id="dob" type="date" value={formData.date_of_birth} onChange={(e) => handleChange('date_of_birth', e.target.value)} />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="phone">Contact Phone *</Label>
-              <Input
-                id="phone"
-                value={formData.contactPhone || ''}
-                onChange={(e) => handleInputChange('contactPhone', e.target.value)}
-                placeholder="Your phone number"
-                required
-              />
+              <Label htmlFor="phone">Contact Phone</Label>
+              <Input id="phone" value={formData.phone} onChange={(e) => handleChange('phone', e.target.value)} placeholder="Your phone number" />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.contactEmail || ''}
-                onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                placeholder="Your email address"
-              />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="language">Preferred Language</Label>
-              <Select
-                value={formData.language}
-                onValueChange={(value) => handleInputChange('language', value as 'en' | 'ne')}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+              <Select value={formData.language} onValueChange={(v) => handleChange('language', v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">English</SelectItem>
                   <SelectItem value="ne">Nepali</SelectItem>
@@ -184,62 +162,27 @@ const PatientProfile: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Medical Information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />
               <span>Medical Information</span>
             </CardTitle>
-            <CardDescription>Treatment details and medical history</CardDescription>
+            <CardDescription>Hospital and address details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="diagnosis">Primary Diagnosis *</Label>
-              <Input
-                id="diagnosis"
-                value={formData.diagnosis || ''}
-                onChange={(e) => handleInputChange('diagnosis', e.target.value)}
-                placeholder="e.g., End Stage Renal Disease"
-                required
-              />
+              <Label htmlFor="hospital">Hospital</Label>
+              <Input id="hospital" value={formData.hospital} onChange={(e) => handleChange('hospital', e.target.value)} placeholder="Your hospital" />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="nephrologist">Nephrologist</Label>
-              <Input
-                id="nephrologist"
-                value={formData.nephrologist || ''}
-                onChange={(e) => handleInputChange('nephrologist', e.target.value)}
-                placeholder="Dr. Name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="treatmentStart">Treatment Start Date</Label>
-              <Input
-                id="treatmentStart"
-                type="date"
-                value={formData.treatmentStartDate || ''}
-                onChange={(e) => handleInputChange('treatmentStartDate', e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="insurance">Insurance Details</Label>
-              <Textarea
-                id="insurance"
-                value={formData.insuranceDetails || ''}
-                onChange={(e) => handleInputChange('insuranceDetails', e.target.value)}
-                placeholder="Insurance provider and policy information"
-                rows={3}
-              />
+              <Label htmlFor="address">Address</Label>
+              <Textarea id="address" value={formData.address} onChange={(e) => handleChange('address', e.target.value)} placeholder="Your address" rows={3} />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Emergency Contact */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -249,35 +192,14 @@ const PatientProfile: React.FC = () => {
           <CardDescription>Person to contact in case of emergency</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="emergencyName">Name</Label>
-              <Input
-                id="emergencyName"
-                value={formData.emergencyContact?.name || ''}
-                onChange={(e) => handleEmergencyContactChange('name', e.target.value)}
-                placeholder="Emergency contact name"
-              />
+              <Input id="emergencyName" value={formData.emergency_contact_name} onChange={(e) => handleChange('emergency_contact_name', e.target.value)} placeholder="Emergency contact name" />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="emergencyRelation">Relationship</Label>
-              <Input
-                id="emergencyRelation"
-                value={formData.emergencyContact?.relationship || ''}
-                onChange={(e) => handleEmergencyContactChange('relationship', e.target.value)}
-                placeholder="e.g., Spouse, Parent, Sibling"
-              />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="emergencyPhone">Phone Number</Label>
-              <Input
-                id="emergencyPhone"
-                value={formData.emergencyContact?.phone || ''}
-                onChange={(e) => handleEmergencyContactChange('phone', e.target.value)}
-                placeholder="Emergency contact phone"
-              />
+              <Input id="emergencyPhone" value={formData.emergency_contact_phone} onChange={(e) => handleChange('emergency_contact_phone', e.target.value)} placeholder="Emergency contact phone" />
             </div>
           </div>
         </CardContent>
