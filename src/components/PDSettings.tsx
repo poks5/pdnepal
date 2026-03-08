@@ -8,11 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Settings, Clock, Droplets, Bell, Save, Plus, X } from 'lucide-react';
+import { Settings, Clock, Droplets, Bell, Save, Plus, X, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { PDSettings as PDSettingsType, DialysateStrength } from '@/types/patient';
 
 const PDSettings: React.FC = () => {
   const { pdSettings, updatePDSettings, patientProfile } = usePatient();
+  const { toast } = useToast();
+  const [saving, setSaving] = useState(false);
   
   const [formData, setFormData] = useState<Partial<PDSettingsType>>(
     pdSettings || {
@@ -68,27 +71,32 @@ const PDSettings: React.FC = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!patientProfile?.id) {
-      console.error('Patient profile required before saving PD settings');
+      toast({ title: 'Error', description: 'Patient profile required before saving PD settings.', variant: 'destructive' });
       return;
     }
-
-    const settingsData: PDSettingsType = {
-      id: pdSettings?.id || Date.now().toString(),
-      patientId: patientProfile.id,
-      mode: formData.mode || 'CAPD',
-      fluidBrand: formData.fluidBrand || '',
-      exchangesPerDay: (formData.scheduledTimes?.length || 4) as 1 | 2 | 3 | 4,
-      scheduledTimes: formData.scheduledTimes || [],
-      pushReminders: formData.pushReminders || false,
-      defaultDialysateStrengths: formData.defaultDialysateStrengths || [],
-      defaultDwellTime: formData.defaultDwellTime || 4,
-      treatmentPlanVersion: (pdSettings?.treatmentPlanVersion || 0) + 1
-    };
-    
-    updatePDSettings(settingsData);
-    console.log('PD settings saved');
+    setSaving(true);
+    try {
+      const settingsData: PDSettingsType = {
+        id: pdSettings?.id || Date.now().toString(),
+        patientId: patientProfile.id,
+        mode: formData.mode || 'CAPD',
+        fluidBrand: formData.fluidBrand || '',
+        exchangesPerDay: (formData.scheduledTimes?.length || 4) as 1 | 2 | 3 | 4,
+        scheduledTimes: formData.scheduledTimes || [],
+        pushReminders: formData.pushReminders || false,
+        defaultDialysateStrengths: formData.defaultDialysateStrengths || [],
+        defaultDwellTime: formData.defaultDwellTime || 4,
+        treatmentPlanVersion: (pdSettings?.treatmentPlanVersion || 0) + 1
+      };
+      updatePDSettings(settingsData);
+      toast({ title: 'Settings Saved', description: 'Your PD settings have been updated successfully.' });
+    } catch (err: any) {
+      toast({ title: 'Error saving settings', description: err.message, variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const dwellTimeOptions = [];
@@ -105,9 +113,9 @@ const PDSettings: React.FC = () => {
           <h2 className="text-2xl font-bold">PD Master Settings</h2>
           <p className="text-gray-600">Configure your peritoneal dialysis treatment parameters</p>
         </div>
-        <Button onClick={handleSave} className="flex items-center space-x-2">
-          <Save className="w-4 h-4" />
-          <span>Save Settings</span>
+        <Button onClick={handleSave} disabled={saving} className="flex items-center space-x-2">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          <span>{saving ? 'Saving...' : 'Save Settings'}</span>
         </Button>
       </div>
 

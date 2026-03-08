@@ -5,18 +5,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Save, X, Droplets } from 'lucide-react';
+import { Save, X, Droplets, Loader2 } from 'lucide-react';
 import { useExchangeForm, ExchangeData } from '@/hooks/useExchangeForm';
 import { TimeTypeSection } from '@/components/exchange/TimeTypeSection';
 import { VolumeSection } from '@/components/exchange/VolumeSection';
 import { AssessmentSection } from '@/components/exchange/AssessmentSection';
 
 interface AddExchangeProps {
-  onSave: (data: ExchangeData) => void;
+  onSave: (data: ExchangeData) => Promise<void> | void;
   onCancel: () => void;
+  saving?: boolean;
 }
 
-const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel }) => {
+const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = false }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { formData, updateField, previousFillVolume, isUFAutoCalculated, setIsUFAutoCalculated } = useExchangeForm();
@@ -84,11 +85,11 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel }) => {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <Button type="submit" className="flex-1 h-12 rounded-xl font-semibold shadow-md shadow-primary/20 active:scale-[0.98] transition-transform">
-            <Save className="w-4 h-4 mr-2" />
-            {t('save')}
+          <Button type="submit" disabled={saving} className="flex-1 h-12 rounded-xl font-semibold shadow-md shadow-primary/20 active:scale-[0.98] transition-transform">
+            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            {saving ? 'Saving...' : t('save')}
           </Button>
-          <Button type="button" variant="outline" onClick={onCancel} className="rounded-xl h-12">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={saving} className="rounded-xl h-12">
             {t('cancel')}
           </Button>
         </div>

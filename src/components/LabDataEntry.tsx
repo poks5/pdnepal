@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar } from 'lucide-react';
+import { Calendar, Save, Loader2 } from 'lucide-react';
 import { LabTest, labRanges } from '@/types/labData';
 
 interface LabDataEntryProps {
@@ -18,6 +18,7 @@ interface LabDataEntryProps {
 
 const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => {
   const { toast } = useToast();
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<Partial<LabTest>>(
     existingData || {
       testDate: new Date().toISOString().split('T')[0],
@@ -49,28 +50,26 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.testDate) {
-      toast({
-        title: "Error",
-        description: "Please select a test date",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: "Please select a test date", variant: "destructive" });
       return;
     }
-
-    onSave({
-      ...formData,
-      id: existingData?.id || `lab_${Date.now()}`,
-      patientId: existingData?.patientId || 'current_patient',
-      createdAt: existingData?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
-
-    toast({
-      title: "Success",
-      description: "Lab data saved successfully"
-    });
+    setSaving(true);
+    try {
+      onSave({
+        ...formData,
+        id: existingData?.id || `lab_${Date.now()}`,
+        patientId: existingData?.patientId || 'current_patient',
+        createdAt: existingData?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      toast({ title: "Success", description: "Lab data saved successfully" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const renderParameterInput = (
@@ -284,8 +283,11 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
       </Card>
 
       <div className="flex justify-end space-x-4">
-        <Button variant="outline">Cancel</Button>
-        <Button onClick={handleSave}>Save Lab Data</Button>
+        <Button variant="outline" disabled={saving}>Cancel</Button>
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+          {saving ? 'Saving...' : 'Save Lab Data'}
+        </Button>
       </div>
     </div>
   );
