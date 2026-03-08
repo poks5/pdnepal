@@ -9,6 +9,7 @@ export interface ExchangeData {
   drainVolume: number;
   fillVolume: number;
   ultrafiltration: number;
+  weightAfter: number | null;
   clarity: 'clear' | 'cloudy';
   color: 'normal' | 'yellow' | 'red' | 'brown';
   pain: number;
@@ -24,6 +25,7 @@ export const useExchangeForm = () => {
     drainVolume: 0,
     fillVolume: 2000,
     ultrafiltration: 0,
+    weightAfter: null,
     clarity: 'clear',
     color: 'normal',
     pain: 0,
