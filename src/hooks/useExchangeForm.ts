@@ -13,6 +13,7 @@ export interface ExchangeData {
   clarity: 'clear' | 'cloudy';
   color: 'normal' | 'yellow' | 'red' | 'brown';
   pain: number;
+  symptoms: string[];
   notes: string;
 }
 
