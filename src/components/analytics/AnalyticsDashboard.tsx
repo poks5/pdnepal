@@ -13,7 +13,7 @@ import MedicationTracker from '../medical/MedicationTracker';
 import SymptomTracker from '../medical/SymptomTracker';
 import PhotoDocumentation from '../medical/PhotoDocumentation';
 import { usePatient } from '@/contexts/PatientContext';
-import kidneyMascot from '@/assets/kidney-mascot.png';
+import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos';
 
