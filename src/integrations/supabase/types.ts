@@ -385,6 +385,66 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_assignments: {
+        Row: {
+          assigned_at: string
+          doctor_id: string
+          id: string
+          module_id: string
+          notes: string | null
+          patient_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          doctor_id: string
+          id?: string
+          module_id: string
+          notes?: string | null
+          patient_id: string
+        }
+        Update: {
+          assigned_at?: string
+          doctor_id?: string
+          id?: string
+          module_id?: string
+          notes?: string | null
+          patient_id?: string
+        }
+        Relationships: []
+      }
+      learning_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          module_id: string
+          quiz_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id: string
+          quiz_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id?: string
+          quiz_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pd_catheters: {
         Row: {
           catheter_brand: string | null

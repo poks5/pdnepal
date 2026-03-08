@@ -5,10 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Heart, Calendar, AlertTriangle, MessageSquare, User } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Heart, Calendar, AlertTriangle, MessageSquare, User, BookOpen } from 'lucide-react';
+import LearningCenter from './learning/LearningCenter';
 
 const CaregiverDashboard: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [patientData] = useState({
     name: 'Ram Bahadur Gurung',
     relationship: 'Father',
@@ -27,7 +29,27 @@ const CaregiverDashboard: React.FC = () => {
 
   const adherencePercent = (patientData.todayExchanges.completed / patientData.todayExchanges.total) * 100;
 
+  const [caregiverTab, setCaregiverTab] = useState('overview');
+
   return (
+    <div className="space-y-6">
+      <Tabs value={caregiverTab} onValueChange={setCaregiverTab}>
+        <div className="overflow-x-auto -mx-4 px-4 no-scrollbar">
+          <TabsList className="inline-flex w-max gap-1 bg-muted/50 p-1 rounded-2xl">
+            <TabsTrigger value="overview" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap">
+              <Heart className="w-3.5 h-3.5" /> {t('overview')}
+            </TabsTrigger>
+            <TabsTrigger value="learning" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap">
+              <BookOpen className="w-3.5 h-3.5" /> {language === 'en' ? 'Learning' : 'सिकाइ'}
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="learning">
+          <LearningCenter />
+        </TabsContent>
+
+        <TabsContent value="overview">
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-purple-600 to-violet-600 rounded-xl p-6 text-white">
@@ -177,6 +199,9 @@ const CaregiverDashboard: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+    </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight } from 'lucide-react';
+import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNav } from '@/components/Layout';
@@ -19,6 +19,7 @@ import LabDataManagement from './LabDataManagement';
 import DashboardOverview from './dashboard/DashboardOverview';
 import AnalyticsDashboard from './analytics/AnalyticsDashboard';
 import MyDoctor from './MyDoctor';
+import LearningCenter from './learning/LearningCenter';
 import { formatExchangeForHistory } from '@/utils/exchangeFormatters';
 import { ExchangeData } from '@/hooks/useExchangeForm';
 import { DailyExchangeLog } from '@/types/patient';
@@ -99,6 +100,7 @@ const PatientDashboard: React.FC = () => {
     { value: 'exchanges', icon: Droplets, label: t('exchanges') },
     { value: 'analytics', icon: BarChart, label: 'Analytics' },
     { value: 'lab-data', icon: FlaskConical, label: 'Labs' },
+    { value: 'learning', icon: BookOpen, label: t('learningCenter') },
     { value: 'settings', icon: Settings, label: 'Settings' },
   ];
 
@@ -171,6 +173,7 @@ const PatientDashboard: React.FC = () => {
         <TabsContent value="exchanges"><ExchangeHistory exchanges={formattedExchanges} /></TabsContent>
         <TabsContent value="analytics"><AnalyticsDashboard /></TabsContent>
         <TabsContent value="lab-data"><LabDataManagement /></TabsContent>
+        <TabsContent value="learning"><LearningCenter /></TabsContent>
         <TabsContent value="settings">{renderSettingsContent()}</TabsContent>
       </Tabs>
 

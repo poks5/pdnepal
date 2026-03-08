@@ -433,6 +433,7 @@ const translations: Translations = {
   acknowledge: { en: 'Acknowledge', ne: 'स्वीकार गर्नुहोस्' },
   call: { en: 'Call', ne: 'कल' },
   justNow: { en: 'Just now', ne: 'अहिले भर्खरै' },
+  learningCenter: { en: 'Learning', ne: 'सिकाइ' },
 };
 
 interface LanguageContextType {
