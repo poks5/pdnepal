@@ -124,7 +124,7 @@ const ExchangeHistory: React.FC<ExchangeHistoryProps> = ({ exchanges = [] }) => 
                     </Badge>
                     <div className="flex items-center gap-1.5">
                       <div className={`w-2.5 h-2.5 rounded-full ${colorDot[ex.color] ?? 'bg-muted-foreground'}`} />
-                      <span className="text-xs text-muted-foreground capitalize">{ex.color}</span>
+                      <span className="text-xs text-muted-foreground capitalize">{t(ex.color)}</span>
                     </div>
                   </div>
 

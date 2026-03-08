@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { usePatient } from '@/contexts/PatientContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,7 @@ import { PDSettings as PDSettingsType, DialysateStrength } from '@/types/patient
 const PDSettings: React.FC = () => {
   const { pdSettings, updatePDSettings, patientProfile } = usePatient();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
   
   const [formData, setFormData] = useState<Partial<PDSettingsType>>(
@@ -31,10 +33,7 @@ const PDSettings: React.FC = () => {
   );
 
   const handleInputChange = (field: keyof PDSettingsType, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleTimeChange = (index: number, time: string) => {
@@ -59,16 +58,9 @@ const PDSettings: React.FC = () => {
   const handleStrengthToggle = (strength: DialysateStrength) => {
     const currentStrengths = formData.defaultDialysateStrengths || [];
     const isSelected = currentStrengths.includes(strength);
-    
-    if (isSelected) {
-      handleInputChange('defaultDialysateStrengths', 
-        currentStrengths.filter(s => s !== strength)
-      );
-    } else {
-      handleInputChange('defaultDialysateStrengths', 
-        [...currentStrengths, strength]
-      );
-    }
+    handleInputChange('defaultDialysateStrengths',
+      isSelected ? currentStrengths.filter(s => s !== strength) : [...currentStrengths, strength]
+    );
   };
 
   const handleSave = async () => {
@@ -87,9 +79,9 @@ const PDSettings: React.FC = () => {
         treatmentPlanVersion: (pdSettings?.treatmentPlanVersion || 0) + 1
       };
       await updatePDSettings(settingsData);
-      toast({ title: 'Settings Saved ✅', description: 'Your PD settings have been saved to the database.' });
+      toast({ title: t('settingsSaved'), description: t('settingsSavedDesc') });
     } catch (err: any) {
-      toast({ title: 'Error saving settings', description: err.message, variant: 'destructive' });
+      toast({ title: t('errorSavingSettings'), description: err.message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -106,44 +98,38 @@ const PDSettings: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">PD Master Settings</h2>
-          <p className="text-gray-600">Configure your peritoneal dialysis treatment parameters</p>
+          <h2 className="text-2xl font-bold">{t('pdMasterSettings')}</h2>
+          <p className="text-muted-foreground">{t('configurePDParams')}</p>
         </div>
         <Button onClick={handleSave} disabled={saving} className="flex items-center space-x-2">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          <span>{saving ? 'Saving...' : 'Save Settings'}</span>
+          <span>{saving ? t('saving') : t('saveSettings')}</span>
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Treatment Mode & Brand */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Settings className="w-5 h-5" />
-              <span>Treatment Configuration</span>
+              <span>{t('treatmentConfiguration')}</span>
             </CardTitle>
-            <CardDescription>Basic treatment mode and fluid preferences</CardDescription>
+            <CardDescription>{t('basicTreatmentPrefs')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="mode">PD Mode</Label>
-              <Select
-                value={formData.mode}
-                onValueChange={(value) => handleInputChange('mode', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+              <Label htmlFor="mode">{t('pdMode')}</Label>
+              <Select value={formData.mode} onValueChange={(value) => handleInputChange('mode', value)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CAPD">CAPD (Continuous Ambulatory)</SelectItem>
-                  <SelectItem value="APD">APD (Automated Peritoneal)</SelectItem>
+                  <SelectItem value="CAPD">{t('capdFull')}</SelectItem>
+                  <SelectItem value="APD">{t('apdFull')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="fluidBrand">Fluid Brand</Label>
+              <Label htmlFor="fluidBrand">{t('fluidBrand')}</Label>
               <Input
                 id="fluidBrand"
                 value={formData.fluidBrand || ''}
@@ -153,18 +139,16 @@ const PDSettings: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dwellTime">Default Dwell Time (hours)</Label>
+              <Label htmlFor="dwellTime">{t('defaultDwellTime')}</Label>
               <Select
                 value={formData.defaultDwellTime?.toString()}
                 onValueChange={(value) => handleInputChange('defaultDwellTime', parseFloat(value))}
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {dwellTimeOptions.map((time) => (
                     <SelectItem key={time} value={time.toString()}>
-                      {time} hours
+                      {time} {t('hours')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -177,32 +161,26 @@ const PDSettings: React.FC = () => {
                 checked={formData.pushReminders || false}
                 onCheckedChange={(checked) => handleInputChange('pushReminders', checked)}
               />
-              <Label htmlFor="pushReminders">Enable push notifications</Label>
+              <Label htmlFor="pushReminders">{t('enablePushNotifications')}</Label>
             </div>
           </CardContent>
         </Card>
 
-        {/* Exchange Schedule */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Clock className="w-5 h-5" />
-              <span>Exchange Schedule</span>
+              <span>{t('exchangeSchedule')}</span>
             </CardTitle>
-            <CardDescription>Set your daily exchange times</CardDescription>
+            <CardDescription>{t('setDailyExchangeTimes')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label>Scheduled Times</Label>
+              <Label>{t('scheduledTimes')}</Label>
               {(formData.scheduledTimes?.length || 0) < 4 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addScheduledTime}
-                  className="flex items-center space-x-1"
-                >
+                <Button variant="outline" size="sm" onClick={addScheduledTime} className="flex items-center space-x-1">
                   <Plus className="w-3 h-3" />
-                  <span>Add Time</span>
+                  <span>{t('addTime')}</span>
                 </Button>
               )}
             </div>
@@ -210,18 +188,9 @@ const PDSettings: React.FC = () => {
             <div className="space-y-2">
               {(formData.scheduledTimes || []).map((time, index) => (
                 <div key={index} className="flex items-center space-x-2">
-                  <Input
-                    type="time"
-                    value={time}
-                    onChange={(e) => handleTimeChange(index, e.target.value)}
-                    className="flex-1"
-                  />
+                  <Input type="time" value={time} onChange={(e) => handleTimeChange(index, e.target.value)} className="flex-1" />
                   {(formData.scheduledTimes?.length || 0) > 1 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeScheduledTime(index)}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => removeScheduledTime(index)}>
                       <X className="w-3 h-3" />
                     </Button>
                   )}
@@ -229,67 +198,59 @@ const PDSettings: React.FC = () => {
               ))}
             </div>
 
-            <div className="text-sm text-gray-600">
-              Total exchanges per day: {formData.scheduledTimes?.length || 0}
+            <div className="text-sm text-muted-foreground">
+              {t('totalExchangesPerDay')}: {formData.scheduledTimes?.length || 0}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Dialysate Strengths */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Droplets className="w-5 h-5" />
-            <span>Default Dialysate Strengths</span>
+            <span>{t('defaultDialysateStrengths')}</span>
           </CardTitle>
-          <CardDescription>Select the dialysate concentrations you typically use</CardDescription>
+          <CardDescription>{t('selectDialysateConcentrations')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
             {dialysateStrengths.map((strength) => (
               <Badge
                 key={strength}
-                variant={
-                  (formData.defaultDialysateStrengths || []).includes(strength)
-                    ? "default"
-                    : "outline"
-                }
+                variant={(formData.defaultDialysateStrengths || []).includes(strength) ? "default" : "outline"}
                 className={`cursor-pointer p-2 ${
                   (formData.defaultDialysateStrengths || []).includes(strength)
-                    ? "bg-blue-100 text-blue-800"
-                    : "hover:bg-gray-100"
+                    ? "bg-primary/10 text-primary"
+                    : "hover:bg-muted"
                 }`}
                 onClick={() => handleStrengthToggle(strength)}
               >
-                {strength} Dextrose
+                {strength} {t('dextrose')}
               </Badge>
             ))}
           </div>
-          <p className="text-sm text-gray-600 mt-2">
-            Click to toggle. Selected strengths will appear as quick options during exchange logging.
-          </p>
+          <p className="text-sm text-muted-foreground mt-2">{t('clickToToggle')}</p>
         </CardContent>
       </Card>
 
-      {/* Treatment Plan Version */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Bell className="w-5 h-5" />
-            <span>Treatment Plan</span>
+            <span>{t('treatmentPlan')}</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Current Version: {formData.treatmentPlanVersion || 1}</p>
-              <p className="text-sm text-gray-600">
-                Last updated: {pdSettings ? new Date().toLocaleDateString() : 'Never'}
+              <p className="font-medium">{t('currentVersion')}: {formData.treatmentPlanVersion || 1}</p>
+              <p className="text-sm text-muted-foreground">
+                {t('lastUpdated')}: {pdSettings ? new Date().toLocaleDateString() : t('never')}
               </p>
             </div>
             <Badge variant="outline">
-              {formData.mode} Mode
+              {formData.mode} {t('mode')}
             </Badge>
           </div>
         </CardContent>

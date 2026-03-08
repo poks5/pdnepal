@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Plus, FileText, TrendingUp, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import LabDataEntry from './LabDataEntry';
 import LabHistory from './LabHistory';
@@ -17,6 +18,7 @@ interface LabDataManagementProps {
 const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const targetPatientId = patientId || user?.id;
   
   const [labData, setLabData] = useState<LabTest[]>([]);
@@ -37,7 +39,6 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
           .limit(50);
         if (error) throw error;
         
-        // Map DB rows to LabTest type
         const mapped: LabTest[] = (data || []).map(row => ({
           id: row.id,
           patientId: row.patient_id,
@@ -90,7 +91,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
           .update(updatePayload)
           .eq('id', editingLab.id);
         if (error) throw error;
-        toast({ title: "Success", description: "Lab data updated" });
+        toast({ title: t('success'), description: t('labDataUpdated') });
       } else {
         const { error } = await supabase
           .from('lab_results')
@@ -111,10 +112,9 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
             notes: newLabData.notes ?? null,
           });
         if (error) throw error;
-        toast({ title: "Success", description: "Lab data added" });
+        toast({ title: t('success'), description: t('labDataAdded') });
       }
 
-      // Refresh
       const { data } = await supabase
         .from('lab_results')
         .select('*')
@@ -144,7 +144,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
         })));
       }
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: t('error'), description: err.message, variant: "destructive" });
     }
     
     setShowEntryDialog(false);
@@ -165,12 +165,12 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Lab Data Management</h1>
-          <p className="text-muted-foreground">Track and manage lab results</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('labDataManagement')}</h1>
+          <p className="text-muted-foreground">{t('trackManageLabResults')}</p>
         </div>
         <Button onClick={handleAddNew}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Lab Data
+          {t('addLabData')}
         </Button>
       </div>
 
@@ -180,10 +180,10 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
         <Tabs defaultValue="history" className="space-y-6">
           <TabsList>
             <TabsTrigger value="history" className="flex items-center space-x-2">
-              <FileText className="w-4 h-4" /><span>Lab History</span>
+              <FileText className="w-4 h-4" /><span>{t('labHistory')}</span>
             </TabsTrigger>
             <TabsTrigger value="trends" className="flex items-center space-x-2">
-              <TrendingUp className="w-4 h-4" /><span>Trends</span>
+              <TrendingUp className="w-4 h-4" /><span>{t('trends')}</span>
             </TabsTrigger>
           </TabsList>
           <TabsContent value="history">
@@ -192,7 +192,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
           <TabsContent value="trends">
             <div className="text-center py-8">
               <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Trend analysis coming soon</p>
+              <p className="text-muted-foreground">{t('trendAnalysisComingSoon')}</p>
             </div>
           </TabsContent>
         </Tabs>
@@ -201,7 +201,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
       <Dialog open={showEntryDialog} onOpenChange={setShowEntryDialog}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingLab ? 'Edit Lab Data' : 'Add New Lab Data'}</DialogTitle>
+            <DialogTitle>{editingLab ? t('editLabData') : t('addNewLabData')}</DialogTitle>
           </DialogHeader>
           <LabDataEntry onSave={handleSaveLabData} existingData={editingLab} />
         </DialogContent>
