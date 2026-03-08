@@ -25,12 +25,12 @@ import { DailyExchangeLog } from '@/types/patient';
 import { useToast } from '@/hooks/use-toast';
 
 const settingsSubItems = [
-  { id: 'profile', icon: FileText, label: 'Profile', description: 'Personal information' },
-  { id: 'catheter', icon: Settings, label: 'Catheter', description: 'Catheter details' },
-  { id: 'pd-settings', icon: Settings, label: 'PD Settings', description: 'Dialysis configuration' },
-  { id: 'caregiver', icon: Users, label: 'Caregivers', description: 'Manage caregivers' },
-  { id: 'supplier', icon: Package, label: 'Suppliers', description: 'Supply management' },
-  { id: 'my-doctor', icon: Stethoscope, label: 'My Doctor', description: 'Doctor connection' },
+  { id: 'profile', icon: FileText, label: 'Profile', description: 'Personal information', emoji: '👤', gradient: 'from-primary/10 to-[hsl(var(--lavender))]/8' },
+  { id: 'catheter', icon: Settings, label: 'Catheter', description: 'Catheter details', emoji: '🏥', gradient: 'from-[hsl(var(--mint))]/10 to-accent/8' },
+  { id: 'pd-settings', icon: Settings, label: 'PD Settings', description: 'Dialysis configuration', emoji: '⚙️', gradient: 'from-[hsl(var(--sky))]/10 to-primary/8' },
+  { id: 'caregiver', icon: Users, label: 'Caregivers', description: 'Manage caregivers', emoji: '🤝', gradient: 'from-[hsl(var(--peach))]/10 to-[hsl(var(--coral))]/8' },
+  { id: 'supplier', icon: Package, label: 'Suppliers', description: 'Supply management', emoji: '📦', gradient: 'from-[hsl(var(--lavender))]/10 to-primary/8' },
+  { id: 'my-doctor', icon: Stethoscope, label: 'My Doctor', description: 'Doctor connection', emoji: '👨‍⚕️', gradient: 'from-[hsl(var(--mint))]/10 to-[hsl(var(--sky))]/8' },
 ];
 
 const PatientDashboard: React.FC = () => {
@@ -105,21 +105,22 @@ const PatientDashboard: React.FC = () => {
   const renderSettingsContent = () => {
     if (!settingsView) {
       return (
-        <div className="space-y-2">
-          {settingsSubItems.map(({ id, icon: Icon, label, description }) => (
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-foreground px-1">⚙️ Settings & Preferences</h3>
+          {settingsSubItems.map(({ id, icon: Icon, label, description, emoji, gradient }) => (
             <button
               key={id}
               onClick={() => setSettingsView(id)}
-              className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 hover:shadow-sm transition-all group text-left"
+              className={`w-full flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r ${gradient} border border-border/30 hover:shadow-md transition-all group text-left card-hover`}
             >
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                <Icon className="w-5 h-5 text-primary" />
+              <div className="w-12 h-12 rounded-2xl bg-card shadow-sm flex items-center justify-center shrink-0">
+                <span className="text-2xl">{emoji}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">{label}</p>
+                <p className="text-sm font-bold text-foreground">{label}</p>
                 <p className="text-xs text-muted-foreground">{description}</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
             </button>
           ))}
         </div>
@@ -130,7 +131,7 @@ const PatientDashboard: React.FC = () => {
       <div className="space-y-4">
         <button
           onClick={() => setSettingsView(null)}
-          className="flex items-center gap-1.5 text-sm text-primary font-medium hover:underline"
+          className="flex items-center gap-1.5 text-sm text-primary font-bold hover:underline"
         >
           <ChevronRight className="w-4 h-4 rotate-180" />
           Back to Settings
