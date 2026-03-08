@@ -62,6 +62,7 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
       route: form.route || null,
       duration_days: form.duration_days ? parseInt(form.duration_days) : null,
       notes: form.notes || null,
+      photo_urls: form.photo_urls,
       created_by: user.id,
     });
     if (error) {
