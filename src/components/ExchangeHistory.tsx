@@ -17,6 +17,7 @@ interface Exchange {
   color: 'normal' | 'yellow' | 'red' | 'brown';
   pain: number;
   notes?: string;
+  symptoms?: string[];
 }
 
 interface ExchangeHistoryProps {
