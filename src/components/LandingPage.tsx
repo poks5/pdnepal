@@ -190,7 +190,7 @@ const LandingPage: React.FC = () => {
                   fgColor="#1a1a2e"
                   level="M"
                   imageSettings={{
-                    src: kidneyMascot,
+                    src: pdsathiLogo,
                     x: undefined,
                     y: undefined,
                     height: 28,
