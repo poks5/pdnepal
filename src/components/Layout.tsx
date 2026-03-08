@@ -54,7 +54,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { icon: Bell, label: 'Alerts', id: 'alerts' },
     { icon: FlaskConical, label: 'Labs', id: 'labs' },
     { icon: FileText, label: 'Plans', id: 'plans' },
-    { icon: Settings, label: 'More', id: 'export' },
+    { icon: Settings, label: 'More', id: 'more' },
   ];
 
   const adminNav = [

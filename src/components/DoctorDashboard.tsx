@@ -15,7 +15,7 @@ import PatientList from '@/components/PatientList';
 import PlansTab from '@/components/PlansTab';
 import LabOverview from '@/components/LabOverview';
 import PendingPatientRequests from '@/components/PendingPatientRequests';
-import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2 } from 'lucide-react';
+import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings } from 'lucide-react';
 
 export interface RealPatient {
   id: string;
@@ -30,6 +30,12 @@ export interface RealPatient {
   hospital?: string;
 }
 
+const moreSubItems = [
+  { id: 'requests', icon: UserPlus, label: 'Patient Requests', description: 'Pending assignment requests' },
+  { id: 'communication', icon: MessageSquare, label: 'Messages', description: 'Patient communications' },
+  { id: 'export', icon: Download, label: 'Export Data', description: 'Download reports & data' },
+];
+
 const DoctorDashboard: React.FC = () => {
   const { user } = useAuth();
   const { activeTab, setActiveTab } = useNav();
@@ -38,13 +44,13 @@ const DoctorDashboard: React.FC = () => {
   const [selectedPatient, setSelectedPatient] = useState<RealPatient | null>(null);
   const [patients, setPatients] = useState<RealPatient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [moreView, setMoreView] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
     const fetchPatients = async () => {
       setLoading(true);
       try {
-        // Get active assignments for this doctor
         const { data: assignments, error: assignErr } = await supabase
           .from('doctor_patient_assignments')
           .select('patient_id')
@@ -56,13 +62,11 @@ const DoctorDashboard: React.FC = () => {
 
         const patientIds = assignments.map(a => a.patient_id);
 
-        // Fetch profiles
         const { data: profiles } = await supabase
           .from('profiles')
           .select('user_id, full_name, date_of_birth, hospital')
           .in('user_id', patientIds);
 
-        // Fetch recent exchange logs (last 7 days) for all patients
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         
@@ -79,7 +83,6 @@ const DoctorDashboard: React.FC = () => {
           const lastLog = patientLogs[0];
           const alerts = patientLogs.filter(l => l.drain_color === 'cloudy').length;
           
-          // Calculate age
           let age = 0;
           if (profile.date_of_birth) {
             const dob = new Date(profile.date_of_birth);
@@ -88,16 +91,13 @@ const DoctorDashboard: React.FC = () => {
             if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) age--;
           }
 
-          // Determine adherence (exchanges per day target ~4, check last 7 days = 28 target)
           const adherence = Math.min(100, Math.round((patientLogs.length / 28) * 100));
           
-          // Determine status
           let status = 'good';
           if (alerts > 0) status = 'attention';
           else if (adherence < 75) status = 'attention';
           else if (adherence < 90) status = 'stable';
 
-          // Last exchange relative time
           let lastExchange = 'No records';
           if (lastLog) {
             const diff = Date.now() - new Date(lastLog.created_at).getTime();
@@ -147,20 +147,58 @@ const DoctorDashboard: React.FC = () => {
 
   const tabItems = [
     { value: 'patients', icon: Users, label: 'Patients' },
-    { value: 'requests', icon: UserPlus, label: 'Requests' },
     { value: 'alerts', icon: AlertTriangle, label: 'Alerts' },
     { value: 'labs', icon: FileText, label: 'Labs' },
-    { value: 'communication', icon: MessageSquare, label: 'Messages' },
-    { value: 'export', icon: Download, label: 'Export' },
     { value: 'plans', icon: ClipboardList, label: 'Plans' },
+    { value: 'more', icon: Settings, label: 'More' },
   ];
+
+  const renderMoreContent = () => {
+    if (!moreView) {
+      return (
+        <div className="space-y-2">
+          {moreSubItems.map(({ id, icon: Icon, label, description }) => (
+            <button
+              key={id}
+              onClick={() => setMoreView(id)}
+              className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 hover:shadow-sm transition-all group text-left"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                <Icon className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">{label}</p>
+                <p className="text-xs text-muted-foreground">{description}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setMoreView(null)}
+          className="flex items-center gap-1.5 text-sm text-primary font-medium hover:underline"
+        >
+          <ChevronRight className="w-4 h-4 rotate-180" />
+          Back
+        </button>
+        {moreView === 'requests' && <PendingPatientRequests />}
+        {moreView === 'communication' && <CommentSystem patients={patients} />}
+        {moreView === 'export' && <ExportTools />}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <DashboardHeader patientCount={patients.length} totalAlerts={totalAlerts} />
       <DashboardCards patientCount={patients.length} totalAlerts={totalAlerts} totalMissedExchanges={totalMissedExchanges} />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v !== 'more') setMoreView(null); }} className="space-y-4 sm:space-y-6">
         <div className="overflow-x-auto -mx-4 px-4 no-scrollbar">
           <TabsList className="inline-flex w-max gap-1 bg-muted/50 p-1 rounded-2xl">
             {tabItems.map(({ value, icon: Icon, label }) => (
@@ -181,12 +219,10 @@ const DoctorDashboard: React.FC = () => {
             <PatientList patients={patients} onViewPatient={handleViewPatient} onManagePlan={handleManagePlan} />
           )}
         </TabsContent>
-        <TabsContent value="requests"><PendingPatientRequests /></TabsContent>
         <TabsContent value="alerts"><AlertCenter /></TabsContent>
         <TabsContent value="labs"><LabOverview patients={patients} onViewPatientLabs={handleViewPatientLabs} /></TabsContent>
-        <TabsContent value="communication"><CommentSystem patients={patients} /></TabsContent>
-        <TabsContent value="export"><ExportTools /></TabsContent>
         <TabsContent value="plans"><PlansTab patients={patients} onManagePlan={handleManagePlan} /></TabsContent>
+        <TabsContent value="more">{renderMoreContent()}</TabsContent>
       </Tabs>
 
       <Dialog open={showPlanEditor} onOpenChange={setShowPlanEditor}>
