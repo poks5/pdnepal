@@ -39,6 +39,10 @@ const PeritonitisModule: React.FC<{ patientId?: string }> = ({ patientId }) => {
   const [abxForm, setAbxForm] = useState({ drug_name: '', route: 'IP', start_date: '', stop_date: '', dose: '', frequency: '', reason_for_change: '' });
   const [showAbxAdd, setShowAbxAdd] = useState<string | null>(null);
 
+  // Add culture form
+  const [cultureForm, setCultureForm] = useState({ culture_date: '', sample_type: 'PD effluent', organism: '', colony_count: '', gram_type: '', notes: '', sensitivities: [{ antibiotic: '', result: 'sensitive' as 'sensitive' | 'resistant' | 'intermediate' }] });
+  const [showCultureAdd, setShowCultureAdd] = useState<string | null>(null);
+
   const targetPatient = patientId || user?.id;
 
   const loadEpisodes = async () => {
@@ -117,6 +121,43 @@ const PeritonitisModule: React.FC<{ patientId?: string }> = ({ patientId }) => {
       setShowAbxAdd(null);
       loadEpisodes();
     }
+  };
+
+  const handleAddCulture = async (episodeId: string) => {
+    if (!cultureForm.culture_date) return;
+    const { error } = await supabase.from('peritonitis_cultures').insert({
+      episode_id: episodeId,
+      culture_date: cultureForm.culture_date,
+      sample_type: cultureForm.sample_type || null,
+      organism: cultureForm.organism || null,
+      colony_count: cultureForm.colony_count || null,
+      gram_type: cultureForm.gram_type || null,
+      notes: cultureForm.notes || null,
+      sensitivity: cultureForm.sensitivities.filter(s => s.antibiotic.trim()) as any,
+    });
+    if (error) {
+      toast({ title: t('error'), description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: '✅', description: t('cultureAdded') });
+      setCultureForm({ culture_date: '', sample_type: 'PD effluent', organism: '', colony_count: '', gram_type: '', notes: '', sensitivities: [{ antibiotic: '', result: 'sensitive' }] });
+      setShowCultureAdd(null);
+      loadEpisodes();
+    }
+  };
+
+  const addSensitivityRow = () => {
+    setCultureForm(p => ({ ...p, sensitivities: [...p.sensitivities, { antibiotic: '', result: 'sensitive' }] }));
+  };
+
+  const updateSensitivity = (idx: number, field: string, value: string) => {
+    setCultureForm(p => ({
+      ...p,
+      sensitivities: p.sensitivities.map((s, i) => i === idx ? { ...s, [field]: value } : s),
+    }));
+  };
+
+  const removeSensitivity = (idx: number) => {
+    setCultureForm(p => ({ ...p, sensitivities: p.sensitivities.filter((_, i) => i !== idx) }));
   };
 
   const toggleSymptom = (s: string) => {
@@ -293,6 +334,110 @@ const PeritonitisModule: React.FC<{ patientId?: string }> = ({ patientId }) => {
                               ))}
                             </TableBody>
                           </Table>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cultures & Sensitivity */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1"><FlaskConical className="w-3 h-3" /> {t('cultures')}</p>
+                        <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-full gap-1" onClick={() => setShowCultureAdd(showCultureAdd === ep.id ? null : ep.id)}>
+                          <Plus className="w-3 h-3" /> {t('add')}
+                        </Button>
+                      </div>
+                      {showCultureAdd === ep.id && (
+                        <Card className="rounded-xl border-primary/20 mb-2">
+                          <CardContent className="p-3 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input type="date" placeholder={t('cultureDate')} value={cultureForm.culture_date} onChange={e => setCultureForm(p => ({ ...p, culture_date: e.target.value }))} className="rounded-lg text-xs h-8" />
+                              <Input placeholder={t('sampleType')} value={cultureForm.sample_type} onChange={e => setCultureForm(p => ({ ...p, sample_type: e.target.value }))} className="rounded-lg text-xs h-8" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input placeholder={t('organism')} value={cultureForm.organism} onChange={e => setCultureForm(p => ({ ...p, organism: e.target.value }))} className="rounded-lg text-xs h-8" />
+                              <Input placeholder={t('colonyCount')} value={cultureForm.colony_count} onChange={e => setCultureForm(p => ({ ...p, colony_count: e.target.value }))} className="rounded-lg text-xs h-8" />
+                            </div>
+                            <Select value={cultureForm.gram_type} onValueChange={v => setCultureForm(p => ({ ...p, gram_type: v }))}>
+                              <SelectTrigger className="rounded-lg h-8 text-xs"><SelectValue placeholder={t('gramType')} /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="positive">{t('gramPositive')}</SelectItem>
+                                <SelectItem value="negative">{t('gramNegative')}</SelectItem>
+                                <SelectItem value="fungal">{t('fungal')}</SelectItem>
+                                <SelectItem value="mycobacterial">{t('mycobacterial')}</SelectItem>
+                              </SelectContent>
+                            </Select>
+
+                            {/* Antibiogram / Sensitivity */}
+                            <div>
+                              <div className="flex items-center justify-between mb-1">
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t('antibiogram')}</p>
+                                <Button size="sm" variant="ghost" className="h-5 text-[9px] rounded-full gap-0.5" onClick={addSensitivityRow}>
+                                  <Plus className="w-2.5 h-2.5" /> {t('addRow')}
+                                </Button>
+                              </div>
+                              {cultureForm.sensitivities.map((s, idx) => (
+                                <div key={idx} className="flex gap-1.5 mb-1">
+                                  <Input placeholder={t('antibioticName')} value={s.antibiotic} onChange={e => updateSensitivity(idx, 'antibiotic', e.target.value)} className="rounded-lg text-xs h-7 flex-1" />
+                                  <Select value={s.result} onValueChange={v => updateSensitivity(idx, 'result', v)}>
+                                    <SelectTrigger className="rounded-lg h-7 text-xs w-28"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="sensitive">{t('sensitive')}</SelectItem>
+                                      <SelectItem value="resistant">{t('resistant')}</SelectItem>
+                                      <SelectItem value="intermediate">{t('intermediate')}</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  {cultureForm.sensitivities.length > 1 && (
+                                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => removeSensitivity(idx)}>×</Button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            <Input placeholder={t('notes')} value={cultureForm.notes} onChange={e => setCultureForm(p => ({ ...p, notes: e.target.value }))} className="rounded-lg text-xs h-8" />
+                            <Button size="sm" className="rounded-full w-full h-7 text-xs" onClick={() => handleAddCulture(ep.id)}>{t('addCulture')}</Button>
+                          </CardContent>
+                        </Card>
+                      )}
+                      {(ep.cultures || []).length > 0 && (
+                        <div className="space-y-2">
+                          {ep.cultures!.map(c => (
+                            <Card key={c.id} className="rounded-xl border-border/20">
+                              <CardContent className="p-2.5 space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold">{c.organism || t('noOrganism')}</span>
+                                  <div className="flex gap-1">
+                                    {c.gram_type && <Badge variant="outline" className="text-[9px] rounded-full">{t(`gram_${c.gram_type}`)}</Badge>}
+                                    <Badge variant="outline" className="text-[9px] rounded-full">{format(new Date(c.culture_date), 'MMM d')}</Badge>
+                                  </div>
+                                </div>
+                                {c.sensitivity && (c.sensitivity as any[]).length > 0 && (
+                                  <div className="rounded-lg overflow-hidden border border-border/20">
+                                    <Table>
+                                      <TableHeader>
+                                        <TableRow className="text-[9px]">
+                                          <TableHead className="h-6 px-2">{t('antibioticName')}</TableHead>
+                                          <TableHead className="h-6 px-2">{t('result')}</TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {(c.sensitivity as any[]).map((s: any, i: number) => (
+                                          <TableRow key={i} className="text-[10px]">
+                                            <TableCell className="py-1 px-2">{s.antibiotic}</TableCell>
+                                            <TableCell className="py-1 px-2">
+                                              <Badge className={`text-[8px] border-0 rounded-full ${s.result === 'sensitive' ? 'bg-[hsl(var(--mint))]/15 text-[hsl(var(--mint))]' : s.result === 'resistant' ? 'bg-destructive/10 text-destructive' : 'bg-[hsl(var(--peach))]/15 text-[hsl(var(--coral))]'}`}>
+                                                {t(s.result)}
+                                              </Badge>
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </div>
+                                )}
+                                {c.notes && <p className="text-[10px] text-muted-foreground italic">{c.notes}</p>}
+                              </CardContent>
+                            </Card>
+                          ))}
                         </div>
                       )}
                     </div>
