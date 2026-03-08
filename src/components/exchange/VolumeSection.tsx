@@ -33,7 +33,7 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
     setIsUFAutoCalculated(true);
     
     toast({
-      title: "UF Calculated",
+      title: t('ufCalculated'),
       description: getUFCalculationMessage(previousFillVolume)
     });
   };
@@ -80,12 +80,12 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
           type="number"
           value={formData.ultrafiltration}
           onChange={(e) => updateField('ultrafiltration', Number(e.target.value))}
-          placeholder={isUFAutoCalculated ? "Auto-calculated" : "Auto or manual entry"}
+          placeholder={isUFAutoCalculated ? t('autoCalculated') : t('autoOrManual')}
           className={isUFAutoCalculated ? "bg-green-50 border-green-200" : ""}
         />
       </div>
       <div>
-        <Label htmlFor="weightAfter">Post-Fill Weight (kg)</Label>
+        <Label htmlFor="weightAfter">{t('postFillWeight')}</Label>
         <Input
           id="weightAfter"
           type="number"
@@ -93,7 +93,7 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
           min="0"
           value={formData.weightAfter ?? ''}
           onChange={(e) => updateField('weightAfter', e.target.value ? Number(e.target.value) : null)}
-          placeholder="Weight after fill"
+          placeholder={t('weightAfterFill')}
         />
       </div>
     </div>

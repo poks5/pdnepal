@@ -20,7 +20,7 @@ export const TimeTypeSection: React.FC<TimeTypeSectionProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <Label htmlFor="time">Time</Label>
+        <Label htmlFor="time">{t('time')}</Label>
         <Input
           id="time"
           type="time"
@@ -30,7 +30,7 @@ export const TimeTypeSection: React.FC<TimeTypeSectionProps> = ({
         />
       </div>
       <div>
-        <Label htmlFor="type">Exchange Type</Label>
+        <Label htmlFor="type">{t('exchangeType')}</Label>
         <Select value={formData.type} onValueChange={(value) => updateField('type', value)}>
           <SelectTrigger>
             <SelectValue />

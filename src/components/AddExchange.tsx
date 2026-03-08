@@ -25,7 +25,7 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.drainVolume < 0 || formData.fillVolume <= 0) {
-      toast({ title: 'Validation Error', description: 'Please enter valid volumes', variant: 'destructive' });
+      toast({ title: t('validationError'), description: t('enterValidVolumes'), variant: 'destructive' });
       return;
     }
     let finalUF = formData.ultrafiltration;
@@ -44,7 +44,7 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
           </div>
           <div>
             <h2 className="text-lg font-bold text-foreground">{t('addExchange')}</h2>
-            <p className="text-xs text-muted-foreground">Record your dialysis exchange</p>
+            <p className="text-xs text-muted-foreground">{t('recordExchange')}</p>
           </div>
         </div>
         <Button variant="ghost" size="icon" onClick={onCancel} className="rounded-full">
@@ -55,8 +55,8 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
       {previousFillVolume && (
         <div className="bg-primary/5 border border-primary/10 p-3 rounded-xl">
           <p className="text-sm text-primary font-medium">
-            Previous fill: <strong>{previousFillVolume}ml</strong>
-            {isUFAutoCalculated && ' (used for UF calculation)'}
+            {t('previousFill')}: <strong>{previousFillVolume}ml</strong>
+            {isUFAutoCalculated && ` ${t('usedForUF')}`}
           </p>
         </div>
       )}
@@ -73,12 +73,12 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
         <AssessmentSection formData={formData} updateField={updateField} />
 
         <div className="space-y-1.5">
-          <Label htmlFor="notes" className="text-sm font-medium">Notes</Label>
+          <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
           <Textarea
             id="notes"
             value={formData.notes}
             onChange={(e) => updateField('notes', e.target.value)}
-            placeholder="Any concerns, symptoms, or observations..."
+            placeholder={t('anyConcerns')}
             rows={3}
             className="rounded-xl resize-none"
           />
@@ -87,7 +87,7 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
         <div className="flex gap-3 pt-2">
           <Button type="submit" disabled={saving} className="flex-1 h-12 rounded-xl font-semibold shadow-md shadow-primary/20 active:scale-[0.98] transition-transform">
             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            {saving ? 'Saving...' : t('save')}
+            {saving ? t('saving') : t('save')}
           </Button>
           <Button type="button" variant="outline" onClick={onCancel} disabled={saving} className="rounded-xl h-12">
             {t('cancel')}
