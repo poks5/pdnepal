@@ -4,7 +4,17 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ExchangeData } from '@/hooks/useExchangeForm';
+
+const SYMPTOM_OPTIONS = [
+  { id: 'fever', label: 'Fever' },
+  { id: 'abdominal_pain', label: 'Abdominal Pain' },
+  { id: 'constipation', label: 'Constipation' },
+  { id: 'nausea', label: 'Nausea' },
+  { id: 'headache', label: 'Headache' },
+  { id: 'dizziness', label: 'Dizziness' },
+];
 
 interface AssessmentSectionProps {
   formData: ExchangeData;
