@@ -101,9 +101,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
               {/* Desktop actions */}
               <div className="hidden md:flex items-center gap-4">
+                <button
+                  onClick={() => setLanguage(language === 'en' ? 'ne' : 'en')}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-full bg-muted/50 transition-colors"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  {language === 'en' ? 'नेपाली' : 'EN'}
+                </button>
                 <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-full px-4 shadow-sm">
                   <Phone className="w-3.5 h-3.5 mr-1.5" />
-                  Emergency
+                  {t('emergency')}
                 </Button>
                 <div className="h-8 w-px bg-border/50" />
                 <div className="flex items-center gap-3">
