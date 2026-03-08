@@ -215,10 +215,15 @@ const DoctorDashboard: React.FC = () => {
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v !== 'more') setMoreView(null); }} className="space-y-4 sm:space-y-6">
         <div className="overflow-x-auto -mx-4 px-4 no-scrollbar">
           <TabsList className="inline-flex w-max gap-1 bg-muted/50 p-1 rounded-2xl">
-            {tabItems.map(({ value, icon: Icon, label }) => (
-              <TabsTrigger key={value} value={value} className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap">
+            {tabItems.map(({ value, icon: Icon, label, badge }) => (
+              <TabsTrigger key={value} value={value} className="relative flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap">
                 <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>{label}</span>
+                {badge > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
+                    {badge}
+                  </span>
+                )}
               </TabsTrigger>
             ))}
           </TabsList>
