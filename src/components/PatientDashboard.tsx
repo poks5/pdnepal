@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Droplets, FileText, Settings, Users, Package, FlaskConical, BarChart, Stethoscope } from 'lucide-react';
+import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNav } from '@/components/Layout';
 import { usePatient } from '@/contexts/PatientContext';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import AddExchange from './AddExchange';
 import ExchangeHistory from './ExchangeHistory';
@@ -23,13 +24,23 @@ import { ExchangeData } from '@/hooks/useExchangeForm';
 import { DailyExchangeLog } from '@/types/patient';
 import { useToast } from '@/hooks/use-toast';
 
+const settingsSubItems = [
+  { id: 'profile', icon: FileText, label: 'Profile', description: 'Personal information' },
+  { id: 'catheter', icon: Settings, label: 'Catheter', description: 'Catheter details' },
+  { id: 'pd-settings', icon: Settings, label: 'PD Settings', description: 'Dialysis configuration' },
+  { id: 'caregiver', icon: Users, label: 'Caregivers', description: 'Manage caregivers' },
+  { id: 'supplier', icon: Package, label: 'Suppliers', description: 'Supply management' },
+  { id: 'my-doctor', icon: Stethoscope, label: 'My Doctor', description: 'Doctor connection' },
+];
+
 const PatientDashboard: React.FC = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { activeTab, setActiveTab } = useNav();
-  const { exchangeLogs, addExchangeLog, patientProfile } = usePatient();
+  const { exchangeLogs, addExchangeLog } = usePatient();
   const [showAddExchange, setShowAddExchange] = useState(false);
   const [savingExchange, setSavingExchange] = useState(false);
+  const [settingsView, setSettingsView] = useState<string | null>(null);
   const { toast } = useToast();
 
   const todayExchanges = { completed: 2, total: 4, nextTime: '18:00' };
@@ -83,18 +94,56 @@ const PatientDashboard: React.FC = () => {
     }
   };
 
-  const tabItems = [
+  const mainTabs = [
     { value: 'overview', icon: Calendar, label: t('overview') },
     { value: 'exchanges', icon: Droplets, label: t('exchanges') },
     { value: 'analytics', icon: BarChart, label: 'Analytics' },
     { value: 'lab-data', icon: FlaskConical, label: 'Labs' },
-    { value: 'profile', icon: FileText, label: t('profile') },
-    { value: 'catheter', icon: Settings, label: t('catheter') },
-    { value: 'settings', icon: Settings, label: t('settings') },
-    { value: 'caregiver', icon: Users, label: t('caregiver') },
-    { value: 'supplier', icon: Package, label: t('supplier') },
-    { value: 'my-doctor', icon: Stethoscope, label: 'My Doctor' },
+    { value: 'settings', icon: Settings, label: 'Settings' },
   ];
+
+  const renderSettingsContent = () => {
+    if (!settingsView) {
+      return (
+        <div className="space-y-2">
+          {settingsSubItems.map(({ id, icon: Icon, label, description }) => (
+            <button
+              key={id}
+              onClick={() => setSettingsView(id)}
+              className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 hover:shadow-sm transition-all group text-left"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                <Icon className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">{label}</p>
+                <p className="text-xs text-muted-foreground">{description}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setSettingsView(null)}
+          className="flex items-center gap-1.5 text-sm text-primary font-medium hover:underline"
+        >
+          <ChevronRight className="w-4 h-4 rotate-180" />
+          Back to Settings
+        </button>
+        {settingsView === 'profile' && <PatientProfile />}
+        {settingsView === 'catheter' && <CatheterDetails />}
+        {settingsView === 'pd-settings' && <PDSettings />}
+        {settingsView === 'caregiver' && <CaregiverDetails />}
+        {settingsView === 'supplier' && <SupplierDetails />}
+        {settingsView === 'my-doctor' && <MyDoctor />}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -103,10 +152,10 @@ const PatientDashboard: React.FC = () => {
         <p className="text-sm text-muted-foreground mt-0.5">{t('track_dialysis_journey')}</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v !== 'settings') setSettingsView(null); }} className="space-y-4 sm:space-y-6">
         <div className="overflow-x-auto -mx-4 px-4 no-scrollbar">
           <TabsList className="inline-flex w-max gap-1 bg-muted/50 p-1 rounded-2xl">
-            {tabItems.map(({ value, icon: Icon, label }) => (
+            {mainTabs.map(({ value, icon: Icon, label }) => (
               <TabsTrigger key={value} value={value} className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap">
                 <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>{label}</span>
@@ -121,12 +170,7 @@ const PatientDashboard: React.FC = () => {
         <TabsContent value="exchanges"><ExchangeHistory exchanges={formattedExchanges} /></TabsContent>
         <TabsContent value="analytics"><AnalyticsDashboard /></TabsContent>
         <TabsContent value="lab-data"><LabDataManagement /></TabsContent>
-        <TabsContent value="profile"><PatientProfile /></TabsContent>
-        <TabsContent value="catheter"><CatheterDetails /></TabsContent>
-        <TabsContent value="settings"><PDSettings /></TabsContent>
-        <TabsContent value="caregiver"><CaregiverDetails /></TabsContent>
-        <TabsContent value="supplier"><SupplierDetails /></TabsContent>
-        <TabsContent value="my-doctor"><MyDoctor /></TabsContent>
+        <TabsContent value="settings">{renderSettingsContent()}</TabsContent>
       </Tabs>
 
       <Dialog open={showAddExchange} onOpenChange={setShowAddExchange}>
