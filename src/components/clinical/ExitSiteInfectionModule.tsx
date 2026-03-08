@@ -75,7 +75,7 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
         event_date: form.date_onset, created_by: user.id,
       });
       setShowAdd(false);
-      setForm({ date_onset: '', symptoms: [], organism: '', antibiotic: '', route: '', duration_days: '', notes: '' });
+      setForm({ date_onset: '', symptoms: [], organism: '', antibiotic: '', route: '', duration_days: '', notes: '', photo_urls: [] });
       loadData();
     }
   };
