@@ -443,6 +443,16 @@ const PeritonitisModule: React.FC<{ patientId?: string }> = ({ patientId }) => {
                       )}
                     </div>
 
+                    {/* Effluent Photos */}
+                    <ClinicalPhotoUpload
+                      photoUrls={(ep as any).photo_urls || []}
+                      folder={`peritonitis/${ep.id}`}
+                      onPhotosChange={async (urls) => {
+                        await supabase.from('peritonitis_episodes').update({ photo_urls: urls } as any).eq('id', ep.id);
+                        loadEpisodes();
+                      }}
+                    />
+
                     {ep.notes && <p className="text-xs text-muted-foreground italic">{ep.notes}</p>}
                   </div>
                 )}

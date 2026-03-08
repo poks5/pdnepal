@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ExitSiteInfection } from '@/types/clinical';
 import { Plus, CheckCircle, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import ClinicalPhotoUpload from './ClinicalPhotoUpload';
 
 const exitSymptoms = ['redness', 'swelling', 'discharge', 'crusting', 'tenderness', 'warmth'];
 
