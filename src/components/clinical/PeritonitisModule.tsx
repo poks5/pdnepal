@@ -39,6 +39,10 @@ const PeritonitisModule: React.FC<{ patientId?: string }> = ({ patientId }) => {
   const [abxForm, setAbxForm] = useState({ drug_name: '', route: 'IP', start_date: '', stop_date: '', dose: '', frequency: '', reason_for_change: '' });
   const [showAbxAdd, setShowAbxAdd] = useState<string | null>(null);
 
+  // Add culture form
+  const [cultureForm, setCultureForm] = useState({ culture_date: '', sample_type: 'PD effluent', organism: '', colony_count: '', gram_type: '', notes: '', sensitivities: [{ antibiotic: '', result: 'sensitive' as 'sensitive' | 'resistant' | 'intermediate' }] });
+  const [showCultureAdd, setShowCultureAdd] = useState<string | null>(null);
+
   const targetPatient = patientId || user?.id;
 
   const loadEpisodes = async () => {
