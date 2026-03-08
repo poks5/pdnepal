@@ -101,7 +101,7 @@ const AdminDashboard: React.FC = () => {
       {/* Welcome Section */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-foreground">
             {language === 'en' ? 'Admin Dashboard' : 'प्रशासक ड्यासबोर्ड'}
           </h1>
           <p className="text-gray-600 mt-1">
