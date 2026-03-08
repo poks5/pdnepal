@@ -56,7 +56,9 @@ const DoctorDashboard: React.FC = () => {
         .select('*', { count: 'exact', head: true })
         .eq('doctor_id', user.id)
         .eq('status', 'pending');
-      setPendingCount(count || 0);
+      const c = count || 0;
+      setPendingCount(c);
+      setBadgeCounts(prev => ({ ...prev, more: c }));
     };
     fetchPending();
   }, [user]);
