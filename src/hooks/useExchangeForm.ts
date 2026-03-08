@@ -25,6 +25,7 @@ export const useExchangeForm = () => {
     drainVolume: 0,
     fillVolume: 2000,
     ultrafiltration: 0,
+    weightAfter: null,
     clarity: 'clear',
     color: 'normal',
     pain: 0,

@@ -84,6 +84,18 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
           className={isUFAutoCalculated ? "bg-green-50 border-green-200" : ""}
         />
       </div>
+      <div>
+        <Label htmlFor="weightAfter">Post-Fill Weight (kg)</Label>
+        <Input
+          id="weightAfter"
+          type="number"
+          step="0.1"
+          min="0"
+          value={formData.weightAfter ?? ''}
+          onChange={(e) => updateField('weightAfter', e.target.value ? Number(e.target.value) : null)}
+          placeholder="Weight after fill"
+        />
+      </div>
     </div>
   );
 };
