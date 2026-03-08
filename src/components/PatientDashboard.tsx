@@ -126,7 +126,7 @@ const PatientDashboard: React.FC = () => {
 
       <Dialog open={showAddExchange} onOpenChange={setShowAddExchange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <AddExchange onSave={handleSaveExchange} onCancel={() => setShowAddExchange(false)} />
+          <AddExchange onSave={handleSaveExchange} onCancel={() => setShowAddExchange(false)} saving={savingExchange} />
         </DialogContent>
       </Dialog>
     </div>
