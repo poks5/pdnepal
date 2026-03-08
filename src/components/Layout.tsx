@@ -12,8 +12,10 @@ import {
 interface NavContextType {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  badgeCounts: Record<string, number>;
+  setBadgeCounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
-const NavContext = createContext<NavContextType>({ activeTab: 'overview', setActiveTab: () => {} });
+const NavContext = createContext<NavContextType>({ activeTab: 'overview', setActiveTab: () => {}, badgeCounts: {}, setBadgeCounts: () => {} });
 export const useNav = () => useContext(NavContext);
 
 interface LayoutProps {
