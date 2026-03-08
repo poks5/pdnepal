@@ -32,8 +32,10 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onAddExchange
 }) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const hour = new Date().getHours();
-  const greeting = hour >= 5 && hour < 12 ? '🌅 शुभ प्रभात' : hour >= 12 && hour < 17 ? '🙏 नमस्ते' : hour >= 17 && hour < 21 ? '🌇 शुभ सन्ध्या' : '🌙 शुभ रात्रि';
+  const greetingKey = hour >= 5 && hour < 12 ? 'goodMorning' : hour >= 12 && hour < 17 ? 'goodAfternoon' : hour >= 17 && hour < 21 ? 'goodEvening' : 'goodNight';
+  const greetingEmoji = hour >= 5 && hour < 12 ? '🌅' : hour >= 12 && hour < 17 ? '🙏' : hour >= 17 && hour < 21 ? '🌇' : '🌙';
   const firstName = user?.fullName?.split(' ')[0] || '';
 
   return (
