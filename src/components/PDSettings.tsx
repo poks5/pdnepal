@@ -72,15 +72,11 @@ const PDSettings: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!patientProfile?.id) {
-      toast({ title: 'Error', description: 'Patient profile required before saving PD settings.', variant: 'destructive' });
-      return;
-    }
     setSaving(true);
     try {
       const settingsData: PDSettingsType = {
-        id: pdSettings?.id || Date.now().toString(),
-        patientId: patientProfile.id,
+        id: pdSettings?.id || '',
+        patientId: patientProfile?.id || '',
         mode: formData.mode || 'CAPD',
         fluidBrand: formData.fluidBrand || '',
         exchangesPerDay: (formData.scheduledTimes?.length || 4) as 1 | 2 | 3 | 4,
@@ -90,8 +86,8 @@ const PDSettings: React.FC = () => {
         defaultDwellTime: formData.defaultDwellTime || 4,
         treatmentPlanVersion: (pdSettings?.treatmentPlanVersion || 0) + 1
       };
-      updatePDSettings(settingsData);
-      toast({ title: 'Settings Saved', description: 'Your PD settings have been updated successfully.' });
+      await updatePDSettings(settingsData);
+      toast({ title: 'Settings Saved ✅', description: 'Your PD settings have been saved to the database.' });
     } catch (err: any) {
       toast({ title: 'Error saving settings', description: err.message, variant: 'destructive' });
     } finally {
