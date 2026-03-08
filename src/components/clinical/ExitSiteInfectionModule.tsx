@@ -178,6 +178,27 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
                   </div>
                 )}
                 {inf.antibiotic && <p className="text-xs text-muted-foreground">💊 {inf.antibiotic} ({inf.route}) · {inf.duration_days}d</p>}
+                {inf.photo_urls && inf.photo_urls.length > 0 && (
+                  <ClinicalPhotoUpload
+                    photoUrls={inf.photo_urls}
+                    folder={`exit-site/${inf.id}`}
+                    onPhotosChange={async (urls) => {
+                      await supabase.from('exit_site_infections').update({ photo_urls: urls }).eq('id', inf.id);
+                      loadData();
+                    }}
+                    readOnly={inf.resolved}
+                  />
+                )}
+                {!inf.resolved && (!inf.photo_urls || inf.photo_urls.length === 0) && (
+                  <ClinicalPhotoUpload
+                    photoUrls={[]}
+                    folder={`exit-site/${inf.id}`}
+                    onPhotosChange={async (urls) => {
+                      await supabase.from('exit_site_infections').update({ photo_urls: urls }).eq('id', inf.id);
+                      loadData();
+                    }}
+                  />
+                )}
                 {!inf.resolved && (
                   <Button size="sm" variant="outline" className="mt-2 rounded-full text-xs h-7" onClick={() => markResolved(inf.id)}>
                     <CheckCircle className="w-3 h-3 mr-1" /> {t('markResolved')}
