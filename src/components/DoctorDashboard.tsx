@@ -15,7 +15,8 @@ import PatientList from '@/components/PatientList';
 import PlansTab from '@/components/PlansTab';
 import LabOverview from '@/components/LabOverview';
 import PendingPatientRequests from '@/components/PendingPatientRequests';
-import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings } from 'lucide-react';
+import DoctorLearningAssignments from '@/components/learning/DoctorLearningAssignments';
+import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings, BookOpen } from 'lucide-react';
 
 export interface RealPatient {
   id: string;
