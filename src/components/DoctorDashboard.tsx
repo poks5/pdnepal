@@ -13,7 +13,8 @@ import DashboardCards from '@/components/DashboardCards';
 import PatientList from '@/components/PatientList';
 import PlansTab from '@/components/PlansTab';
 import LabOverview from '@/components/LabOverview';
-import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText } from 'lucide-react';
+import PendingPatientRequests from '@/components/PendingPatientRequests';
+import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus } from 'lucide-react';
 
 const DoctorDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -44,6 +45,7 @@ const DoctorDashboard: React.FC = () => {
 
   const tabItems = [
     { value: 'patients', icon: Users, label: 'Patients' },
+    { value: 'requests', icon: UserPlus, label: 'Requests' },
     { value: 'alerts', icon: AlertTriangle, label: 'Alerts' },
     { value: 'labs', icon: FileText, label: 'Labs' },
     { value: 'communication', icon: MessageSquare, label: 'Messages' },
@@ -69,6 +71,7 @@ const DoctorDashboard: React.FC = () => {
         </div>
 
         <TabsContent value="patients"><PatientList patients={patients} onViewPatient={handleViewPatient} onManagePlan={handleManagePlan} /></TabsContent>
+        <TabsContent value="requests"><PendingPatientRequests /></TabsContent>
         <TabsContent value="alerts"><AlertCenter /></TabsContent>
         <TabsContent value="labs"><LabOverview patients={patients} onViewPatientLabs={handleViewPatientLabs} /></TabsContent>
         <TabsContent value="communication"><CommentSystem /></TabsContent>
