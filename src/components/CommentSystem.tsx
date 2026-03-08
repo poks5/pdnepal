@@ -48,7 +48,7 @@ const CommentSystem: React.FC<CommentSystemProps> = ({ patients = [] }) => {
       timestamp: new Date().toISOString(),
       notifyPatient,
       notifyCaregiver,
-      doctorName: user?.user_metadata?.full_name || 'Doctor',
+      doctorName: user?.fullName || 'Doctor',
     };
 
     setComments(prev => [newComment, ...prev]);

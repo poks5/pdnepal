@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ClipboardList, Settings } from 'lucide-react';
 
 interface Patient {
-  id: number;
+  id: string;
   name: string;
   age: number;
   adherence: number;

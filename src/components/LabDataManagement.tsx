@@ -72,9 +72,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
     
     try {
       if (editingLab) {
-        const { error } = await supabase
-          .from('lab_results')
-          .update({
+        const updatePayload: Record<string, any> = {
             test_date: newLabData.testDate || editingLab.testDate,
             creatinine: newLabData.creatinine ?? null,
             potassium: newLabData.potassium ?? null,
@@ -83,10 +81,13 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
             phosphorus: newLabData.phosphorus ?? null,
             albumin: newLabData.albumin ?? null,
             hemoglobin: newLabData.hemoglobin ?? null,
-            glucose: newLabData.glucose ?? null,
+            glucose: (newLabData as any).glucose ?? null,
             bun: newLabData.urea ?? null,
             notes: newLabData.notes ?? null,
-          })
+          };
+        const { error } = await supabase
+          .from('lab_results')
+          .update(updatePayload)
           .eq('id', editingLab.id);
         if (error) throw error;
         toast({ title: "Success", description: "Lab data updated" });
@@ -105,7 +106,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
             phosphorus: newLabData.phosphorus ?? null,
             albumin: newLabData.albumin ?? null,
             hemoglobin: newLabData.hemoglobin ?? null,
-            glucose: newLabData.glucose ?? null,
+            glucose: (newLabData as any).glucose ?? null,
             bun: newLabData.urea ?? null,
             notes: newLabData.notes ?? null,
           });
