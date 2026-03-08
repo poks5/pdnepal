@@ -256,44 +256,59 @@ export type Database = {
       }
       pd_settings: {
         Row: {
+          batch_number: string | null
+          brand: string | null
           catheter_insertion_date: string | null
           catheter_type: string | null
           created_at: string
           daily_exchanges: number | null
           dwell_time_hours: number | null
           fill_volume_ml: number | null
+          hospital: string | null
           id: string
           modality: string | null
           patient_id: string
+          placement_method: string | null
           solution_type: string | null
+          surgeon_nephrologist: string | null
           updated_at: string
           updated_by: string | null
         }
         Insert: {
+          batch_number?: string | null
+          brand?: string | null
           catheter_insertion_date?: string | null
           catheter_type?: string | null
           created_at?: string
           daily_exchanges?: number | null
           dwell_time_hours?: number | null
           fill_volume_ml?: number | null
+          hospital?: string | null
           id?: string
           modality?: string | null
           patient_id: string
+          placement_method?: string | null
           solution_type?: string | null
+          surgeon_nephrologist?: string | null
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
+          batch_number?: string | null
+          brand?: string | null
           catheter_insertion_date?: string | null
           catheter_type?: string | null
           created_at?: string
           daily_exchanges?: number | null
           dwell_time_hours?: number | null
           fill_volume_ml?: number | null
+          hospital?: string | null
           id?: string
           modality?: string | null
           patient_id?: string
+          placement_method?: string | null
           solution_type?: string | null
+          surgeon_nephrologist?: string | null
           updated_at?: string
           updated_by?: string | null
         }
