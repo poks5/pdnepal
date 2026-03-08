@@ -385,6 +385,66 @@ export type Database = {
         }
         Relationships: []
       }
+      pd_catheters: {
+        Row: {
+          catheter_brand: string | null
+          catheter_type: string | null
+          created_at: string
+          created_by: string
+          exit_site_orientation: string | null
+          first_use_date: string | null
+          id: string
+          insertion_date: string
+          insertion_technique: string | null
+          is_current: boolean | null
+          notes: string | null
+          omentopexy: boolean | null
+          patient_id: string
+          reason_for_removal: string | null
+          removal_date: string | null
+          surgeon: string | null
+          updated_at: string
+        }
+        Insert: {
+          catheter_brand?: string | null
+          catheter_type?: string | null
+          created_at?: string
+          created_by: string
+          exit_site_orientation?: string | null
+          first_use_date?: string | null
+          id?: string
+          insertion_date: string
+          insertion_technique?: string | null
+          is_current?: boolean | null
+          notes?: string | null
+          omentopexy?: boolean | null
+          patient_id: string
+          reason_for_removal?: string | null
+          removal_date?: string | null
+          surgeon?: string | null
+          updated_at?: string
+        }
+        Update: {
+          catheter_brand?: string | null
+          catheter_type?: string | null
+          created_at?: string
+          created_by?: string
+          exit_site_orientation?: string | null
+          first_use_date?: string | null
+          id?: string
+          insertion_date?: string
+          insertion_technique?: string | null
+          is_current?: boolean | null
+          notes?: string | null
+          omentopexy?: boolean | null
+          patient_id?: string
+          reason_for_removal?: string | null
+          removal_date?: string | null
+          surgeon?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pd_events: {
         Row: {
           created_at: string
@@ -418,6 +478,54 @@ export type Database = {
           patient_id?: string
           related_record_id?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      pd_fluid_usage: {
+        Row: {
+          created_at: string
+          created_by: string
+          end_date: string | null
+          exchanges_per_day: number | null
+          fluid_type: string
+          glucose_strength: string | null
+          id: string
+          is_current: boolean | null
+          notes: string | null
+          patient_id: string
+          start_date: string
+          updated_at: string
+          volume_ml: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          end_date?: string | null
+          exchanges_per_day?: number | null
+          fluid_type: string
+          glucose_strength?: string | null
+          id?: string
+          is_current?: boolean | null
+          notes?: string | null
+          patient_id: string
+          start_date: string
+          updated_at?: string
+          volume_ml?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          end_date?: string | null
+          exchanges_per_day?: number | null
+          fluid_type?: string
+          glucose_strength?: string | null
+          id?: string
+          is_current?: boolean | null
+          notes?: string | null
+          patient_id?: string
+          start_date?: string
+          updated_at?: string
+          volume_ml?: number | null
         }
         Relationships: []
       }
