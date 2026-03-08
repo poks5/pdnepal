@@ -138,7 +138,7 @@ const AdminDashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <h2 className="text-xl font-semibold text-foreground mb-4">
           {language === 'en' ? 'Quick Actions' : 'द्रुत कार्यहरू'}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
