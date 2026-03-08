@@ -8,12 +8,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ExchangeData } from '@/hooks/useExchangeForm';
 
 const SYMPTOM_OPTIONS = [
-  { id: 'fever', label: 'Fever' },
-  { id: 'abdominal_pain', label: 'Abdominal Pain' },
-  { id: 'constipation', label: 'Constipation' },
-  { id: 'nausea', label: 'Nausea' },
-  { id: 'headache', label: 'Headache' },
-  { id: 'dizziness', label: 'Dizziness' },
+  { id: 'fever', labelKey: 'fever' },
+  { id: 'abdominal_pain', labelKey: 'abdominalPain' },
+  { id: 'constipation', labelKey: 'constipation' },
+  { id: 'nausea', labelKey: 'nausea' },
+  { id: 'headache', labelKey: 'headache' },
+  { id: 'dizziness', labelKey: 'dizziness' },
 ];
 
 interface AssessmentSectionProps {
@@ -44,16 +44,16 @@ export const AssessmentSection: React.FC<AssessmentSectionProps> = ({
           </Select>
         </div>
         <div>
-          <Label htmlFor="color">Color</Label>
+          <Label htmlFor="color">{t('color')}</Label>
           <Select value={formData.color} onValueChange={(value) => updateField('color', value)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="normal">Normal (Clear/Light Yellow)</SelectItem>
-              <SelectItem value="yellow">Dark Yellow</SelectItem>
-              <SelectItem value="red">Red/Pink</SelectItem>
-              <SelectItem value="brown">Brown</SelectItem>
+              <SelectItem value="normal">{t('colorNormal')}</SelectItem>
+              <SelectItem value="yellow">{t('colorYellow')}</SelectItem>
+              <SelectItem value="red">{t('colorRed')}</SelectItem>
+              <SelectItem value="brown">{t('colorBrown')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -61,7 +61,7 @@ export const AssessmentSection: React.FC<AssessmentSectionProps> = ({
 
       {/* Pain Scale */}
       <div>
-        <Label htmlFor="pain">{t('pain')} (0-10 scale)</Label>
+        <Label htmlFor="pain">{t('pain')} (0-10)</Label>
         <Input
           id="pain"
           type="range"
@@ -72,15 +72,15 @@ export const AssessmentSection: React.FC<AssessmentSectionProps> = ({
           className="w-full"
         />
         <div className="flex justify-between text-sm text-muted-foreground mt-1">
-          <span>No Pain (0)</span>
-          <span>Current: {formData.pain}</span>
-          <span>Severe (10)</span>
+          <span>{t('noPain')} (0)</span>
+          <span>{t('current')}: {formData.pain}</span>
+          <span>{t('severe')} (10)</span>
         </div>
       </div>
 
       {/* Symptoms */}
       <div>
-        <Label className="text-sm font-medium mb-2 block">Symptoms</Label>
+        <Label className="text-sm font-medium mb-2 block">{t('symptoms')}</Label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {SYMPTOM_OPTIONS.map((symptom) => (
             <label key={symptom.id} className="flex items-center gap-2 cursor-pointer">
@@ -93,7 +93,7 @@ export const AssessmentSection: React.FC<AssessmentSectionProps> = ({
                   updateField('symptoms', updated);
                 }}
               />
-              <span className="text-sm">{symptom.label}</span>
+              <span className="text-sm">{t(symptom.labelKey)}</span>
             </label>
           ))}
         </div>
