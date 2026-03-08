@@ -38,14 +38,30 @@ const moreSubItems = [
 
 const DoctorDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { activeTab, setActiveTab } = useNav();
+  const { activeTab, setActiveTab, setBadgeCounts } = useNav();
   const [showPlanEditor, setShowPlanEditor] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
   const [selectedPatient, setSelectedPatient] = useState<RealPatient | null>(null);
   const [patients, setPatients] = useState<RealPatient[]>([]);
   const [loading, setLoading] = useState(true);
   const [moreView, setMoreView] = useState<string | null>(null);
+  const [pendingCount, setPendingCount] = useState(0);
 
+  // Fetch pending request count
+  useEffect(() => {
+    if (!user) return;
+    const fetchPending = async () => {
+      const { count } = await supabase
+        .from('doctor_patient_assignments')
+        .select('*', { count: 'exact', head: true })
+        .eq('doctor_id', user.id)
+        .eq('status', 'pending');
+      const c = count || 0;
+      setPendingCount(c);
+      setBadgeCounts(prev => ({ ...prev, more: c }));
+    };
+    fetchPending();
+  }, [user]);
   useEffect(() => {
     if (!user) return;
     const fetchPatients = async () => {
@@ -146,11 +162,11 @@ const DoctorDashboard: React.FC = () => {
   }
 
   const tabItems = [
-    { value: 'patients', icon: Users, label: 'Patients' },
-    { value: 'alerts', icon: AlertTriangle, label: 'Alerts' },
-    { value: 'labs', icon: FileText, label: 'Labs' },
-    { value: 'plans', icon: ClipboardList, label: 'Plans' },
-    { value: 'more', icon: Settings, label: 'More' },
+    { value: 'patients', icon: Users, label: 'Patients', badge: 0 },
+    { value: 'alerts', icon: AlertTriangle, label: 'Alerts', badge: 0 },
+    { value: 'labs', icon: FileText, label: 'Labs', badge: 0 },
+    { value: 'plans', icon: ClipboardList, label: 'Plans', badge: 0 },
+    { value: 'more', icon: Settings, label: 'More', badge: pendingCount },
   ];
 
   const renderMoreContent = () => {
@@ -201,10 +217,15 @@ const DoctorDashboard: React.FC = () => {
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v !== 'more') setMoreView(null); }} className="space-y-4 sm:space-y-6">
         <div className="overflow-x-auto -mx-4 px-4 no-scrollbar">
           <TabsList className="inline-flex w-max gap-1 bg-muted/50 p-1 rounded-2xl">
-            {tabItems.map(({ value, icon: Icon, label }) => (
-              <TabsTrigger key={value} value={value} className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap">
+            {tabItems.map(({ value, icon: Icon, label, badge }) => (
+              <TabsTrigger key={value} value={value} className="relative flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap">
                 <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>{label}</span>
+                {badge > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
+                    {badge}
+                  </span>
+                )}
               </TabsTrigger>
             ))}
           </TabsList>
