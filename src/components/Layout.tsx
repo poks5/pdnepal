@@ -1,11 +1,12 @@
 import React, { useState, createContext, useContext } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Phone, LogOut, Menu, X, User, Bell,
   Home, Activity, FileText, Settings, FlaskConical,
-  Users, BarChart, Shield
+  Users, BarChart, Shield, Globe
 } from 'lucide-react';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
@@ -25,6 +26,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [badgeCounts, setBadgeCounts] = useState<Record<string, number>>({});
@@ -54,26 +56,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const patientNav = [
-    { icon: Home, label: 'Home', id: 'overview', emoji: '🏠' },
-    { icon: Activity, label: 'Exchanges', id: 'exchanges', emoji: '💧' },
-    { icon: FlaskConical, label: 'Labs', id: 'lab-data', emoji: '🧪' },
-    { icon: BarChart, label: 'Analytics', id: 'analytics', emoji: '📊' },
-    { icon: Settings, label: 'Settings', id: 'settings', emoji: '⚙️' },
+    { icon: Home, label: t('home'), id: 'overview', emoji: '🏠' },
+    { icon: Activity, label: t('exchanges'), id: 'exchanges', emoji: '💧' },
+    { icon: FlaskConical, label: t('labs'), id: 'lab-data', emoji: '🧪' },
+    { icon: BarChart, label: t('analytics'), id: 'analytics', emoji: '📊' },
+    { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
 
   const doctorNav = [
-    { icon: Home, label: 'Home', id: 'patients', emoji: '🏠' },
-    { icon: Bell, label: 'Alerts', id: 'alerts', emoji: '🔔' },
-    { icon: FlaskConical, label: 'Labs', id: 'labs', emoji: '🧪' },
-    { icon: FileText, label: 'Plans', id: 'plans', emoji: '📋' },
-    { icon: Settings, label: 'More', id: 'more', emoji: '⚙️' },
+    { icon: Home, label: t('home'), id: 'patients', emoji: '🏠' },
+    { icon: Bell, label: t('alerts'), id: 'alerts', emoji: '🔔' },
+    { icon: FlaskConical, label: t('labs'), id: 'labs', emoji: '🧪' },
+    { icon: FileText, label: t('plans'), id: 'plans', emoji: '📋' },
+    { icon: Settings, label: t('more'), id: 'more', emoji: '⚙️' },
   ];
 
   const adminNav = [
-    { icon: Home, label: 'Home', id: 'overview', emoji: '🏠' },
-    { icon: Users, label: 'Users', id: 'users', emoji: '👥' },
-    { icon: Shield, label: 'Security', id: 'security', emoji: '🛡️' },
-    { icon: Settings, label: 'Settings', id: 'settings', emoji: '⚙️' },
+    { icon: Home, label: t('home'), id: 'overview', emoji: '🏠' },
+    { icon: Users, label: t('users'), id: 'users', emoji: '👥' },
+    { icon: Shield, label: t('security'), id: 'security', emoji: '🛡️' },
+    { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
 
   const navItems = user?.role === 'doctor' ? doctorNav
@@ -99,9 +101,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
               {/* Desktop actions */}
               <div className="hidden md:flex items-center gap-4">
+                <button
+                  onClick={() => setLanguage(language === 'en' ? 'ne' : 'en')}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-full bg-muted/50 transition-colors"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  {language === 'en' ? 'नेपाली' : 'EN'}
+                </button>
                 <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-full px-4 shadow-sm">
                   <Phone className="w-3.5 h-3.5 mr-1.5" />
-                  Emergency
+                  {t('emergency')}
                 </Button>
                 <div className="h-8 w-px bg-border/50" />
                 <div className="flex items-center gap-3">
@@ -122,8 +131,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
               {/* Mobile */}
               <div className="flex md:hidden items-center gap-2">
+                <button
+                  onClick={() => setLanguage(language === 'en' ? 'ne' : 'en')}
+                  className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2 py-1 rounded-full"
+                >
+                  {language === 'en' ? 'ने' : 'EN'}
+                </button>
                 <Badge className={`text-[10px] px-2 py-0.5 border-0 font-semibold ${roleColor[user?.role ?? '']}`}>
-                  {roleEmoji[user?.role ?? '']} {roleLabel[user?.role ?? ''] ?? user?.role}
+                  {roleEmoji[user?.role ?? '']} {t(user?.role ?? 'patient')}
                 </Badge>
                 <Button variant="ghost" size="icon" className="rounded-full w-9 h-9" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                   {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -145,10 +160,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 <Button variant="outline" size="sm" className="text-destructive justify-start rounded-2xl h-12 border-destructive/20">
-                  <Phone className="w-4 h-4 mr-2" /> Emergency
+                  <Phone className="w-4 h-4 mr-2" /> {t('emergency')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={logout} className="justify-start rounded-2xl h-12">
-                  <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                  <LogOut className="w-4 h-4 mr-2" /> {t('logout')}
                 </Button>
               </div>
             </div>
@@ -163,7 +178,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Footer credit */}
         <footer className="hidden md:block text-center py-4 border-t border-border/20">
           <p className="text-[11px] text-muted-foreground/60">
-            Concept by <span className="font-semibold text-muted-foreground/80">Dr. Anil Pokhrel</span> · Consultant Nephrologist
+            {t('conceptBy')} <span className="font-semibold text-muted-foreground/80">Dr. Anil Pokhrel</span> · {t('consultantNephrologist')}
           </p>
         </footer>
 

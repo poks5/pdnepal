@@ -1,5 +1,5 @@
 import React from 'react';
-import TodayProgress from './TodayProgress';
+import { useLanguage } from '@/contexts/LanguageContext';
 import WeeklyStats from './WeeklyStats';
 import RecentExchanges from './RecentExchanges';
 import WeightUFTracker from './WeightUFTracker';
@@ -7,6 +7,7 @@ import HealthTips from './HealthTips';
 import QuickActions from '../QuickActions';
 import { DailyExchangeLog } from '@/types/patient';
 import { useAuth } from '@/contexts/AuthContext';
+import TodayProgress from './TodayProgress';
 import patientHero from '@/assets/patient-hero.png';
 
 interface DashboardOverviewProps {
@@ -31,8 +32,10 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onAddExchange
 }) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const hour = new Date().getHours();
-  const greeting = hour >= 5 && hour < 12 ? '🌅 शुभ प्रभात' : hour >= 12 && hour < 17 ? '🙏 नमस्ते' : hour >= 17 && hour < 21 ? '🌇 शुभ सन्ध्या' : '🌙 शुभ रात्रि';
+  const greetingKey = hour >= 5 && hour < 12 ? 'goodMorning' : hour >= 12 && hour < 17 ? 'goodAfternoon' : hour >= 17 && hour < 21 ? 'goodEvening' : 'goodNight';
+  const greetingEmoji = hour >= 5 && hour < 12 ? '🌅' : hour >= 12 && hour < 17 ? '🙏' : hour >= 17 && hour < 21 ? '🌇' : '🌙';
   const firstName = user?.fullName?.split(' ')[0] || '';
 
   return (
@@ -44,11 +47,11 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
         <div className="flex items-center justify-between relative">
           <div className="flex-1">
-            <p className="text-lg sm:text-xl font-bold">{greeting}{firstName ? `, ${firstName}` : ''}</p>
-            <p className="text-sm opacity-85 mt-1">तपाईंको PD यात्रा राम्रो चलिरहेको छ! 💪</p>
+            <p className="text-lg sm:text-xl font-bold">{greetingEmoji} {t(greetingKey)}{firstName ? `, ${firstName}` : ''}</p>
+            <p className="text-sm opacity-85 mt-1">{t('pdJourneyGreat')}</p>
             <div className="flex items-center gap-2 mt-3">
               <span className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-semibold">
-                Day streak: 🔥 7
+                {t('dayStreak')}: 🔥 7
               </span>
             </div>
           </div>

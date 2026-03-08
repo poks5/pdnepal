@@ -13,22 +13,24 @@ import MedicationTracker from '../medical/MedicationTracker';
 import SymptomTracker from '../medical/SymptomTracker';
 import PhotoDocumentation from '../medical/PhotoDocumentation';
 import { usePatient } from '@/contexts/PatientContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos';
 
-const sections = [
-  { id: 'trends' as const, label: 'UF Trends', emoji: '📈', icon: TrendingUp, color: 'from-primary/20 to-primary/5', text: 'text-primary', desc: 'Track ultrafiltration & exchange patterns' },
-  { id: 'alerts' as const, label: 'Lab Alerts', emoji: '🔬', icon: AlertTriangle, color: 'from-destructive/15 to-destructive/5', text: 'text-destructive', desc: 'Smart alerts on lab values' },
-  { id: 'medications' as const, label: 'Medications', emoji: '💊', icon: Pill, color: 'from-[hsl(var(--mint))]/20 to-[hsl(var(--mint))]/5', text: 'text-[hsl(var(--mint))]', desc: 'Track meds & adherence' },
-  { id: 'symptoms' as const, label: 'Symptoms', emoji: '🩺', icon: Activity, color: 'from-[hsl(var(--coral))]/15 to-[hsl(var(--peach))]/5', text: 'text-[hsl(var(--coral))]', desc: 'Log & score daily symptoms' },
-  { id: 'photos' as const, label: 'Photos', emoji: '📸', icon: Camera, color: 'from-[hsl(var(--lavender))]/20 to-[hsl(var(--lavender))]/5', text: 'text-[hsl(var(--lavender))]', desc: 'Document catheter & fluid' },
-  { id: 'export' as const, label: 'Export', emoji: '📤', icon: Download, color: 'from-[hsl(var(--sky))]/20 to-[hsl(var(--sky))]/5', text: 'text-[hsl(var(--sky))]', desc: 'Download & share reports' },
+const sectionDefs = [
+  { id: 'trends' as const, labelKey: 'ufTrends', emoji: '📈', icon: TrendingUp, color: 'from-primary/20 to-primary/5', descKey: 'trackUFPatterns' },
+  { id: 'alerts' as const, labelKey: 'labAlerts', emoji: '🔬', icon: AlertTriangle, color: 'from-destructive/15 to-destructive/5', descKey: 'smartLabAlerts' },
+  { id: 'medications' as const, labelKey: 'medications', emoji: '💊', icon: Pill, color: 'from-[hsl(var(--mint))]/20 to-[hsl(var(--mint))]/5', descKey: 'trackMedsAdherence' },
+  { id: 'symptoms' as const, labelKey: 'symptoms', emoji: '🩺', icon: Activity, color: 'from-[hsl(var(--coral))]/15 to-[hsl(var(--peach))]/5', descKey: 'logScoreSymptoms' },
+  { id: 'photos' as const, labelKey: 'photos', emoji: '📸', icon: Camera, color: 'from-[hsl(var(--lavender))]/20 to-[hsl(var(--lavender))]/5', descKey: 'documentCatheterFluid' },
+  { id: 'export' as const, labelKey: 'export', emoji: '📤', icon: Download, color: 'from-[hsl(var(--sky))]/20 to-[hsl(var(--sky))]/5', descKey: 'downloadShareReports' },
 ];
 
 const AnalyticsDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState<Section>('hub');
   const { exchangeLogs } = usePatient();
+  const { t } = useLanguage();
 
   const totalExchanges = exchangeLogs.length;
   const avgUF = totalExchanges > 0
@@ -44,7 +46,7 @@ const AnalyticsDashboard: React.FC = () => {
           onClick={() => setActiveSection('hub')}
           className="gap-1.5 text-muted-foreground hover:text-foreground rounded-full"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Analytics
+          <ArrowLeft className="w-4 h-4" /> {t('backToAnalytics')}
         </Button>
         {activeSection === 'trends' && <TrendAnalysis />}
         {activeSection === 'alerts' && <LabAlerts />}
@@ -66,8 +68,8 @@ const AnalyticsDashboard: React.FC = () => {
             <img src={pdsathiLogo} alt="" className="w-10 h-10" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight">Analytics & Medical</h1>
-            <p className="text-sm opacity-80 mt-0.5">Comprehensive health insights at your fingertips</p>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight">{t('analyticsMedical')}</h1>
+            <p className="text-sm opacity-80 mt-0.5">{t('analyticsDesc')}</p>
           </div>
         </div>
       </div>
@@ -75,9 +77,9 @@ const AnalyticsDashboard: React.FC = () => {
       {/* Quick Stats Row */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Exchanges', value: totalExchanges, icon: Droplets, emoji: '💧', bg: 'bg-primary/10' },
-          { label: 'Avg UF', value: `${avgUF}ml`, icon: BarChart3, emoji: '📊', bg: 'bg-[hsl(var(--mint))]/15' },
-          { label: 'Health Score', value: '—', icon: Heart, emoji: '❤️', bg: 'bg-[hsl(var(--coral))]/10' },
+          { label: t('exchanges'), value: totalExchanges, icon: Droplets, emoji: '💧', bg: 'bg-primary/10' },
+          { label: t('avgUF'), value: `${avgUF}ml`, icon: BarChart3, emoji: '📊', bg: 'bg-[hsl(var(--mint))]/15' },
+          { label: t('healthScore'), value: '—', icon: Heart, emoji: '❤️', bg: 'bg-[hsl(var(--coral))]/10' },
         ].map(({ label, value, emoji, bg }) => (
           <Card key={label} className="border-border/30 shadow-sm rounded-2xl overflow-hidden">
             <CardContent className="p-3.5 text-center">
@@ -91,7 +93,7 @@ const AnalyticsDashboard: React.FC = () => {
 
       {/* Section Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {sections.map(({ id, label, emoji, icon: Icon, color, text, desc }) => (
+        {sectionDefs.map(({ id, labelKey, emoji, icon: Icon, color, descKey }) => (
           <button
             key={id}
             onClick={() => setActiveSection(id)}
@@ -103,8 +105,8 @@ const AnalyticsDashboard: React.FC = () => {
                   <span className="text-xl">{emoji}</span>
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-foreground">{label}</p>
-                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{desc}</p>
+                  <p className="font-bold text-sm text-foreground">{t(labelKey)}</p>
+                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{t(descKey)}</p>
                 </div>
               </CardContent>
             </Card>
@@ -116,7 +118,7 @@ const AnalyticsDashboard: React.FC = () => {
       <div className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 border border-border/20">
         <Shield className="w-5 h-5 text-muted-foreground shrink-0" />
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Your health data is encrypted and only visible to you and your assigned doctor. All analytics are generated locally.
+          {t('dataEncrypted')}
         </p>
       </div>
     </div>
