@@ -338,7 +338,6 @@ const translations: Translations = {
   exportCSV: { en: 'Export CSV', ne: 'CSV निर्यात' },
   timeline: { en: 'Timeline', ne: 'समयरेखा' },
   infections: { en: 'Infections', ne: 'संक्रमणहरू' },
-  error: { en: 'Error', ne: 'त्रुटि' },
 };
 
 interface LanguageContextType {
