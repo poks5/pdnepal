@@ -7,6 +7,7 @@ import HealthTips from './HealthTips';
 import QuickActions from '../QuickActions';
 import { DailyExchangeLog } from '@/types/patient';
 import { useAuth } from '@/contexts/AuthContext';
+import TodayProgress from './TodayProgress';
 import patientHero from '@/assets/patient-hero.png';
 
 interface DashboardOverviewProps {
