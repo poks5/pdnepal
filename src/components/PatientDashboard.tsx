@@ -41,12 +41,6 @@ const PatientDashboard: React.FC = () => {
     if (!user) return;
     setSavingExchange(true);
     try {
-      // Combine free-text notes with selected symptoms
-      const symptomText = exchangeData.symptoms.length > 0
-        ? `Symptoms: ${exchangeData.symptoms.join(', ')}`
-        : '';
-      const combinedNotes = [exchangeData.notes, symptomText].filter(Boolean).join(' | ');
-
       const { error } = await supabase.from('exchange_logs').insert({
         patient_id: user.id,
         recorded_by: user.id,
@@ -57,8 +51,9 @@ const PatientDashboard: React.FC = () => {
         drain_volume_ml: exchangeData.drainVolume,
         drain_color: exchangeData.clarity,
         pain_level: exchangeData.pain,
-        notes: combinedNotes || null,
+        notes: exchangeData.notes || null,
         weight_after_kg: exchangeData.weightAfter,
+        symptoms: exchangeData.symptoms,
       });
       if (error) throw error;
 
