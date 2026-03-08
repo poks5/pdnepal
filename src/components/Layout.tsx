@@ -88,8 +88,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex justify-between items-center h-14 sm:h-16">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 gradient-hero rounded-2xl flex items-center justify-center shadow-lg shadow-primary/25">
-                  <span className="text-primary-foreground font-extrabold text-sm tracking-tight">PD</span>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center overflow-hidden bg-primary/5">
+                  <img src={pdsathiLogo} alt="PDsathi" className="w-9 h-9 object-contain" />
                 </div>
                 <div className="hidden sm:block">
                   <h1 className="text-base font-extrabold text-foreground leading-none tracking-tight">PDsathi</h1>
