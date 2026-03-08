@@ -100,6 +100,7 @@ const PatientDashboard: React.FC = () => {
     { value: 'exchanges', icon: Droplets, label: t('exchanges') },
     { value: 'analytics', icon: BarChart, label: 'Analytics' },
     { value: 'lab-data', icon: FlaskConical, label: 'Labs' },
+    { value: 'learning', icon: BookOpen, label: t('learningCenter') },
     { value: 'settings', icon: Settings, label: 'Settings' },
   ];
 
