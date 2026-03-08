@@ -70,6 +70,8 @@ const AnalyticsDashboard: React.FC = () => {
         {activeSection === 'peritonitis' && <PeritonitisModule />}
         {activeSection === 'exit_site' && <ExitSiteInfectionModule />}
         {activeSection === 'center_analytics' && <CenterAnalytics />}
+        {activeSection === 'catheter_registry' && <CatheterRegistry />}
+        {activeSection === 'fluid_registry' && <FluidRegistry />}
       </div>
     );
   }
