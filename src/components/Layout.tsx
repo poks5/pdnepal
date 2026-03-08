@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Phone, LogOut, Menu, X, User, Bell,
   Home, Activity, FileText, Settings, FlaskConical,
-  Users, BarChart, Shield, Globe
+  Users, BarChart, Shield, Globe, BookOpen
 } from 'lucide-react';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
