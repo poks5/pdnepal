@@ -16,6 +16,8 @@ interface CenterStats {
   organisms: { name: string; count: number; pct: number }[];
   exitSiteCount: number;
   avgClearanceDays: number | null;
+  medianTimeToFirstPeritonitis: number | null;
+  catheterVsInfection: { type: string; rate: number; episodes: number; patients: number }[];
 }
 
 const CenterAnalytics: React.FC = () => {
