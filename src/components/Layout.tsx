@@ -160,10 +160,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 <Button variant="outline" size="sm" className="text-destructive justify-start rounded-2xl h-12 border-destructive/20">
-                  <Phone className="w-4 h-4 mr-2" /> Emergency
+                  <Phone className="w-4 h-4 mr-2" /> {t('emergency')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={logout} className="justify-start rounded-2xl h-12">
-                  <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                  <LogOut className="w-4 h-4 mr-2" /> {t('logout')}
                 </Button>
               </div>
             </div>
