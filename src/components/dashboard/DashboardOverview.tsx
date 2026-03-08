@@ -1,5 +1,5 @@
 import React from 'react';
-import TodayProgress from './TodayProgress';
+import { useLanguage } from '@/contexts/LanguageContext';
 import WeeklyStats from './WeeklyStats';
 import RecentExchanges from './RecentExchanges';
 import WeightUFTracker from './WeightUFTracker';
