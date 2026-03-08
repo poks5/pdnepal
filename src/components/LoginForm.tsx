@@ -139,7 +139,6 @@ const LoginForm: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
 
         {/* Credit */}
         <div className="text-center space-y-1 pt-2">
