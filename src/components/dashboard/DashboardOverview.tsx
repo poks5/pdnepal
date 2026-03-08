@@ -47,11 +47,11 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
         <div className="flex items-center justify-between relative">
           <div className="flex-1">
-            <p className="text-lg sm:text-xl font-bold">{greeting}{firstName ? `, ${firstName}` : ''}</p>
-            <p className="text-sm opacity-85 mt-1">तपाईंको PD यात्रा राम्रो चलिरहेको छ! 💪</p>
+            <p className="text-lg sm:text-xl font-bold">{greetingEmoji} {t(greetingKey)}{firstName ? `, ${firstName}` : ''}</p>
+            <p className="text-sm opacity-85 mt-1">{t('pdJourneyGreat')}</p>
             <div className="flex items-center gap-2 mt-3">
               <span className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-semibold">
-                Day streak: 🔥 7
+                {t('dayStreak')}: 🔥 7
               </span>
             </div>
           </div>
