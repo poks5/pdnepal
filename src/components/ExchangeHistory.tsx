@@ -96,15 +96,15 @@ const ExchangeHistory: React.FC<ExchangeHistoryProps> = ({ exchanges = [] }) => 
                   {/* Stats grid — 2x2 on mobile, 4 col on desktop */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
                     <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
-                      <span className="text-[10px] text-muted-foreground block">Drain</span>
+                      <span className="text-[10px] text-muted-foreground block">{t('drain')}</span>
                       <span className="font-semibold text-foreground">{ex.drainVolume}ml</span>
                     </div>
                     <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
-                      <span className="text-[10px] text-muted-foreground block">Fill</span>
+                      <span className="text-[10px] text-muted-foreground block">{t('fill')}</span>
                       <span className="font-semibold text-foreground">{ex.fillVolume}ml</span>
                     </div>
                     <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
-                      <span className="text-[10px] text-muted-foreground block">UF</span>
+                      <span className="text-[10px] text-muted-foreground block">{t('uf')}</span>
                       <span className={`font-semibold ${ex.ultrafiltration >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
                         {ex.ultrafiltration > 0 ? '+' : ''}{ex.ultrafiltration}ml
                       </span>
