@@ -13,22 +13,24 @@ import MedicationTracker from '../medical/MedicationTracker';
 import SymptomTracker from '../medical/SymptomTracker';
 import PhotoDocumentation from '../medical/PhotoDocumentation';
 import { usePatient } from '@/contexts/PatientContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos';
 
-const sections = [
-  { id: 'trends' as const, label: 'UF Trends', emoji: '📈', icon: TrendingUp, color: 'from-primary/20 to-primary/5', text: 'text-primary', desc: 'Track ultrafiltration & exchange patterns' },
-  { id: 'alerts' as const, label: 'Lab Alerts', emoji: '🔬', icon: AlertTriangle, color: 'from-destructive/15 to-destructive/5', text: 'text-destructive', desc: 'Smart alerts on lab values' },
-  { id: 'medications' as const, label: 'Medications', emoji: '💊', icon: Pill, color: 'from-[hsl(var(--mint))]/20 to-[hsl(var(--mint))]/5', text: 'text-[hsl(var(--mint))]', desc: 'Track meds & adherence' },
-  { id: 'symptoms' as const, label: 'Symptoms', emoji: '🩺', icon: Activity, color: 'from-[hsl(var(--coral))]/15 to-[hsl(var(--peach))]/5', text: 'text-[hsl(var(--coral))]', desc: 'Log & score daily symptoms' },
-  { id: 'photos' as const, label: 'Photos', emoji: '📸', icon: Camera, color: 'from-[hsl(var(--lavender))]/20 to-[hsl(var(--lavender))]/5', text: 'text-[hsl(var(--lavender))]', desc: 'Document catheter & fluid' },
-  { id: 'export' as const, label: 'Export', emoji: '📤', icon: Download, color: 'from-[hsl(var(--sky))]/20 to-[hsl(var(--sky))]/5', text: 'text-[hsl(var(--sky))]', desc: 'Download & share reports' },
+const sectionDefs = [
+  { id: 'trends' as const, labelKey: 'ufTrends', emoji: '📈', icon: TrendingUp, color: 'from-primary/20 to-primary/5', descKey: 'trackUFPatterns' },
+  { id: 'alerts' as const, labelKey: 'labAlerts', emoji: '🔬', icon: AlertTriangle, color: 'from-destructive/15 to-destructive/5', descKey: 'smartLabAlerts' },
+  { id: 'medications' as const, labelKey: 'medications', emoji: '💊', icon: Pill, color: 'from-[hsl(var(--mint))]/20 to-[hsl(var(--mint))]/5', descKey: 'trackMedsAdherence' },
+  { id: 'symptoms' as const, labelKey: 'symptoms', emoji: '🩺', icon: Activity, color: 'from-[hsl(var(--coral))]/15 to-[hsl(var(--peach))]/5', descKey: 'logScoreSymptoms' },
+  { id: 'photos' as const, labelKey: 'photos', emoji: '📸', icon: Camera, color: 'from-[hsl(var(--lavender))]/20 to-[hsl(var(--lavender))]/5', descKey: 'documentCatheterFluid' },
+  { id: 'export' as const, labelKey: 'export', emoji: '📤', icon: Download, color: 'from-[hsl(var(--sky))]/20 to-[hsl(var(--sky))]/5', descKey: 'downloadShareReports' },
 ];
 
 const AnalyticsDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState<Section>('hub');
   const { exchangeLogs } = usePatient();
+  const { t } = useLanguage();
 
   const totalExchanges = exchangeLogs.length;
   const avgUF = totalExchanges > 0
@@ -44,7 +46,7 @@ const AnalyticsDashboard: React.FC = () => {
           onClick={() => setActiveSection('hub')}
           className="gap-1.5 text-muted-foreground hover:text-foreground rounded-full"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Analytics
+          <ArrowLeft className="w-4 h-4" /> {t('backToAnalytics')}
         </Button>
         {activeSection === 'trends' && <TrendAnalysis />}
         {activeSection === 'alerts' && <LabAlerts />}
