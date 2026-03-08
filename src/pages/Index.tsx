@@ -28,7 +28,7 @@ const AppContent: React.FC = () => {
   }
 
   if (!isAuthenticated || !user) {
-    return <LoginForm />;
+    return <LandingPage />;
   }
 
   const renderDashboard = () => {
