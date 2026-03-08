@@ -56,26 +56,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const patientNav = [
-    { icon: Home, label: 'Home', id: 'overview', emoji: '🏠' },
-    { icon: Activity, label: 'Exchanges', id: 'exchanges', emoji: '💧' },
-    { icon: FlaskConical, label: 'Labs', id: 'lab-data', emoji: '🧪' },
-    { icon: BarChart, label: 'Analytics', id: 'analytics', emoji: '📊' },
-    { icon: Settings, label: 'Settings', id: 'settings', emoji: '⚙️' },
+    { icon: Home, label: t('home'), id: 'overview', emoji: '🏠' },
+    { icon: Activity, label: t('exchanges'), id: 'exchanges', emoji: '💧' },
+    { icon: FlaskConical, label: t('labs'), id: 'lab-data', emoji: '🧪' },
+    { icon: BarChart, label: t('analytics'), id: 'analytics', emoji: '📊' },
+    { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
 
   const doctorNav = [
-    { icon: Home, label: 'Home', id: 'patients', emoji: '🏠' },
-    { icon: Bell, label: 'Alerts', id: 'alerts', emoji: '🔔' },
-    { icon: FlaskConical, label: 'Labs', id: 'labs', emoji: '🧪' },
-    { icon: FileText, label: 'Plans', id: 'plans', emoji: '📋' },
-    { icon: Settings, label: 'More', id: 'more', emoji: '⚙️' },
+    { icon: Home, label: t('home'), id: 'patients', emoji: '🏠' },
+    { icon: Bell, label: t('alerts'), id: 'alerts', emoji: '🔔' },
+    { icon: FlaskConical, label: t('labs'), id: 'labs', emoji: '🧪' },
+    { icon: FileText, label: t('plans'), id: 'plans', emoji: '📋' },
+    { icon: Settings, label: t('more'), id: 'more', emoji: '⚙️' },
   ];
 
   const adminNav = [
-    { icon: Home, label: 'Home', id: 'overview', emoji: '🏠' },
-    { icon: Users, label: 'Users', id: 'users', emoji: '👥' },
-    { icon: Shield, label: 'Security', id: 'security', emoji: '🛡️' },
-    { icon: Settings, label: 'Settings', id: 'settings', emoji: '⚙️' },
+    { icon: Home, label: t('home'), id: 'overview', emoji: '🏠' },
+    { icon: Users, label: t('users'), id: 'users', emoji: '👥' },
+    { icon: Shield, label: t('security'), id: 'security', emoji: '🛡️' },
+    { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
 
   const navItems = user?.role === 'doctor' ? doctorNav
