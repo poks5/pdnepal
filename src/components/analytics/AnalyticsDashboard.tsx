@@ -118,7 +118,7 @@ const AnalyticsDashboard: React.FC = () => {
       <div className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 border border-border/20">
         <Shield className="w-5 h-5 text-muted-foreground shrink-0" />
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Your health data is encrypted and only visible to you and your assigned doctor. All analytics are generated locally.
+          {t('dataEncrypted')}
         </p>
       </div>
     </div>
