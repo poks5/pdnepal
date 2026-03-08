@@ -53,6 +53,74 @@ export const PatientProvider: React.FC<PatientProviderProps> = ({ children }) =>
   const [exchangeLogs, setExchangeLogs] = useState<DailyExchangeLog[]>([]);
   const [loadingExchanges, setLoadingExchanges] = useState(false);
 
+  // Load patient profile from Supabase
+  useEffect(() => {
+    if (!user) return;
+    const loadProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        if (error) throw error;
+        if (data) {
+          setPatientProfile({
+            id: data.user_id,
+            name: data.full_name,
+            dateOfBirth: data.date_of_birth || '',
+            diagnosis: '',
+            contactPhone: data.phone || '',
+            contactEmail: user.email || '',
+            language: (data.language as 'en' | 'ne') || 'en',
+            emergencyContact: data.emergency_contact_name ? {
+              name: data.emergency_contact_name,
+              relationship: '',
+              phone: data.emergency_contact_phone || '',
+            } : undefined,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      }
+    };
+    loadProfile();
+  }, [user]);
+
+  // Load PD settings from Supabase
+  useEffect(() => {
+    if (!user) return;
+    const loadPDSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pd_settings')
+          .select('*')
+          .eq('patient_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (error) throw error;
+        if (data) {
+          setPDSettings({
+            id: data.id,
+            patientId: data.patient_id,
+            mode: (data.modality as any) || 'CAPD',
+            fluidBrand: data.brand || '',
+            exchangesPerDay: (data.daily_exchanges || 4) as 1 | 2 | 3 | 4,
+            scheduledTimes: [],
+            pushReminders: true,
+            defaultDialysateStrengths: data.solution_type ? [data.solution_type as any] : ['1.5%'],
+            defaultDwellTime: Number(data.dwell_time_hours) || 4,
+            treatmentPlanVersion: 1,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load PD settings:', err);
+      }
+    };
+    loadPDSettings();
+  }, [user]);
+
   // Load exchange logs from Supabase when user is available
   useEffect(() => {
     if (!user) return;
@@ -99,7 +167,6 @@ export const PatientProvider: React.FC<PatientProviderProps> = ({ children }) =>
     const persistedData = loadData();
     if (persistedData.patientData) {
       setCatheterDetails(persistedData.patientData.catheterDetails);
-      setPDSettings(persistedData.patientData.pdSettings);
       setCaregivers(persistedData.patientData.caregivers || []);
       setSuppliers(persistedData.patientData.suppliers || []);
     }
