@@ -110,7 +110,7 @@ const ExchangeHistory: React.FC<ExchangeHistoryProps> = ({ exchanges = [] }) => 
                       </span>
                     </div>
                     <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
-                      <span className="text-[10px] text-muted-foreground block">Pain</span>
+                      <span className="text-[10px] text-muted-foreground block">{t('pain')}</span>
                       <span className={`font-semibold ${ex.pain > 3 ? 'text-destructive' : 'text-emerald-600'}`}>
                         {ex.pain}/10
                       </span>
