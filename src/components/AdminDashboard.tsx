@@ -190,12 +190,12 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-600">{language === 'en' ? 'Last Backup' : 'अन्तिम ब्याकअप'}</p>
-              <p className="text-sm font-medium text-gray-900 mt-1">2 hours ago</p>
+              <p className="text-sm text-muted-foreground">{language === 'en' ? 'Last Backup' : 'अन्तिम ब्याकअप'}</p>
+              <p className="text-sm font-medium text-foreground mt-1">2 hours ago</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">{language === 'en' ? 'Version' : 'संस्करण'}</p>
-              <p className="text-sm font-medium text-gray-900 mt-1">v2.1.0</p>
+              <p className="text-sm text-muted-foreground">{language === 'en' ? 'Version' : 'संस्करण'}</p>
+              <p className="text-sm font-medium text-foreground mt-1">v2.1.0</p>
             </div>
           </div>
         </CardContent>
