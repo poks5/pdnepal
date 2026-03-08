@@ -25,7 +25,7 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({
     date_onset: '', symptoms: [] as string[], organism: '', antibiotic: '',
-    route: '', duration_days: '', notes: '',
+    route: '', duration_days: '', notes: '', photo_urls: [] as string[],
   });
 
   const targetPatient = patientId || user?.id;
