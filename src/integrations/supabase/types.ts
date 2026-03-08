@@ -194,6 +194,77 @@ export type Database = {
         }
         Relationships: []
       }
+      exit_site_infections: {
+        Row: {
+          antibiotic: string | null
+          created_at: string
+          created_by: string
+          culture_date: string | null
+          date_onset: string
+          duration_days: number | null
+          id: string
+          notes: string | null
+          organism: string | null
+          patient_id: string
+          photo_urls: string[] | null
+          progressed_to_peritonitis: boolean | null
+          related_peritonitis_id: string | null
+          resolution_date: string | null
+          resolved: boolean | null
+          route: string | null
+          symptoms: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          antibiotic?: string | null
+          created_at?: string
+          created_by: string
+          culture_date?: string | null
+          date_onset: string
+          duration_days?: number | null
+          id?: string
+          notes?: string | null
+          organism?: string | null
+          patient_id: string
+          photo_urls?: string[] | null
+          progressed_to_peritonitis?: boolean | null
+          related_peritonitis_id?: string | null
+          resolution_date?: string | null
+          resolved?: boolean | null
+          route?: string | null
+          symptoms?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          antibiotic?: string | null
+          created_at?: string
+          created_by?: string
+          culture_date?: string | null
+          date_onset?: string
+          duration_days?: number | null
+          id?: string
+          notes?: string | null
+          organism?: string | null
+          patient_id?: string
+          photo_urls?: string[] | null
+          progressed_to_peritonitis?: boolean | null
+          related_peritonitis_id?: string | null
+          resolution_date?: string | null
+          resolved?: boolean | null
+          route?: string | null
+          symptoms?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exit_site_infections_related_peritonitis_id_fkey"
+            columns: ["related_peritonitis_id"]
+            isOneToOne: false
+            referencedRelation: "peritonitis_episodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lab_results: {
         Row: {
           albumin: number | null
@@ -263,6 +334,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pd_events: {
+        Row: {
+          created_at: string
+          created_by: string
+          event_date: string
+          event_type: string
+          id: string
+          notes: string | null
+          patient_id: string
+          related_record_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          event_date: string
+          event_type: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          related_record_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          event_date?: string
+          event_type?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          related_record_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pd_settings: {
         Row: {
           batch_number: string | null
@@ -320,6 +427,199 @@ export type Database = {
           surgeon_nephrologist?: string | null
           updated_at?: string
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      peritonitis_antibiotics: {
+        Row: {
+          created_at: string
+          dose: string | null
+          drug_name: string
+          episode_id: string
+          frequency: string | null
+          id: string
+          reason_for_change: string | null
+          route: string
+          start_date: string
+          stop_date: string | null
+        }
+        Insert: {
+          created_at?: string
+          dose?: string | null
+          drug_name: string
+          episode_id: string
+          frequency?: string | null
+          id?: string
+          reason_for_change?: string | null
+          route: string
+          start_date: string
+          stop_date?: string | null
+        }
+        Update: {
+          created_at?: string
+          dose?: string | null
+          drug_name?: string
+          episode_id?: string
+          frequency?: string | null
+          id?: string
+          reason_for_change?: string | null
+          route?: string
+          start_date?: string
+          stop_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "peritonitis_antibiotics_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "peritonitis_episodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      peritonitis_cultures: {
+        Row: {
+          colony_count: string | null
+          created_at: string
+          culture_date: string
+          episode_id: string
+          gram_type: string | null
+          id: string
+          notes: string | null
+          organism: string | null
+          sample_type: string | null
+          sensitivity: Json | null
+        }
+        Insert: {
+          colony_count?: string | null
+          created_at?: string
+          culture_date: string
+          episode_id: string
+          gram_type?: string | null
+          id?: string
+          notes?: string | null
+          organism?: string | null
+          sample_type?: string | null
+          sensitivity?: Json | null
+        }
+        Update: {
+          colony_count?: string | null
+          created_at?: string
+          culture_date?: string
+          episode_id?: string
+          gram_type?: string | null
+          id?: string
+          notes?: string | null
+          organism?: string | null
+          sample_type?: string | null
+          sensitivity?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "peritonitis_cultures_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "peritonitis_episodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      peritonitis_episodes: {
+        Row: {
+          catheter_removed: boolean | null
+          classification: string | null
+          clearance_wbc_below_100: boolean | null
+          clinical_response: string | null
+          created_at: string
+          created_by: string
+          culture_negative_on_clearance: boolean | null
+          culture_result: string | null
+          date_onset: string
+          death: boolean | null
+          definitive_antibiotic: string | null
+          duration_days: number | null
+          effluent_clearance_date: string | null
+          effluent_wbc: number | null
+          empiric_antibiotic_start_date: string | null
+          empiric_regimen: string | null
+          eosinophil_percent: number | null
+          episode_number: number
+          gram_stain_result: string | null
+          id: string
+          neutrophil_percent: number | null
+          notes: string | null
+          organism: string | null
+          patient_id: string
+          presenting_symptoms: string[] | null
+          removal_date: string | null
+          route: string | null
+          switch_to_hd: boolean | null
+          symptoms_resolved: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          catheter_removed?: boolean | null
+          classification?: string | null
+          clearance_wbc_below_100?: boolean | null
+          clinical_response?: string | null
+          created_at?: string
+          created_by: string
+          culture_negative_on_clearance?: boolean | null
+          culture_result?: string | null
+          date_onset: string
+          death?: boolean | null
+          definitive_antibiotic?: string | null
+          duration_days?: number | null
+          effluent_clearance_date?: string | null
+          effluent_wbc?: number | null
+          empiric_antibiotic_start_date?: string | null
+          empiric_regimen?: string | null
+          eosinophil_percent?: number | null
+          episode_number?: number
+          gram_stain_result?: string | null
+          id?: string
+          neutrophil_percent?: number | null
+          notes?: string | null
+          organism?: string | null
+          patient_id: string
+          presenting_symptoms?: string[] | null
+          removal_date?: string | null
+          route?: string | null
+          switch_to_hd?: boolean | null
+          symptoms_resolved?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          catheter_removed?: boolean | null
+          classification?: string | null
+          clearance_wbc_below_100?: boolean | null
+          clinical_response?: string | null
+          created_at?: string
+          created_by?: string
+          culture_negative_on_clearance?: boolean | null
+          culture_result?: string | null
+          date_onset?: string
+          death?: boolean | null
+          definitive_antibiotic?: string | null
+          duration_days?: number | null
+          effluent_clearance_date?: string | null
+          effluent_wbc?: number | null
+          empiric_antibiotic_start_date?: string | null
+          empiric_regimen?: string | null
+          eosinophil_percent?: number | null
+          episode_number?: number
+          gram_stain_result?: string | null
+          id?: string
+          neutrophil_percent?: number | null
+          notes?: string | null
+          organism?: string | null
+          patient_id?: string
+          presenting_symptoms?: string[] | null
+          removal_date?: string | null
+          route?: string | null
+          switch_to_hd?: boolean | null
+          symptoms_resolved?: boolean | null
+          updated_at?: string
         }
         Relationships: []
       }
