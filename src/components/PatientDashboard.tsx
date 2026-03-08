@@ -52,6 +52,7 @@ const PatientDashboard: React.FC = () => {
         drain_color: exchangeData.clarity,
         pain_level: exchangeData.pain,
         notes: exchangeData.notes,
+        weight_after_kg: exchangeData.weightAfter,
       });
       if (error) throw error;
 
