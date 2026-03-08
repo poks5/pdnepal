@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   TrendingUp, AlertTriangle, Download, Pill, Activity, Camera,
-  ArrowLeft, Droplets, Heart, BarChart3, Shield
+  ArrowLeft, Droplets, Heart, BarChart3, Shield, Wrench
 } from 'lucide-react';
 import TrendAnalysis from './TrendAnalysis';
 import DataExport from './DataExport';
@@ -16,16 +16,20 @@ import PDTimeline from '../clinical/PDTimeline';
 import PeritonitisModule from '../clinical/PeritonitisModule';
 import ExitSiteInfectionModule from '../clinical/ExitSiteInfectionModule';
 import CenterAnalytics from '../clinical/CenterAnalytics';
+import CatheterRegistry from '../clinical/CatheterRegistry';
+import FluidRegistry from '../clinical/FluidRegistry';
 import { usePatient } from '@/contexts/PatientContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
-type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos' | 'timeline' | 'peritonitis' | 'exit_site' | 'center_analytics';
+type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos' | 'timeline' | 'peritonitis' | 'exit_site' | 'center_analytics' | 'catheter_registry' | 'fluid_registry';
 
 const sectionDefs = [
   { id: 'timeline' as const, labelKey: 'pdTimeline', emoji: '🗓️', icon: TrendingUp, color: 'from-primary/20 to-primary/5', descKey: 'pdTimelineDesc' },
   { id: 'peritonitis' as const, labelKey: 'peritonitisTracker', emoji: '🦠', icon: AlertTriangle, color: 'from-destructive/15 to-destructive/5', descKey: 'peritonitisDesc' },
   { id: 'exit_site' as const, labelKey: 'exitSiteInfections', emoji: '⚠️', icon: AlertTriangle, color: 'from-[hsl(var(--coral))]/15 to-[hsl(var(--peach))]/5', descKey: 'exitSiteDesc' },
+  { id: 'catheter_registry' as const, labelKey: 'catheterRegistry', emoji: '🔧', icon: Wrench, color: 'from-[hsl(var(--sky))]/15 to-[hsl(var(--sky))]/5', descKey: 'catheterRegistryDesc' },
+  { id: 'fluid_registry' as const, labelKey: 'fluidRegistry', emoji: '💧', icon: Droplets, color: 'from-[hsl(var(--lavender))]/15 to-[hsl(var(--lavender))]/5', descKey: 'fluidRegistryDesc' },
   { id: 'center_analytics' as const, labelKey: 'centerAnalytics', emoji: '📊', icon: Download, color: 'from-[hsl(var(--sky))]/20 to-[hsl(var(--sky))]/5', descKey: 'centerAnalyticsDesc' },
   { id: 'trends' as const, labelKey: 'ufTrends', emoji: '📈', icon: TrendingUp, color: 'from-[hsl(var(--mint))]/20 to-[hsl(var(--mint))]/5', descKey: 'trackUFPatterns' },
   { id: 'alerts' as const, labelKey: 'labAlerts', emoji: '🔬', icon: AlertTriangle, color: 'from-[hsl(var(--lavender))]/15 to-[hsl(var(--lavender))]/5', descKey: 'smartLabAlerts' },
@@ -66,6 +70,8 @@ const AnalyticsDashboard: React.FC = () => {
         {activeSection === 'peritonitis' && <PeritonitisModule />}
         {activeSection === 'exit_site' && <ExitSiteInfectionModule />}
         {activeSection === 'center_analytics' && <CenterAnalytics />}
+        {activeSection === 'catheter_registry' && <CatheterRegistry />}
+        {activeSection === 'fluid_registry' && <FluidRegistry />}
       </div>
     );
   }
