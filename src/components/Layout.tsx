@@ -1,11 +1,12 @@
 import React, { useState, createContext, useContext } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Phone, LogOut, Menu, X, User, Bell,
   Home, Activity, FileText, Settings, FlaskConical,
-  Users, BarChart, Shield
+  Users, BarChart, Shield, Globe
 } from 'lucide-react';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
