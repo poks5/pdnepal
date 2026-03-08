@@ -7,7 +7,7 @@ import {
   Home, Activity, FileText, Settings, FlaskConical,
   Users, BarChart, Shield
 } from 'lucide-react';
-import kidneyMascot from '@/assets/kidney-mascot.png';
+import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 // Context for bottom nav ↔ dashboard tab sync
 interface NavContextType {
