@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ExitSiteInfection } from '@/types/clinical';
 import { Plus, CheckCircle, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import ClinicalPhotoUpload from './ClinicalPhotoUpload';
 
 const exitSymptoms = ['redness', 'swelling', 'discharge', 'crusting', 'tenderness', 'warmth'];
 
@@ -24,7 +25,7 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({
     date_onset: '', symptoms: [] as string[], organism: '', antibiotic: '',
-    route: '', duration_days: '', notes: '',
+    route: '', duration_days: '', notes: '', photo_urls: [] as string[],
   });
 
   const targetPatient = patientId || user?.id;
@@ -61,6 +62,7 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
       route: form.route || null,
       duration_days: form.duration_days ? parseInt(form.duration_days) : null,
       notes: form.notes || null,
+      photo_urls: form.photo_urls,
       created_by: user.id,
     });
     if (error) {
@@ -73,7 +75,7 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
         event_date: form.date_onset, created_by: user.id,
       });
       setShowAdd(false);
-      setForm({ date_onset: '', symptoms: [], organism: '', antibiotic: '', route: '', duration_days: '', notes: '' });
+      setForm({ date_onset: '', symptoms: [], organism: '', antibiotic: '', route: '', duration_days: '', notes: '', photo_urls: [] });
       loadData();
     }
   };
@@ -129,6 +131,11 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
               <Input type="number" placeholder={t('durationDays')} value={form.duration_days} onChange={e => setForm(p => ({ ...p, duration_days: e.target.value }))} className="rounded-xl" />
             </div>
             <Input placeholder={t('notes')} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} className="rounded-xl" />
+            <ClinicalPhotoUpload
+              photoUrls={form.photo_urls}
+              folder={`exit-site/${targetPatient}`}
+              onPhotosChange={(urls) => setForm(p => ({ ...p, photo_urls: urls }))}
+            />
             <div className="flex gap-2">
               <Button size="sm" className="rounded-full flex-1" onClick={handleAdd}>{t('save')}</Button>
               <Button size="sm" variant="outline" className="rounded-full" onClick={() => setShowAdd(false)}>{t('cancel')}</Button>
@@ -171,6 +178,27 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
                   </div>
                 )}
                 {inf.antibiotic && <p className="text-xs text-muted-foreground">💊 {inf.antibiotic} ({inf.route}) · {inf.duration_days}d</p>}
+                {inf.photo_urls && inf.photo_urls.length > 0 && (
+                  <ClinicalPhotoUpload
+                    photoUrls={inf.photo_urls}
+                    folder={`exit-site/${inf.id}`}
+                    onPhotosChange={async (urls) => {
+                      await supabase.from('exit_site_infections').update({ photo_urls: urls }).eq('id', inf.id);
+                      loadData();
+                    }}
+                    readOnly={inf.resolved}
+                  />
+                )}
+                {!inf.resolved && (!inf.photo_urls || inf.photo_urls.length === 0) && (
+                  <ClinicalPhotoUpload
+                    photoUrls={[]}
+                    folder={`exit-site/${inf.id}`}
+                    onPhotosChange={async (urls) => {
+                      await supabase.from('exit_site_infections').update({ photo_urls: urls }).eq('id', inf.id);
+                      loadData();
+                    }}
+                  />
+                )}
                 {!inf.resolved && (
                   <Button size="sm" variant="outline" className="mt-2 rounded-full text-xs h-7" onClick={() => markResolved(inf.id)}>
                     <CheckCircle className="w-3 h-3 mr-1" /> {t('markResolved')}

@@ -550,6 +550,7 @@ export type Database = {
           notes: string | null
           organism: string | null
           patient_id: string
+          photo_urls: string[] | null
           presenting_symptoms: string[] | null
           removal_date: string | null
           route: string | null
@@ -582,6 +583,7 @@ export type Database = {
           notes?: string | null
           organism?: string | null
           patient_id: string
+          photo_urls?: string[] | null
           presenting_symptoms?: string[] | null
           removal_date?: string | null
           route?: string | null
@@ -614,6 +616,7 @@ export type Database = {
           notes?: string | null
           organism?: string | null
           patient_id?: string
+          photo_urls?: string[] | null
           presenting_symptoms?: string[] | null
           removal_date?: string | null
           route?: string | null
