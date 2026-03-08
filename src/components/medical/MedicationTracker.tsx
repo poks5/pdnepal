@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pill, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Plus, Clock, CheckCircle, X } from 'lucide-react';
 
 interface Medication {
   id: string;
@@ -23,291 +23,120 @@ interface Medication {
 const MedicationTracker: React.FC = () => {
   const { toast } = useToast();
   const [medications, setMedications] = useState<Medication[]>([
-    {
-      id: '1',
-      name: 'Calcium Carbonate',
-      dosage: '500mg',
-      frequency: 'With meals',
-      timing: ['08:00', '13:00', '19:00'],
-      exchangeRelated: true,
-      lastTaken: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-      nextDue: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-      adherence: 85
-    },
-    {
-      id: '2',
-      name: 'Sevelamer',
-      dosage: '800mg',
-      frequency: 'Before exchanges',
-      timing: ['06:00', '12:00', '18:00', '24:00'],
-      exchangeRelated: true,
-      lastTaken: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-      nextDue: new Date().toISOString(),
-      adherence: 92
-    }
+    { id: '1', name: 'Calcium Carbonate', dosage: '500mg', frequency: 'With meals', timing: ['08:00', '13:00', '19:00'], exchangeRelated: true, lastTaken: new Date(Date.now() - 3 * 3600000).toISOString(), nextDue: new Date(Date.now() + 2 * 3600000).toISOString(), adherence: 85 },
+    { id: '2', name: 'Sevelamer', dosage: '800mg', frequency: 'Before exchanges', timing: ['06:00', '12:00', '18:00'], exchangeRelated: true, lastTaken: new Date(Date.now() - 6 * 3600000).toISOString(), nextDue: new Date().toISOString(), adherence: 92 },
   ]);
-
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newMedication, setNewMedication] = useState({
-    name: '',
-    dosage: '',
-    frequency: '',
-    exchangeRelated: false
-  });
+  const [newMed, setNewMed] = useState({ name: '', dosage: '', frequency: '', exchangeRelated: false });
 
-  const handleTakeMedication = (medicationId: string) => {
+  const handleTake = (id: string) => {
     setMedications(prev => prev.map(med => {
-      if (med.id === medicationId) {
-        const now = new Date();
-        const timings = med.timing;
-        const currentHour = now.getHours();
-        
-        // Find next scheduled time
-        let nextTime = timings.find(time => {
-          const [hour] = time.split(':').map(Number);
-          return hour > currentHour;
-        });
-        
-        if (!nextTime) {
-          nextTime = timings[0]; // Next day's first dose
-        }
-        
-        const [nextHour, nextMinute] = nextTime.split(':').map(Number);
-        const nextDue = new Date();
-        nextDue.setHours(nextHour, nextMinute, 0, 0);
-        if (nextDue <= now) {
-          nextDue.setDate(nextDue.getDate() + 1);
-        }
-        
-        return {
-          ...med,
-          lastTaken: now.toISOString(),
-          nextDue: nextDue.toISOString()
-        };
-      }
-      return med;
+      if (med.id !== id) return med;
+      const now = new Date();
+      const nextTime = med.timing.find(t => { const [h] = t.split(':').map(Number); return h > now.getHours(); }) || med.timing[0];
+      const [nh, nm] = nextTime.split(':').map(Number);
+      const next = new Date(); next.setHours(nh, nm, 0, 0);
+      if (next <= now) next.setDate(next.getDate() + 1);
+      return { ...med, lastTaken: now.toISOString(), nextDue: next.toISOString() };
     }));
-    
-    toast({
-      title: "Medication Logged",
-      description: "Medication intake has been recorded."
-    });
+    toast({ title: '✅ Medication Logged', description: 'Intake recorded successfully.' });
   };
 
-  const getStatusColor = (medication: Medication) => {
-    const now = new Date();
-    const nextDue = new Date(medication.nextDue);
-    const overdue = now > nextDue;
-    const dueSoon = (nextDue.getTime() - now.getTime()) < 30 * 60 * 1000; // 30 minutes
-    
-    if (overdue) return 'bg-red-100 text-red-800';
-    if (dueSoon) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-green-100 text-green-800';
-  };
-
-  const getStatusText = (medication: Medication) => {
-    const now = new Date();
-    const nextDue = new Date(medication.nextDue);
-    const overdue = now > nextDue;
-    const dueSoon = (nextDue.getTime() - now.getTime()) < 30 * 60 * 1000;
-    
-    if (overdue) return 'Overdue';
-    if (dueSoon) return 'Due Soon';
-    return 'On Schedule';
+  const getStatus = (med: Medication) => {
+    const now = Date.now();
+    const due = new Date(med.nextDue).getTime();
+    if (now > due) return { label: 'Overdue', emoji: '🔴', color: 'bg-destructive/10 text-destructive' };
+    if (due - now < 1800000) return { label: 'Due Soon', emoji: '🟡', color: 'bg-[hsl(var(--coral))]/10 text-[hsl(var(--coral))]' };
+    return { label: 'On Track', emoji: '🟢', color: 'bg-[hsl(var(--mint))]/10 text-[hsl(var(--mint))]' };
   };
 
   const addMedication = () => {
-    if (!newMedication.name || !newMedication.dosage) {
-      toast({
-        title: "Error",
-        description: "Please fill in medication name and dosage.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const medication: Medication = {
-      id: Date.now().toString(),
-      ...newMedication,
-      timing: ['08:00', '20:00'], // Default timing
-      lastTaken: '',
-      nextDue: new Date().toISOString(),
-      adherence: 100
-    };
-
-    setMedications(prev => [...prev, medication]);
-    setNewMedication({ name: '', dosage: '', frequency: '', exchangeRelated: false });
+    if (!newMed.name || !newMed.dosage) { toast({ title: 'Error', description: 'Name and dosage required.', variant: 'destructive' }); return; }
+    setMedications(prev => [...prev, { id: Date.now().toString(), ...newMed, timing: ['08:00', '20:00'], lastTaken: '', nextDue: new Date().toISOString(), adherence: 100 }]);
+    setNewMed({ name: '', dosage: '', frequency: '', exchangeRelated: false });
     setShowAddForm(false);
-    
-    toast({
-      title: "Medication Added",
-      description: `${medication.name} has been added to your tracker.`
-    });
+    toast({ title: '💊 Medication Added' });
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Medication Tracker</h2>
-          <p className="text-gray-600">Track medications and their relationship to exchange schedules</p>
+          <h2 className="text-xl font-black text-foreground">💊 Medications</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Track meds & adherence</p>
         </div>
-        <Button onClick={() => setShowAddForm(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Medication
+        <Button size="sm" onClick={() => setShowAddForm(true)} className="rounded-full gap-1.5 text-xs">
+          <Plus className="w-3.5 h-3.5" /> Add
         </Button>
       </div>
 
-      {/* Current Medications */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {medications.map((medication) => (
-          <Card key={medication.id}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Pill className="w-5 h-5 text-blue-500" />
-                  <CardTitle className="text-lg">{medication.name}</CardTitle>
-                </div>
-                <Badge className={getStatusColor(medication)}>
-                  {getStatusText(medication)}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-600">Dosage: <span className="font-medium">{medication.dosage}</span></p>
-                  <p className="text-sm text-gray-600">Frequency: <span className="font-medium">{medication.frequency}</span></p>
-                  {medication.exchangeRelated && (
-                    <Badge variant="outline" className="mt-1">Exchange Related</Badge>
-                  )}
-                </div>
-                
-                <div className="flex items-center space-x-2 text-sm">
-                  <Clock className="w-4 h-4" />
-                  <span>Next: {new Date(medication.nextDue).toLocaleTimeString()}</span>
-                </div>
-                
+      {/* Medication Cards */}
+      <div className="space-y-3">
+        {medications.map(med => {
+          const status = getStatus(med);
+          return (
+            <Card key={med.id} className="rounded-2xl border-border/30 shadow-sm">
+              <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm">
-                    <span className="text-gray-600">Adherence: </span>
-                    <span className={`font-medium ${medication.adherence >= 80 ? 'text-green-600' : 'text-red-600'}`}>
-                      {medication.adherence}%
-                    </span>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">💊</span>
+                    <div>
+                      <p className="font-bold text-sm text-foreground">{med.name}</p>
+                      <p className="text-[11px] text-muted-foreground">{med.dosage} · {med.frequency}</p>
+                    </div>
                   </div>
-                  <Button 
-                    size="sm" 
-                    onClick={() => handleTakeMedication(medication.id)}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-1" />
-                    Take Now
-                  </Button>
+                  <Badge className={`text-[10px] px-2 py-0.5 border-0 font-semibold ${status.color}`}>
+                    {status.emoji} {status.label}
+                  </Badge>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+
+                {med.exchangeRelated && (
+                  <Badge variant="outline" className="text-[10px] px-2 py-0.5 rounded-full">🔗 Exchange Related</Badge>
+                )}
+
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Next: {new Date(med.nextDue).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Adherence</span>
+                    <span className={`font-bold ${med.adherence >= 80 ? 'text-[hsl(var(--mint))]' : 'text-destructive'}`}>{med.adherence}%</span>
+                  </div>
+                  <Progress value={med.adherence} className="h-2" />
+                </div>
+
+                <Button size="sm" onClick={() => handleTake(med.id)} className="w-full rounded-xl h-9 text-xs font-semibold bg-[hsl(var(--mint))] hover:bg-[hsl(var(--mint))]/90 text-white">
+                  <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Take Now
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* Add Medication Form */}
+      {/* Add Form */}
       {showAddForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add New Medication</CardTitle>
+        <Card className="rounded-2xl border-border/30 shadow-sm">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-bold">Add Medication</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => setShowAddForm(false)} className="w-8 h-8 rounded-full">
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="medName">Medication Name *</Label>
-                <Input
-                  id="medName"
-                  value={newMedication.name}
-                  onChange={(e) => setNewMedication(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., Calcium Carbonate"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="dosage">Dosage *</Label>
-                <Input
-                  id="dosage"
-                  value={newMedication.dosage}
-                  onChange={(e) => setNewMedication(prev => ({ ...prev, dosage: e.target.value }))}
-                  placeholder="e.g., 500mg"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="frequency">Frequency</Label>
-                <Input
-                  id="frequency"
-                  value={newMedication.frequency}
-                  onChange={(e) => setNewMedication(prev => ({ ...prev, frequency: e.target.value }))}
-                  placeholder="e.g., With meals"
-                />
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="exchangeRelated"
-                  checked={newMedication.exchangeRelated}
-                  onChange={(e) => setNewMedication(prev => ({ ...prev, exchangeRelated: e.target.checked }))}
-                />
-                <Label htmlFor="exchangeRelated">Related to exchange schedule</Label>
-              </div>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-xs">Name *</Label><Input value={newMed.name} onChange={e => setNewMed(p => ({ ...p, name: e.target.value }))} placeholder="e.g., Calcium Carbonate" className="mt-1 h-10 rounded-xl text-sm" /></div>
+              <div><Label className="text-xs">Dosage *</Label><Input value={newMed.dosage} onChange={e => setNewMed(p => ({ ...p, dosage: e.target.value }))} placeholder="e.g., 500mg" className="mt-1 h-10 rounded-xl text-sm" /></div>
             </div>
-            
-            <div className="flex justify-end space-x-2 mt-4">
-              <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                Cancel
-              </Button>
-              <Button onClick={addMedication}>
-                Add Medication
-              </Button>
-            </div>
+            <div><Label className="text-xs">Frequency</Label><Input value={newMed.frequency} onChange={e => setNewMed(p => ({ ...p, frequency: e.target.value }))} placeholder="e.g., With meals" className="mt-1 h-10 rounded-xl text-sm" /></div>
+            <Button onClick={addMedication} className="w-full rounded-xl h-10 text-sm font-semibold">Add Medication</Button>
           </CardContent>
         </Card>
       )}
-
-      {/* Medication Alerts */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <AlertTriangle className="w-5 h-5 text-orange-500" />
-            <span>Medication Reminders</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {medications.filter(med => {
-              const now = new Date();
-              const nextDue = new Date(med.nextDue);
-              return now > nextDue || (nextDue.getTime() - now.getTime()) < 60 * 60 * 1000;
-            }).map(med => (
-              <div key={med.id} className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded">
-                <div>
-                  <p className="font-medium">{med.name} - {med.dosage}</p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(med.nextDue) < new Date() ? 'Overdue' : 'Due soon'}
-                  </p>
-                </div>
-                <Button size="sm" onClick={() => handleTakeMedication(med.id)}>
-                  Mark Taken
-                </Button>
-              </div>
-            ))}
-            {medications.filter(med => {
-              const now = new Date();
-              const nextDue = new Date(med.nextDue);
-              return now <= nextDue && (nextDue.getTime() - now.getTime()) >= 60 * 60 * 1000;
-            }).length === medications.length && (
-              <p className="text-center text-gray-500 py-4">No pending medication reminders</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
