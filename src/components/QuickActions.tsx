@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Mic, Camera, Clock, Wifi, WifiOff } from 'lucide-react';
+import { Mic, Camera, Clock, Wifi, WifiOff, Sparkles, Bell, Scan } from 'lucide-react';
 import VoiceNote from './VoiceNote';
 import BarcodeScanner from './BarcodeScanner';
 import ReminderSystem from './ReminderSystem';
@@ -34,48 +33,65 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onVoiceNote, onBarcodeScann
   };
 
   const actions = [
-    { icon: Mic, label: 'Voice Note', onClick: () => setShowVoiceNote(true), color: 'text-primary' },
-    { icon: Camera, label: 'Scan Bag', onClick: () => setShowBarcodeScanner(true), color: 'text-emerald-600' },
-    { icon: Clock, label: 'Reminders', onClick: () => setShowReminders(true), color: 'text-violet-600' },
+    {
+      icon: Mic,
+      label: 'Voice Note',
+      emoji: '🎙️',
+      onClick: () => setShowVoiceNote(true),
+      gradient: 'from-primary/10 to-[hsl(var(--lavender))]/10',
+      iconColor: 'text-primary',
+    },
+    {
+      icon: Scan,
+      label: 'Scan Bag',
+      emoji: '📷',
+      onClick: () => setShowBarcodeScanner(true),
+      gradient: 'from-[hsl(var(--mint))]/10 to-accent/10',
+      iconColor: 'text-[hsl(var(--mint))]',
+    },
+    {
+      icon: Bell,
+      label: 'Reminders',
+      emoji: '⏰',
+      onClick: () => setShowReminders(true),
+      gradient: 'from-[hsl(var(--coral))]/10 to-[hsl(var(--peach))]/10',
+      iconColor: 'text-[hsl(var(--coral))]',
+    },
   ];
 
   return (
     <div className="space-y-3">
-      {/* Online status */}
+      {/* Online status - more subtle */}
       <div className="flex items-center gap-1.5 px-1">
         {isOnline
-          ? <Wifi className="w-3.5 h-3.5 text-emerald-500" />
-          : <WifiOff className="w-3.5 h-3.5 text-destructive" />
+          ? <><Wifi className="w-3 h-3 text-[hsl(var(--mint))]" /><span className="text-[10px] font-medium text-muted-foreground">Connected</span></>
+          : <><WifiOff className="w-3 h-3 text-destructive" /><span className="text-[10px] font-medium text-muted-foreground">Offline — saved locally</span></>
         }
-        <span className="text-[10px] font-medium text-muted-foreground">
-          {isOnline ? 'Online' : 'Offline — data saved locally'}
-        </span>
         {hasQueuedActions && (
-          <span className="text-[10px] font-semibold text-amber-600 ml-auto">
-            {queuedActions.length} pending sync
+          <span className="text-[10px] font-semibold text-[hsl(var(--coral))] ml-auto">
+            {queuedActions.length} pending
           </span>
         )}
       </div>
 
-      {/* Action buttons */}
-      <div className="grid grid-cols-3 gap-2">
-        {actions.map(({ icon: Icon, label, onClick, color }) => (
-          <Button
+      {/* Action cards */}
+      <div className="grid grid-cols-3 gap-2.5">
+        {actions.map(({ icon: Icon, label, emoji, onClick, gradient, iconColor }) => (
+          <button
             key={label}
             onClick={onClick}
-            variant="outline"
-            className="h-16 sm:h-20 flex-col gap-1.5 rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5 active:scale-95 transition-all"
+            className={`flex flex-col items-center justify-center gap-2 p-4 sm:p-5 rounded-2xl bg-gradient-to-br ${gradient} border border-border/30 shadow-sm hover:shadow-md active:scale-95 transition-all`}
           >
-            <Icon className={`w-5 h-5 ${color}`} />
-            <span className="text-[10px] sm:text-xs font-medium text-foreground">{label}</span>
-          </Button>
+            <span className="text-2xl">{emoji}</span>
+            <span className="text-[11px] sm:text-xs font-semibold text-foreground">{label}</span>
+          </button>
         ))}
       </div>
 
       {!isOnline && (
-        <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-          <p className="text-xs text-amber-700 font-medium">
-            You're offline. Data will sync when connection is restored.
+        <div className="p-3.5 bg-[hsl(var(--peach))]/10 border border-[hsl(var(--coral))]/20 rounded-2xl">
+          <p className="text-xs text-[hsl(var(--coral))] font-medium">
+            📡 You're offline. Data will sync when connection is restored.
           </p>
         </div>
       )}
