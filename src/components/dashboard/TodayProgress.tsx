@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Plus, Clock, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import kidneyMascot from '@/assets/kidney-mascot.png';
+import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 interface TodayProgressProps {
   completed: number;
