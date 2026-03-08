@@ -48,6 +48,16 @@ const LandingPage: React.FC = () => {
   if (view === 'register') return <RegisterForm onBack={() => setView('landing')} />;
   if (view === 'forgot') return <ForgotPasswordForm onBack={() => setView('landing')} />;
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return { text: 'शुभ प्रभात', emoji: '🌅', sub: 'Good Morning' };
+    if (hour >= 12 && hour < 17) return { text: 'नमस्ते', emoji: '🙏', sub: 'Good Afternoon' };
+    if (hour >= 17 && hour < 21) return { text: 'शुभ सन्ध्या', emoji: '🌇', sub: 'Good Evening' };
+    return { text: 'शुभ रात्रि', emoji: '🌙', sub: 'Good Night' };
+  };
+
+  const greeting = getGreeting();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 relative overflow-hidden">
       {/* Decorative blobs */}
@@ -56,8 +66,18 @@ const LandingPage: React.FC = () => {
 
       <div className="relative z-10 max-w-lg mx-auto px-4 py-6 sm:py-10 space-y-6 sm:space-y-8">
 
-        {/* Hero Brand */}
+        {/* Greeting + Hero Brand */}
         <section className="text-center space-y-4 pt-4">
+          {/* Namaste greeting */}
+          <div className="inline-flex items-center gap-2 bg-card/80 backdrop-blur-sm rounded-full px-5 py-2 shadow-md border border-border/30">
+            <span className="text-2xl">{greeting.emoji}</span>
+            <div className="text-left">
+              <p className="text-base font-bold text-foreground leading-tight">{greeting.text}</p>
+              <p className="text-[10px] text-muted-foreground font-medium">{greeting.sub}</p>
+            </div>
+            <span className="text-2xl">🙏</span>
+          </div>
+
           <div className="relative inline-block">
             <div className="w-24 h-24 sm:w-28 sm:h-28 gradient-hero rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-primary/30 animate-float">
               <img src={kidneyMascot} alt="PDsathi mascot" className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-lg" />
@@ -72,6 +92,9 @@ const LandingPage: React.FC = () => {
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base mt-1 font-medium">
               Your Peritoneal Dialysis Companion
+            </p>
+            <p className="text-xs text-muted-foreground/70 mt-1.5 italic">
+              "साथी जो तपाईंको स्वास्थ्य यात्रामा सँगै छ"
             </p>
           </div>
 
