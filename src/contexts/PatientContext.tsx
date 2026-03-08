@@ -81,7 +81,7 @@ export const PatientProvider: React.FC<PatientProviderProps> = ({ children }) =>
             notes: row.notes ?? undefined,
             exchangeType: row.exchange_type as any,
             photos: [],
-            symptomTags: [],
+            symptomTags: (row as any).symptoms ?? [],
           }));
           setExchangeLogs(mapped);
         }
