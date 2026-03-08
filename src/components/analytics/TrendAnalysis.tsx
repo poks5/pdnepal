@@ -1,153 +1,214 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { TrendingUp, TrendingDown, AlertTriangle, Calendar } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Line, BarChart, Bar } from 'recharts';
+import { TrendingUp, TrendingDown, AlertTriangle, Droplets, Activity, Scale } from 'lucide-react';
 import { usePatient } from '@/contexts/PatientContext';
-import { DailyExchangeLog } from '@/types/patient';
 
 const TrendAnalysis: React.FC = () => {
   const { exchangeLogs } = usePatient();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | '3months'>('month');
 
-  const getFilteredData = () => {
-    const now = new Date();
-    const daysBack = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 90;
-    const cutoffDate = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
-    
-    return exchangeLogs.filter(log => new Date(log.timestamp) >= cutoffDate);
-  };
+  const daysBack = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 90;
 
-  const getUFTrendData = () => {
-    const filteredLogs = getFilteredData();
-    const dailyUF = new Map<string, number>();
-    
-    filteredLogs.forEach(log => {
+  const { ufData, drainColorData, exchangeCountData, stats, alerts } = useMemo(() => {
+    const cutoff = new Date(Date.now() - daysBack * 86400000);
+    const filtered = exchangeLogs.filter(l => new Date(l.timestamp) >= cutoff);
+
+    // Daily UF
+    const dailyUF = new Map<string, { uf: number; count: number }>();
+    filtered.forEach(log => {
       const date = new Date(log.timestamp).toISOString().split('T')[0];
-      const current = dailyUF.get(date) || 0;
-      dailyUF.set(date, current + log.ultrafiltration);
+      const prev = dailyUF.get(date) || { uf: 0, count: 0 };
+      dailyUF.set(date, { uf: prev.uf + (log.ultrafiltration || 0), count: prev.count + 1 });
     });
-    
-    return Array.from(dailyUF.entries())
-      .map(([date, uf]) => ({ date, uf, target: 500 }))
+
+    const ufData = Array.from(dailyUF.entries())
+      .map(([date, { uf }]) => ({ date, uf, target: 500 }))
       .sort((a, b) => a.date.localeCompare(b.date));
-  };
 
-  const getWeeklyStats = () => {
-    const data = getUFTrendData();
-    const recent = data.slice(-7);
-    const previous = data.slice(-14, -7);
-    
-    const recentAvg = recent.reduce((sum, d) => sum + d.uf, 0) / recent.length;
-    const previousAvg = previous.reduce((sum, d) => sum + d.uf, 0) / previous.length;
-    
+    // Exchange count per day
+    const exchangeCountData = Array.from(dailyUF.entries())
+      .map(([date, { count }]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Drain color distribution
+    const colorCounts: Record<string, number> = {};
+    filtered.forEach(log => {
+      const c = log.clarity || 'clear';
+      colorCounts[c] = (colorCounts[c] || 0) + 1;
+    });
+    const drainColorData = Object.entries(colorCounts).map(([name, value]) => ({ name, value }));
+
+    // Stats
+    const recent7 = ufData.slice(-7);
+    const prev7 = ufData.slice(-14, -7);
+    const recentAvg = recent7.length ? Math.round(recent7.reduce((s, d) => s + d.uf, 0) / recent7.length) : 0;
+    const prevAvg = prev7.length ? prev7.reduce((s, d) => s + d.uf, 0) / prev7.length : recentAvg;
+    const change = prevAvg ? Math.round(((recentAvg - prevAvg) / prevAvg) * 100) : 0;
+
+    // Alerts
+    const alerts: { type: string; message: string; tip: string }[] = [];
+    if (recent7.length >= 5) {
+      const declining = recent7.every((d, i) => i === 0 || d.uf <= recent7[i - 1].uf);
+      if (declining) alerts.push({ type: 'warning', message: 'UF declining for 7 days', tip: 'Review dialysate strength or dwell time' });
+    }
+    if (recentAvg > 0 && recentAvg < 300) {
+      alerts.push({ type: 'alert', message: 'Average UF below 300ml', tip: 'Consult nephrologist about adequacy' });
+    }
+
     return {
-      current: Math.round(recentAvg),
-      change: Math.round(((recentAvg - previousAvg) / previousAvg) * 100),
-      trend: recentAvg > previousAvg ? 'up' : 'down'
+      ufData, drainColorData, exchangeCountData,
+      stats: { avg: recentAvg, change, trend: change >= 0 ? 'up' : 'down' as const, days: ufData.length, total: filtered.length },
+      alerts,
     };
-  };
-
-  const getPredictiveAlerts = () => {
-    const data = getUFTrendData();
-    const alerts = [];
-    
-    // Check for declining UF trend
-    if (data.length >= 7) {
-      const recent = data.slice(-7);
-      const declining = recent.every((day, index) => 
-        index === 0 || day.uf <= recent[index - 1].uf
-      );
-      
-      if (declining) {
-        alerts.push({
-          type: 'warning',
-          message: 'Declining UF trend detected over last 7 days',
-          recommendation: 'Consider reviewing dialysate strength or dwell times'
-        });
-      }
-    }
-    
-    // Check for consistently low UF
-    const recentAvg = data.slice(-7).reduce((sum, d) => sum + d.uf, 0) / 7;
-    if (recentAvg < 300) {
-      alerts.push({
-        type: 'alert',
-        message: 'Low average UF detected',
-        recommendation: 'Consult with nephrologist about adequacy'
-      });
-    }
-    
-    return alerts;
-  };
+  }, [exchangeLogs, daysBack]);
 
   const chartConfig = {
-    uf: {
-      label: "Ultrafiltration (ml)",
-      color: "#3b82f6",
-    },
-    target: {
-      label: "Target UF",
-      color: "#10b981",
-    },
+    uf: { label: 'UF (ml)', color: 'hsl(var(--primary))' },
+    target: { label: 'Target', color: 'hsl(var(--mint))' },
+    count: { label: 'Exchanges', color: 'hsl(var(--lavender))' },
   };
 
-  const trendData = getUFTrendData();
-  const weeklyStats = getWeeklyStats();
-  const alerts = getPredictiveAlerts();
+  const ranges = [
+    { key: 'week' as const, label: '7D' },
+    { key: 'month' as const, label: '30D' },
+    { key: '3months' as const, label: '90D' },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Trend Analysis</h2>
-        <div className="flex space-x-2">
-          <Button 
-            variant={timeRange === 'week' ? 'default' : 'outline'} 
-            size="sm"
-            onClick={() => setTimeRange('week')}
-          >
-            7 Days
-          </Button>
-          <Button 
-            variant={timeRange === 'month' ? 'default' : 'outline'} 
-            size="sm"
-            onClick={() => setTimeRange('month')}
-          >
-            30 Days
-          </Button>
-          <Button 
-            variant={timeRange === '3months' ? 'default' : 'outline'} 
-            size="sm"
-            onClick={() => setTimeRange('3months')}
-          >
-            90 Days
-          </Button>
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h2 className="text-xl font-black text-foreground">📈 Trend Analysis</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Track your PD performance over time</p>
+        </div>
+        <div className="flex gap-1.5 bg-muted/50 p-1 rounded-full">
+          {ranges.map(r => (
+            <Button
+              key={r.key}
+              variant={timeRange === r.key ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setTimeRange(r.key)}
+              className={`rounded-full px-4 h-8 text-xs font-semibold ${timeRange === r.key ? 'shadow-sm' : ''}`}
+            >
+              {r.label}
+            </Button>
+          ))}
         </div>
       </div>
 
-      {/* Predictive Alerts */}
+      {/* Alerts */}
       {alerts.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <AlertTriangle className="w-5 h-5 text-orange-500" />
-              <span>Predictive Alerts</span>
-            </CardTitle>
+        <div className="space-y-2">
+          {alerts.map((alert, i) => (
+            <div key={i} className="flex items-start gap-3 p-3.5 rounded-2xl bg-destructive/5 border border-destructive/15">
+              <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">{alert.message}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{alert.tip}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Avg UF', value: `${stats.avg}ml`, icon: Droplets, emoji: '💧', trend: stats.change, trendDir: stats.trend },
+          { label: 'Target Hit', value: `${stats.avg > 0 ? Math.round((stats.avg / 500) * 100) : 0}%`, icon: Activity, emoji: '🎯' },
+          { label: 'Days Tracked', value: stats.days, icon: Scale, emoji: '📅' },
+          { label: 'Total Exchanges', value: stats.total, icon: TrendingUp, emoji: '🔄' },
+        ].map(({ label, value, emoji, trend, trendDir }) => (
+          <Card key={label} className="rounded-2xl border-border/30 shadow-sm">
+            <CardContent className="p-3.5">
+              <span className="text-lg">{emoji}</span>
+              <p className="text-lg font-black text-foreground mt-1 leading-none">{value}</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">{label}</p>
+                {trend !== undefined && (
+                  <span className={`text-[10px] font-bold ${trendDir === 'up' ? 'text-[hsl(var(--mint))]' : 'text-destructive'}`}>
+                    {trendDir === 'up' ? '↑' : '↓'}{Math.abs(trend)}%
+                  </span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* UF Area Chart */}
+      <Card className="rounded-2xl border-border/30 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-bold">Ultrafiltration Trend</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {ufData.length > 0 ? (
+            <ChartContainer config={chartConfig} className="h-[260px] sm:h-[320px]">
+              <AreaChart data={ufData}>
+                <defs>
+                  <linearGradient id="ufGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                <XAxis dataKey="date" tickFormatter={v => new Date(v).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Area type="monotone" dataKey="uf" stroke="hsl(var(--primary))" fill="url(#ufGrad)" strokeWidth={2.5} />
+                <Line type="monotone" dataKey="target" stroke="hsl(var(--mint))" strokeDasharray="5 5" strokeWidth={1.5} dot={false} />
+              </AreaChart>
+            </ChartContainer>
+          ) : (
+            <div className="text-center py-12">
+              <span className="text-4xl">📊</span>
+              <p className="text-sm text-muted-foreground mt-2">No exchange data yet. Log your first exchange to see trends!</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Exchange Count Bar Chart */}
+      <Card className="rounded-2xl border-border/30 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-bold">Daily Exchange Count</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {exchangeCountData.length > 0 ? (
+            <ChartContainer config={chartConfig} className="h-[200px]">
+              <BarChart data={exchangeCountData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                <XAxis dataKey="date" tickFormatter={v => new Date(v).toLocaleDateString(undefined, { day: 'numeric' })} tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="count" fill="hsl(var(--lavender))" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ChartContainer>
+          ) : (
+            <p className="text-center text-sm text-muted-foreground py-8">No data available</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Drain Clarity Distribution */}
+      {drainColorData.length > 0 && (
+        <Card className="rounded-2xl border-border/30 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-bold">Drain Clarity Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {alerts.map((alert, index) => (
-                <div key={index} className="border rounded-lg p-4 bg-orange-50">
-                  <div className="flex items-start space-x-3">
-                    <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-orange-800">{alert.message}</p>
-                      <p className="text-sm text-orange-600 mt-1">{alert.recommendation}</p>
-                    </div>
+            <div className="flex flex-wrap gap-3">
+              {drainColorData.map(({ name, value }) => (
+                <div key={name} className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-muted/40 border border-border/20">
+                  <span className="text-lg">{name === 'clear' ? '✅' : '⚠️'}</span>
+                  <div>
+                    <p className="text-sm font-bold text-foreground capitalize">{name}</p>
+                    <p className="text-xs text-muted-foreground">{value} exchange{value !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
               ))}
@@ -155,85 +216,6 @@ const TrendAnalysis: React.FC = () => {
           </CardContent>
         </Card>
       )}
-
-      {/* Weekly Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Weekly Average UF</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2">
-              <span className="text-2xl font-bold">{weeklyStats.current}ml</span>
-              <div className="flex items-center space-x-1">
-                {weeklyStats.trend === 'up' ? (
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                ) : (
-                  <TrendingDown className="w-4 h-4 text-red-500" />
-                )}
-                <span className={`text-sm ${weeklyStats.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  {Math.abs(weeklyStats.change)}%
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Target Achievement</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {Math.round((weeklyStats.current / 500) * 100)}%
-            </div>
-            <p className="text-sm text-gray-600">of daily target</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Data Points</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{trendData.length}</div>
-            <p className="text-sm text-gray-600">days recorded</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* UF Trend Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Ultrafiltration Trends</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[400px]">
-            <AreaChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="date" 
-                tickFormatter={(value) => new Date(value).toLocaleDateString()}
-              />
-              <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Area
-                type="monotone"
-                dataKey="uf"
-                stroke="#3b82f6"
-                fill="#3b82f6"
-                fillOpacity={0.3}
-              />
-              <Line
-                type="monotone"
-                dataKey="target"
-                stroke="#10b981"
-                strokeDasharray="5 5"
-              />
-            </AreaChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
     </div>
   );
 };
