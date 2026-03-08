@@ -26,6 +26,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [badgeCounts, setBadgeCounts] = useState<Record<string, number>>({});
 
   const roleLabel: Record<string, string> = {
     patient: 'Patient',
