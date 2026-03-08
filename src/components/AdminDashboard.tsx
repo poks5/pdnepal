@@ -101,10 +101,10 @@ const AdminDashboard: React.FC = () => {
       {/* Welcome Section */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-foreground">
             {language === 'en' ? 'Admin Dashboard' : 'प्रशासक ड्यासबोर्ड'}
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             {language === 'en' 
               ? `Welcome back, ${user?.fullName}. System overview and management tools.`
               : `फिर्ता स्वागत छ, ${user?.fullName}। प्रणाली अवलोकन र व्यवस्थापन उपकरणहरू।`
@@ -123,8 +123,8 @@ const AdminDashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
                   <p className="text-sm text-green-600 font-medium">{stat.change}</p>
                 </div>
                 <div className={`p-3 rounded-full bg-gray-50 ${stat.color}`}>
@@ -138,7 +138,7 @@ const AdminDashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <h2 className="text-xl font-semibold text-foreground mb-4">
           {language === 'en' ? 'Quick Actions' : 'द्रुत कार्यहरू'}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -181,7 +181,7 @@ const AdminDashboard: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <p className="text-sm text-gray-600">{language === 'en' ? 'Server Status' : 'सर्भरको स्थिति'}</p>
+              <p className="text-sm text-muted-foreground">{language === 'en' ? 'Server Status' : 'सर्भरको स्थिति'}</p>
               <div className="flex items-center space-x-2 mt-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="text-sm font-medium text-green-600">
@@ -190,12 +190,12 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-600">{language === 'en' ? 'Last Backup' : 'अन्तिम ब्याकअप'}</p>
-              <p className="text-sm font-medium text-gray-900 mt-1">2 hours ago</p>
+              <p className="text-sm text-muted-foreground">{language === 'en' ? 'Last Backup' : 'अन्तिम ब्याकअप'}</p>
+              <p className="text-sm font-medium text-foreground mt-1">2 hours ago</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">{language === 'en' ? 'Version' : 'संस्करण'}</p>
-              <p className="text-sm font-medium text-gray-900 mt-1">v2.1.0</p>
+              <p className="text-sm text-muted-foreground">{language === 'en' ? 'Version' : 'संस्करण'}</p>
+              <p className="text-sm font-medium text-foreground mt-1">v2.1.0</p>
             </div>
           </div>
         </CardContent>
