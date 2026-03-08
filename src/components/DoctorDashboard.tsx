@@ -45,7 +45,21 @@ const DoctorDashboard: React.FC = () => {
   const [patients, setPatients] = useState<RealPatient[]>([]);
   const [loading, setLoading] = useState(true);
   const [moreView, setMoreView] = useState<string | null>(null);
+  const [pendingCount, setPendingCount] = useState(0);
 
+  // Fetch pending request count
+  useEffect(() => {
+    if (!user) return;
+    const fetchPending = async () => {
+      const { count } = await supabase
+        .from('doctor_patient_assignments')
+        .select('*', { count: 'exact', head: true })
+        .eq('doctor_id', user.id)
+        .eq('status', 'pending');
+      setPendingCount(count || 0);
+    };
+    fetchPending();
+  }, [user]);
   useEffect(() => {
     if (!user) return;
     const fetchPatients = async () => {
