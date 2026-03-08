@@ -5,7 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Heart, Calendar, AlertTriangle, MessageSquare, User } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Heart, Calendar, AlertTriangle, MessageSquare, User, BookOpen } from 'lucide-react';
+import LearningCenter from './learning/LearningCenter';
 
 const CaregiverDashboard: React.FC = () => {
   const { t } = useLanguage();
