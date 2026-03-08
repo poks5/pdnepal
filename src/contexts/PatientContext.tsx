@@ -189,9 +189,32 @@ export const PatientProvider: React.FC<PatientProviderProps> = ({ children }) =>
     setCatheterDetails(details);
   };
 
-  const updatePDSettings = (settings: PDSettings) => {
+  const updatePDSettings = useCallback(async (settings: PDSettings) => {
+    if (!user) return;
     setPDSettings(settings);
-  };
+    try {
+      const dbData = {
+        patient_id: user.id,
+        modality: settings.mode,
+        brand: settings.fluidBrand || null,
+        daily_exchanges: settings.exchangesPerDay,
+        dwell_time_hours: settings.defaultDwellTime,
+        solution_type: settings.defaultDialysateStrengths?.[0] || null,
+        fill_volume_ml: 2000,
+        updated_by: user.id,
+      };
+      if (settings.id && settings.id.length > 10) {
+        // Update existing
+        await supabase.from('pd_settings').update(dbData).eq('id', settings.id);
+      } else {
+        // Insert new
+        const { data } = await supabase.from('pd_settings').insert(dbData).select('id').single();
+        if (data) setPDSettings(prev => prev ? { ...prev, id: data.id } : prev);
+      }
+    } catch (err) {
+      console.error('Failed to save PD settings to database:', err);
+    }
+  }, [user]);
 
   const addCaregiver = (caregiver: CaregiverDetails) => {
     setCaregivers(prev => [...prev, caregiver]);
