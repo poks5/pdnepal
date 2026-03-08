@@ -70,9 +70,15 @@ const LearningCenter: React.FC = () => {
     }
   };
 
-  const filteredModules = activeCategory === 'all'
+  const filteredModules = (activeCategory === 'all'
     ? learningModules
-    : learningModules.filter(m => m.category === activeCategory);
+    : learningModules.filter(m => m.category === activeCategory)
+  ).sort((a, b) => {
+    // Assigned but not completed first
+    const aAssigned = assignedModules.has(a.id) && !completedModules.has(a.id) ? 0 : 1;
+    const bAssigned = assignedModules.has(b.id) && !completedModules.has(b.id) ? 0 : 1;
+    return aAssigned - bAssigned;
+  });
 
   const overallProgress = learningModules.length > 0
     ? Math.round((completedModules.size / learningModules.length) * 100)
