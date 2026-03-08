@@ -25,12 +25,12 @@ import { DailyExchangeLog } from '@/types/patient';
 import { useToast } from '@/hooks/use-toast';
 
 const settingsSubItems = [
-  { id: 'profile', icon: FileText, label: 'Profile', description: 'Personal information' },
-  { id: 'catheter', icon: Settings, label: 'Catheter', description: 'Catheter details' },
-  { id: 'pd-settings', icon: Settings, label: 'PD Settings', description: 'Dialysis configuration' },
-  { id: 'caregiver', icon: Users, label: 'Caregivers', description: 'Manage caregivers' },
-  { id: 'supplier', icon: Package, label: 'Suppliers', description: 'Supply management' },
-  { id: 'my-doctor', icon: Stethoscope, label: 'My Doctor', description: 'Doctor connection' },
+  { id: 'profile', icon: FileText, label: 'Profile', description: 'Personal information', emoji: '👤', gradient: 'from-primary/10 to-[hsl(var(--lavender))]/8' },
+  { id: 'catheter', icon: Settings, label: 'Catheter', description: 'Catheter details', emoji: '🏥', gradient: 'from-[hsl(var(--mint))]/10 to-accent/8' },
+  { id: 'pd-settings', icon: Settings, label: 'PD Settings', description: 'Dialysis configuration', emoji: '⚙️', gradient: 'from-[hsl(var(--sky))]/10 to-primary/8' },
+  { id: 'caregiver', icon: Users, label: 'Caregivers', description: 'Manage caregivers', emoji: '🤝', gradient: 'from-[hsl(var(--peach))]/10 to-[hsl(var(--coral))]/8' },
+  { id: 'supplier', icon: Package, label: 'Suppliers', description: 'Supply management', emoji: '📦', gradient: 'from-[hsl(var(--lavender))]/10 to-primary/8' },
+  { id: 'my-doctor', icon: Stethoscope, label: 'My Doctor', description: 'Doctor connection', emoji: '👨‍⚕️', gradient: 'from-[hsl(var(--mint))]/10 to-[hsl(var(--sky))]/8' },
 ];
 
 const PatientDashboard: React.FC = () => {
