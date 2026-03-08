@@ -16,6 +16,8 @@ import PDTimeline from '../clinical/PDTimeline';
 import PeritonitisModule from '../clinical/PeritonitisModule';
 import ExitSiteInfectionModule from '../clinical/ExitSiteInfectionModule';
 import CenterAnalytics from '../clinical/CenterAnalytics';
+import CatheterRegistry from '../clinical/CatheterRegistry';
+import FluidRegistry from '../clinical/FluidRegistry';
 import { usePatient } from '@/contexts/PatientContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
