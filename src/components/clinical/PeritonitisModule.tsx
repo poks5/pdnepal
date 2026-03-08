@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PeritonitisEpisode, PeritonitisAntibiotic, PeritonitisClulture } from '@/types/clinical';
 import { Plus, ChevronDown, ChevronUp, Pill, FlaskConical } from 'lucide-react';
 import { format } from 'date-fns';
+import ClinicalPhotoUpload from './ClinicalPhotoUpload';
 
 const symptomOptions = ['cloudy_effluent', 'abdominal_pain', 'fever', 'nausea', 'vomiting', 'diarrhea'];
 const classificationOptions = ['standard', 'culture_negative', 'fungal', 'polymicrobial', 'refractory', 'relapsing', 'recurrent', 'repeat'];
