@@ -47,6 +47,57 @@ export type Database = {
         }
         Relationships: []
       }
+      clinical_alerts: {
+        Row: {
+          acknowledged: boolean
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          created_at: string
+          details: string | null
+          doctor_id: string | null
+          expires_at: string | null
+          id: string
+          message: string
+          patient_id: string
+          related_record_id: string | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          acknowledged?: boolean
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          created_at?: string
+          details?: string | null
+          doctor_id?: string | null
+          expires_at?: string | null
+          id?: string
+          message: string
+          patient_id: string
+          related_record_id?: string | null
+          severity?: string
+          title: string
+        }
+        Update: {
+          acknowledged?: boolean
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          created_at?: string
+          details?: string | null
+          doctor_id?: string | null
+          expires_at?: string | null
+          id?: string
+          message?: string
+          patient_id?: string
+          related_record_id?: string | null
+          severity?: string
+          title?: string
+        }
+        Relationships: []
+      }
       doctor_patient_assignments: {
         Row: {
           assigned_at: string
