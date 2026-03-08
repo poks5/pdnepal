@@ -93,7 +93,7 @@ const AnalyticsDashboard: React.FC = () => {
 
       {/* Section Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {sections.map(({ id, label, emoji, icon: Icon, color, text, desc }) => (
+        {sectionDefs.map(({ id, labelKey, emoji, icon: Icon, color, descKey }) => (
           <button
             key={id}
             onClick={() => setActiveSection(id)}
@@ -105,8 +105,8 @@ const AnalyticsDashboard: React.FC = () => {
                   <span className="text-xl">{emoji}</span>
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-foreground">{label}</p>
-                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{desc}</p>
+                  <p className="font-bold text-sm text-foreground">{t(labelKey)}</p>
+                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{t(descKey)}</p>
                 </div>
               </CardContent>
             </Card>
