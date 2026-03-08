@@ -386,7 +386,6 @@ const translations: Translations = {
   antibioticOverdue: { en: 'Antibiotic Overdue', ne: 'एन्टिबायोटिक ढिला' },
   noImprovement: { en: 'No Improvement', ne: 'सुधार छैन' },
   acknowledge: { en: 'Acknowledge', ne: 'स्वीकार गर्नुहोस्' },
-  active: { en: 'Active', ne: 'सक्रिय' },
   call: { en: 'Call', ne: 'कल' },
   justNow: { en: 'Just now', ne: 'अहिले भर्खरै' },
 };
