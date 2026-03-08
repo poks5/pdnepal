@@ -19,6 +19,7 @@ import LabDataManagement from './LabDataManagement';
 import DashboardOverview from './dashboard/DashboardOverview';
 import AnalyticsDashboard from './analytics/AnalyticsDashboard';
 import MyDoctor from './MyDoctor';
+import LearningCenter from './learning/LearningCenter';
 import { formatExchangeForHistory } from '@/utils/exchangeFormatters';
 import { ExchangeData } from '@/hooks/useExchangeForm';
 import { DailyExchangeLog } from '@/types/patient';
