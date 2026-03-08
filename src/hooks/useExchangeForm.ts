@@ -30,6 +30,7 @@ export const useExchangeForm = () => {
     clarity: 'clear',
     color: 'normal',
     pain: 0,
+    symptoms: [],
     notes: ''
   });
 
