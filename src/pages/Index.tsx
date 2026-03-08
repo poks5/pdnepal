@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ExchangePlanProvider } from '@/contexts/ExchangePlanContext';
 import { PatientProvider } from '@/contexts/PatientContext';
-import LoginForm from '@/components/LoginForm';
+import LandingPage from '@/components/LandingPage';
 import Layout from '@/components/Layout';
 import PatientDashboard from '@/components/PatientDashboard';
 import DoctorDashboard from '@/components/DoctorDashboard';
