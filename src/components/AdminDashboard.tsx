@@ -181,7 +181,7 @@ const AdminDashboard: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <p className="text-sm text-gray-600">{language === 'en' ? 'Server Status' : 'सर्भरको स्थिति'}</p>
+              <p className="text-sm text-muted-foreground">{language === 'en' ? 'Server Status' : 'सर्भरको स्थिति'}</p>
               <div className="flex items-center space-x-2 mt-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="text-sm font-medium text-green-600">
