@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Droplets, FileText, Settings, Users, Package, FlaskConical, BarChart } from 'lucide-react';
+import { Calendar, Droplets, FileText, Settings, Users, Package, FlaskConical, BarChart, Stethoscope } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNav } from '@/components/Layout';
@@ -17,6 +17,7 @@ import SupplierDetails from './SupplierDetails';
 import LabDataManagement from './LabDataManagement';
 import DashboardOverview from './dashboard/DashboardOverview';
 import AnalyticsDashboard from './analytics/AnalyticsDashboard';
+import MyDoctor from './MyDoctor';
 import { formatExchangeForHistory } from '@/utils/exchangeFormatters';
 import { ExchangeData } from '@/hooks/useExchangeForm';
 import { DailyExchangeLog } from '@/types/patient';
@@ -90,6 +91,7 @@ const PatientDashboard: React.FC = () => {
     { value: 'settings', icon: Settings, label: t('settings') },
     { value: 'caregiver', icon: Users, label: t('caregiver') },
     { value: 'supplier', icon: Package, label: t('supplier') },
+    { value: 'my-doctor', icon: Stethoscope, label: 'My Doctor' },
   ];
 
   return (
@@ -122,6 +124,7 @@ const PatientDashboard: React.FC = () => {
         <TabsContent value="settings"><PDSettings /></TabsContent>
         <TabsContent value="caregiver"><CaregiverDetails /></TabsContent>
         <TabsContent value="supplier"><SupplierDetails /></TabsContent>
+        <TabsContent value="my-doctor"><MyDoctor /></TabsContent>
       </Tabs>
 
       <Dialog open={showAddExchange} onOpenChange={setShowAddExchange}>
