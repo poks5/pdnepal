@@ -156,17 +156,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex justify-around items-center h-16 px-2">
             {navItems.map(({ icon: Icon, label, id }) => {
               const isActive = activeTab === id;
+              const badge = badgeCounts[id] || 0;
               return (
                 <button
                   key={id}
                   onClick={() => setActiveTab(id)}
-                  className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-2 min-w-[56px] transition-all touch-target rounded-xl active:scale-95 ${
+                  className={`relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-2 min-w-[56px] transition-all touch-target rounded-xl active:scale-95 ${
                     isActive
                       ? 'text-primary'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : ''}`} />
+                  <div className="relative">
+                    <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : ''}`} />
+                    {badge > 0 && (
+                      <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-1">
+                        {badge}
+                      </span>
+                    )}
+                  </div>
                   <span className={`text-[10px] leading-none ${isActive ? 'font-bold' : 'font-medium'}`}>{label}</span>
                   {isActive && <div className="w-4 h-0.5 bg-primary rounded-full mt-0.5" />}
                 </button>
