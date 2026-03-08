@@ -368,6 +368,27 @@ const translations: Translations = {
   exportCSV: { en: 'Export CSV', ne: 'CSV निर्यात' },
   timeline: { en: 'Timeline', ne: 'समयरेखा' },
   infections: { en: 'Infections', ne: 'संक्रमणहरू' },
+
+  // ── Smart Clinical Alerts ──
+  alertCenter: { en: 'Alert Center', ne: 'अलर्ट केन्द्र' },
+  clinicalAlertsDescription: { en: 'Smart clinical alerts based on patient data', ne: 'बिरामी डेटामा आधारित स्मार्ट क्लिनिकल अलर्टहरू' },
+  checkAlerts: { en: 'Check Alerts', ne: 'अलर्ट जाँच गर्नुहोस्' },
+  activeAlerts: { en: 'Active Alerts', ne: 'सक्रिय अलर्टहरू' },
+  alertsRequiringAttention: { en: 'Alerts requiring immediate attention', ne: 'तत्काल ध्यान आवश्यक अलर्टहरू' },
+  noActiveAlerts: { en: 'No active alerts', ne: 'कुनै सक्रिय अलर्ट छैन' },
+  clickCheckAlerts: { en: 'Click "Check Alerts" to scan patient data', ne: '"अलर्ट जाँच गर्नुहोस्" मा क्लिक गर्नुहोस्' },
+  alertsGenerated: { en: 'New alerts found', ne: 'नयाँ अलर्टहरू भेटियो' },
+  noNewAlerts: { en: 'No new alerts detected', ne: 'कुनै नयाँ अलर्ट भेटिएन' },
+  recentlyAcknowledged: { en: 'Recently Acknowledged', ne: 'हालै स्वीकार गरिएको' },
+  previouslyAddressedAlerts: { en: 'Previously addressed alerts', ne: 'पहिले सम्बोधन गरिएका अलर्टहरू' },
+  highWBC: { en: 'High WBC', ne: 'उच्च WBC' },
+  cultureResult: { en: 'Culture Result', ne: 'कल्चर नतिजा' },
+  antibioticOverdue: { en: 'Antibiotic Overdue', ne: 'एन्टिबायोटिक ढिला' },
+  noImprovement: { en: 'No Improvement', ne: 'सुधार छैन' },
+  acknowledge: { en: 'Acknowledge', ne: 'स्वीकार गर्नुहोस्' },
+  active: { en: 'Active', ne: 'सक्रिय' },
+  call: { en: 'Call', ne: 'कल' },
+  justNow: { en: 'Just now', ne: 'अहिले भर्खरै' },
 };
 
 interface LanguageContextType {
