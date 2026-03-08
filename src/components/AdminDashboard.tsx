@@ -104,7 +104,7 @@ const AdminDashboard: React.FC = () => {
           <h1 className="text-3xl font-bold text-foreground">
             {language === 'en' ? 'Admin Dashboard' : 'प्रशासक ड्यासबोर्ड'}
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             {language === 'en' 
               ? `Welcome back, ${user?.fullName}. System overview and management tools.`
               : `फिर्ता स्वागत छ, ${user?.fullName}। प्रणाली अवलोकन र व्यवस्थापन उपकरणहरू।`
