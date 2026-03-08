@@ -13,6 +13,7 @@ export interface FormattedExchange {
   color: 'normal' | 'yellow' | 'red' | 'brown';
   pain: number;
   notes?: string;
+  symptoms?: string[];
 }
 
 export const formatExchangeForHistory = (log: DailyExchangeLog): FormattedExchange => ({
