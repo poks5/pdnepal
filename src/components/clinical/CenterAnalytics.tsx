@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Download, BarChart3, TrendingUp } from 'lucide-react';
+import { Download, BarChart3, TrendingUp, Wrench } from 'lucide-react';
 
 interface CenterStats {
   totalPatients: number;
