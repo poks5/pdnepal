@@ -25,7 +25,8 @@ export const formatExchangeForHistory = (log: DailyExchangeLog): FormattedExchan
   fillVolume: log.fillVolume || 0,
   ultrafiltration: log.ultrafiltration || 0,
   clarity: log.clarity as 'clear' | 'cloudy',
-  color: 'normal', // Default since color doesn't exist in DailyExchangeLog
-  pain: 0, // Default since pain doesn't exist in DailyExchangeLog
-  notes: log.notes
+  color: 'normal',
+  pain: log.painLevel || 0,
+  notes: log.notes,
+  symptoms: log.symptomTags || []
 });
