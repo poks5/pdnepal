@@ -72,7 +72,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <NavContext.Provider value={{ activeTab, setActiveTab }}>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50 shadow-sm">
+        <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex justify-between items-center h-14 sm:h-16">
               <div className="flex items-center gap-2.5">
