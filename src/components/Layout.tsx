@@ -58,7 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const patientNav = [
     { icon: Home, label: t('home'), id: 'overview', emoji: '🏠' },
     { icon: Activity, label: t('exchanges'), id: 'exchanges', emoji: '💧' },
-    { icon: FlaskConical, label: t('labs'), id: 'lab-data', emoji: '🧪' },
+    { icon: BookOpen, label: t('learningCenter'), id: 'learning', emoji: '📖' },
     { icon: BarChart, label: t('analytics'), id: 'analytics', emoji: '📊' },
     { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
