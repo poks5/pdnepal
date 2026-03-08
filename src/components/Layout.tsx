@@ -135,8 +135,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-border/30 bg-card/95 backdrop-blur-2xl px-4 pb-5 pt-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
               <div className="flex items-center gap-3.5 px-1">
-                <div className="w-12 h-12 rounded-2xl gradient-hero flex items-center justify-center shadow-lg">
-                  <img src={kidneyMascot} alt="" className="w-8 h-8" />
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden bg-primary/5 shadow-lg">
+                  <img src={pdsathiLogo} alt="PDsathi" className="w-10 h-10 object-contain" />
                 </div>
                 <div>
                   <p className="font-bold text-sm text-foreground">{user?.fullName}</p>
