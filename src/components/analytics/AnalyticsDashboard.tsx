@@ -77,9 +77,9 @@ const AnalyticsDashboard: React.FC = () => {
       {/* Quick Stats Row */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Exchanges', value: totalExchanges, icon: Droplets, emoji: '💧', bg: 'bg-primary/10' },
-          { label: 'Avg UF', value: `${avgUF}ml`, icon: BarChart3, emoji: '📊', bg: 'bg-[hsl(var(--mint))]/15' },
-          { label: 'Health Score', value: '—', icon: Heart, emoji: '❤️', bg: 'bg-[hsl(var(--coral))]/10' },
+          { label: t('exchanges'), value: totalExchanges, icon: Droplets, emoji: '💧', bg: 'bg-primary/10' },
+          { label: t('avgUF'), value: `${avgUF}ml`, icon: BarChart3, emoji: '📊', bg: 'bg-[hsl(var(--mint))]/15' },
+          { label: t('healthScore'), value: '—', icon: Heart, emoji: '❤️', bg: 'bg-[hsl(var(--coral))]/10' },
         ].map(({ label, value, emoji, bg }) => (
           <Card key={label} className="border-border/30 shadow-sm rounded-2xl overflow-hidden">
             <CardContent className="p-3.5 text-center">
