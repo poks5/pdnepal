@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Plus, Clock, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import kidneyMascot from '@/assets/kidney-mascot.png';
+import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 interface TodayProgressProps {
   completed: number;
@@ -48,7 +48,7 @@ const TodayProgress: React.FC<TodayProgressProps> = ({
 
           {/* Mascot */}
           <img
-            src={kidneyMascot}
+            src={pdsathiLogo}
             alt="Kidney mascot"
             className="w-20 h-20 sm:w-24 sm:h-24 object-contain animate-float drop-shadow-md"
           />

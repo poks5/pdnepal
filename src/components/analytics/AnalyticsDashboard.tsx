@@ -13,7 +13,7 @@ import MedicationTracker from '../medical/MedicationTracker';
 import SymptomTracker from '../medical/SymptomTracker';
 import PhotoDocumentation from '../medical/PhotoDocumentation';
 import { usePatient } from '@/contexts/PatientContext';
-import kidneyMascot from '@/assets/kidney-mascot.png';
+import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos';
 
@@ -63,7 +63,7 @@ const AnalyticsDashboard: React.FC = () => {
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center shrink-0">
-            <img src={kidneyMascot} alt="" className="w-10 h-10" />
+            <img src={pdsathiLogo} alt="" className="w-10 h-10" />
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl sm:text-2xl font-black tracking-tight">Analytics & Medical</h1>

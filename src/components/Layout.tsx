@@ -7,7 +7,7 @@ import {
   Home, Activity, FileText, Settings, FlaskConical,
   Users, BarChart, Shield
 } from 'lucide-react';
-import kidneyMascot from '@/assets/kidney-mascot.png';
+import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 // Context for bottom nav ↔ dashboard tab sync
 interface NavContextType {
@@ -88,8 +88,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex justify-between items-center h-14 sm:h-16">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 gradient-hero rounded-2xl flex items-center justify-center shadow-lg shadow-primary/25">
-                  <span className="text-primary-foreground font-extrabold text-sm tracking-tight">PD</span>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center overflow-hidden bg-primary/5">
+                  <img src={pdsathiLogo} alt="PDsathi" className="w-9 h-9 object-contain" />
                 </div>
                 <div className="hidden sm:block">
                   <h1 className="text-base font-extrabold text-foreground leading-none tracking-tight">PDsathi</h1>
@@ -135,8 +135,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-border/30 bg-card/95 backdrop-blur-2xl px-4 pb-5 pt-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
               <div className="flex items-center gap-3.5 px-1">
-                <div className="w-12 h-12 rounded-2xl gradient-hero flex items-center justify-center shadow-lg">
-                  <img src={kidneyMascot} alt="" className="w-8 h-8" />
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden bg-primary/5 shadow-lg">
+                  <img src={pdsathiLogo} alt="PDsathi" className="w-10 h-10 object-contain" />
                 </div>
                 <div>
                   <p className="font-bold text-sm text-foreground">{user?.fullName}</p>

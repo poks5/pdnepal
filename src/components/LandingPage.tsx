@@ -8,7 +8,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, Share2, ExternalLink, Droplets, He
 import { QRCodeSVG } from 'qrcode.react';
 import RegisterForm from './RegisterForm';
 import ForgotPasswordForm from './ForgotPasswordForm';
-import kidneyMascot from '@/assets/kidney-mascot.png';
+import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 const APP_URL = 'https://pdnepal.lovable.app';
 const ABOUT_URL = 'https://pdnepal.lovable.app';
@@ -80,7 +80,7 @@ const LandingPage: React.FC = () => {
 
           <div className="relative inline-block">
             <div className="w-24 h-24 sm:w-28 sm:h-28 gradient-hero rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-primary/30 animate-float">
-              <img src={kidneyMascot} alt="PDsathi mascot" className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-lg" />
+              <img src={pdsathiLogo} alt="PDsathi" className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-lg" />
             </div>
             <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-[hsl(var(--mint))] rounded-full flex items-center justify-center shadow-lg">
               <Heart className="w-4 h-4 text-white fill-white" />
@@ -190,7 +190,7 @@ const LandingPage: React.FC = () => {
                   fgColor="#1a1a2e"
                   level="M"
                   imageSettings={{
-                    src: kidneyMascot,
+                    src: pdsathiLogo,
                     x: undefined,
                     y: undefined,
                     height: 28,
