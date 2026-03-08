@@ -123,6 +123,43 @@ const PeritonitisModule: React.FC<{ patientId?: string }> = ({ patientId }) => {
     }
   };
 
+  const handleAddCulture = async (episodeId: string) => {
+    if (!cultureForm.culture_date) return;
+    const { error } = await supabase.from('peritonitis_cultures').insert({
+      episode_id: episodeId,
+      culture_date: cultureForm.culture_date,
+      sample_type: cultureForm.sample_type || null,
+      organism: cultureForm.organism || null,
+      colony_count: cultureForm.colony_count || null,
+      gram_type: cultureForm.gram_type || null,
+      notes: cultureForm.notes || null,
+      sensitivity: cultureForm.sensitivities.filter(s => s.antibiotic.trim()) as any,
+    });
+    if (error) {
+      toast({ title: t('error'), description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: '✅', description: t('cultureAdded') });
+      setCultureForm({ culture_date: '', sample_type: 'PD effluent', organism: '', colony_count: '', gram_type: '', notes: '', sensitivities: [{ antibiotic: '', result: 'sensitive' }] });
+      setShowCultureAdd(null);
+      loadEpisodes();
+    }
+  };
+
+  const addSensitivityRow = () => {
+    setCultureForm(p => ({ ...p, sensitivities: [...p.sensitivities, { antibiotic: '', result: 'sensitive' }] }));
+  };
+
+  const updateSensitivity = (idx: number, field: string, value: string) => {
+    setCultureForm(p => ({
+      ...p,
+      sensitivities: p.sensitivities.map((s, i) => i === idx ? { ...s, [field]: value } : s),
+    }));
+  };
+
+  const removeSensitivity = (idx: number) => {
+    setCultureForm(p => ({ ...p, sensitivities: p.sensitivities.filter((_, i) => i !== idx) }));
+  };
+
   const toggleSymptom = (s: string) => {
     setForm(p => ({
       ...p,
