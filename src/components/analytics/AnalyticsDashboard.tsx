@@ -22,7 +22,7 @@ import { usePatient } from '@/contexts/PatientContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
-type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos' | 'timeline' | 'peritonitis' | 'exit_site' | 'center_analytics';
+type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos' | 'timeline' | 'peritonitis' | 'exit_site' | 'center_analytics' | 'catheter_registry' | 'fluid_registry';
 
 const sectionDefs = [
   { id: 'timeline' as const, labelKey: 'pdTimeline', emoji: '🗓️', icon: TrendingUp, color: 'from-primary/20 to-primary/5', descKey: 'pdTimelineDesc' },
