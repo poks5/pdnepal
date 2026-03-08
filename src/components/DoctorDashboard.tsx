@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNav } from '@/components/Layout';
+import { supabase } from '@/integrations/supabase/client';
 import ExchangePlanEditor from '@/components/ExchangePlanEditor';
 import PatientDetailView from '@/components/PatientDetailView';
 import AlertCenter from '@/components/AlertCenter';
@@ -14,20 +15,121 @@ import PatientList from '@/components/PatientList';
 import PlansTab from '@/components/PlansTab';
 import LabOverview from '@/components/LabOverview';
 import PendingPatientRequests from '@/components/PendingPatientRequests';
-import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus } from 'lucide-react';
+import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2 } from 'lucide-react';
+
+export interface RealPatient {
+  id: string;
+  name: string;
+  age: number;
+  adherence: number;
+  lastExchange: string;
+  alerts: number;
+  status: string;
+  missedExchanges: number;
+  weeklyUF: number;
+  hospital?: string;
+}
 
 const DoctorDashboard: React.FC = () => {
   const { user } = useAuth();
   const { activeTab, setActiveTab } = useNav();
   const [showPlanEditor, setShowPlanEditor] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedPatient, setSelectedPatient] = useState<RealPatient | null>(null);
+  const [patients, setPatients] = useState<RealPatient[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [patients] = useState([
-    { id: 1, name: 'Ram Bahadur Gurung', age: 45, adherence: 85, lastExchange: '2 hours ago', alerts: 1, status: 'stable', missedExchanges: 0, weeklyUF: 2100 },
-    { id: 2, name: 'Sita Devi Sharma', age: 52, adherence: 92, lastExchange: '1 hour ago', alerts: 0, status: 'good', missedExchanges: 0, weeklyUF: 2350 },
-    { id: 3, name: 'Krishna Prasad Oli', age: 38, adherence: 68, lastExchange: '6 hours ago', alerts: 3, status: 'attention', missedExchanges: 2, weeklyUF: 1650 },
-  ]);
+  useEffect(() => {
+    if (!user) return;
+    const fetchPatients = async () => {
+      setLoading(true);
+      try {
+        // Get active assignments for this doctor
+        const { data: assignments, error: assignErr } = await supabase
+          .from('doctor_patient_assignments')
+          .select('patient_id')
+          .eq('doctor_id', user.id)
+          .eq('status', 'active');
+
+        if (assignErr) throw assignErr;
+        if (!assignments?.length) { setPatients([]); setLoading(false); return; }
+
+        const patientIds = assignments.map(a => a.patient_id);
+
+        // Fetch profiles
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, date_of_birth, hospital')
+          .in('user_id', patientIds);
+
+        // Fetch recent exchange logs (last 7 days) for all patients
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        const { data: recentLogs } = await supabase
+          .from('exchange_logs')
+          .select('patient_id, created_at, ultrafiltration_ml, drain_color')
+          .in('patient_id', patientIds)
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .order('created_at', { ascending: false });
+
+        const mapped: RealPatient[] = (profiles || []).map(profile => {
+          const patientLogs = (recentLogs || []).filter(l => l.patient_id === profile.user_id);
+          const weeklyUF = patientLogs.reduce((sum, l) => sum + (l.ultrafiltration_ml || 0), 0);
+          const lastLog = patientLogs[0];
+          const alerts = patientLogs.filter(l => l.drain_color === 'cloudy').length;
+          
+          // Calculate age
+          let age = 0;
+          if (profile.date_of_birth) {
+            const dob = new Date(profile.date_of_birth);
+            const today = new Date();
+            age = today.getFullYear() - dob.getFullYear();
+            if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) age--;
+          }
+
+          // Determine adherence (exchanges per day target ~4, check last 7 days = 28 target)
+          const adherence = Math.min(100, Math.round((patientLogs.length / 28) * 100));
+          
+          // Determine status
+          let status = 'good';
+          if (alerts > 0) status = 'attention';
+          else if (adherence < 75) status = 'attention';
+          else if (adherence < 90) status = 'stable';
+
+          // Last exchange relative time
+          let lastExchange = 'No records';
+          if (lastLog) {
+            const diff = Date.now() - new Date(lastLog.created_at).getTime();
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            if (hours < 1) lastExchange = 'Just now';
+            else if (hours < 24) lastExchange = `${hours} hours ago`;
+            else lastExchange = `${Math.floor(hours / 24)} days ago`;
+          }
+
+          return {
+            id: profile.user_id,
+            name: profile.full_name,
+            age,
+            adherence,
+            lastExchange,
+            alerts,
+            status,
+            missedExchanges: Math.max(0, 28 - patientLogs.length),
+            weeklyUF,
+            hospital: profile.hospital || undefined,
+          };
+        });
+
+        setPatients(mapped);
+      } catch (err) {
+        console.error('Failed to load patients:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPatients();
+  }, [user]);
 
   const totalAlerts = patients.reduce((sum, p) => sum + p.alerts, 0);
   const totalMissedExchanges = patients.reduce((sum, p) => sum + p.missedExchanges, 0);
@@ -35,7 +137,7 @@ const DoctorDashboard: React.FC = () => {
   const handleManagePlan = (patient: any) => { setEditingPatient(patient); setShowPlanEditor(true); };
   const handleViewPatient = (patient: any) => setSelectedPatient(patient);
   const handleViewPatientLabs = (patientId: string) => {
-    const patient = patients.find(p => p.id.toString() === patientId);
+    const patient = patients.find(p => p.id === patientId);
     if (patient) setSelectedPatient(patient);
   };
 
@@ -70,11 +172,19 @@ const DoctorDashboard: React.FC = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="patients"><PatientList patients={patients} onViewPatient={handleViewPatient} onManagePlan={handleManagePlan} /></TabsContent>
+        <TabsContent value="patients">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : (
+            <PatientList patients={patients} onViewPatient={handleViewPatient} onManagePlan={handleManagePlan} />
+          )}
+        </TabsContent>
         <TabsContent value="requests"><PendingPatientRequests /></TabsContent>
         <TabsContent value="alerts"><AlertCenter /></TabsContent>
         <TabsContent value="labs"><LabOverview patients={patients} onViewPatientLabs={handleViewPatientLabs} /></TabsContent>
-        <TabsContent value="communication"><CommentSystem /></TabsContent>
+        <TabsContent value="communication"><CommentSystem patients={patients} /></TabsContent>
         <TabsContent value="export"><ExportTools /></TabsContent>
         <TabsContent value="plans"><PlansTab patients={patients} onManagePlan={handleManagePlan} /></TabsContent>
       </Tabs>

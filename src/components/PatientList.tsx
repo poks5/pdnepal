@@ -1,13 +1,13 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Users, Phone, FileText, Settings, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Phone, FileText, Settings, ChevronRight, AlertTriangle, Inbox } from 'lucide-react';
 
 interface Patient {
-  id: number;
+  id: string;
   name: string;
   age: number;
   adherence: number;
@@ -33,6 +33,16 @@ const PatientList: React.FC<PatientListProps> = ({ patients, onViewPatient, onMa
     attention: { bg: 'bg-destructive/10', text: 'text-destructive', label: 'Attention' },
   };
 
+  if (patients.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Inbox className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+        <p className="text-muted-foreground font-medium">No patients assigned yet</p>
+        <p className="text-xs text-muted-foreground mt-1">Patients will appear here once they request and you approve them</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       {patients.map((patient) => {
@@ -44,7 +54,6 @@ const PatientList: React.FC<PatientListProps> = ({ patients, onViewPatient, onMa
             onClick={() => onViewPatient(patient)}
           >
             <CardContent className="p-4">
-              {/* Mobile-first layout */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -60,29 +69,21 @@ const PatientList: React.FC<PatientListProps> = ({ patients, onViewPatient, onMa
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Age {patient.age} · Last: {patient.lastExchange} · UF: {patient.weeklyUF}ml/wk
+                    {patient.age > 0 ? `Age ${patient.age} · ` : ''}Last: {patient.lastExchange} · UF: {patient.weeklyUF}ml/wk
                   </p>
-
-                  {/* Adherence bar */}
                   <div className="mt-2.5 flex items-center gap-2">
                     <Progress value={patient.adherence} className="h-1.5 flex-1" />
                     <span className="text-xs font-semibold text-muted-foreground w-8 text-right">{patient.adherence}%</span>
                   </div>
                 </div>
-
                 <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
               </div>
-
-              {/* Action buttons — hidden on mobile, show on tap/desktop */}
               <div className="hidden sm:flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
                 <Button variant="default" size="sm" className="rounded-xl text-xs" onClick={(e) => { e.stopPropagation(); onViewPatient(patient); }}>
                   <FileText className="w-3.5 h-3.5 mr-1" /> Details
                 </Button>
                 <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={(e) => { e.stopPropagation(); onManagePlan(patient); }}>
                   <Settings className="w-3.5 h-3.5 mr-1" /> Plan
-                </Button>
-                <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={(e) => e.stopPropagation()}>
-                  <Phone className="w-3.5 h-3.5 mr-1" /> Call
                 </Button>
               </div>
             </CardContent>
