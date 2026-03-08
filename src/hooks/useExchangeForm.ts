@@ -9,6 +9,7 @@ export interface ExchangeData {
   drainVolume: number;
   fillVolume: number;
   ultrafiltration: number;
+  weightAfter: number | null;
   clarity: 'clear' | 'cloudy';
   color: 'normal' | 'yellow' | 'red' | 'brown';
   pain: number;
