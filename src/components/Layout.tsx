@@ -178,7 +178,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Footer credit */}
         <footer className="hidden md:block text-center py-4 border-t border-border/20">
           <p className="text-[11px] text-muted-foreground/60">
-            Concept by <span className="font-semibold text-muted-foreground/80">Dr. Anil Pokhrel</span> · Consultant Nephrologist
+            {t('conceptBy')} <span className="font-semibold text-muted-foreground/80">Dr. Anil Pokhrel</span> · {t('consultantNephrologist')}
           </p>
         </footer>
 
