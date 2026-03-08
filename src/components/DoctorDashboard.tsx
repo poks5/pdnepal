@@ -160,11 +160,11 @@ const DoctorDashboard: React.FC = () => {
   }
 
   const tabItems = [
-    { value: 'patients', icon: Users, label: 'Patients' },
-    { value: 'alerts', icon: AlertTriangle, label: 'Alerts' },
-    { value: 'labs', icon: FileText, label: 'Labs' },
-    { value: 'plans', icon: ClipboardList, label: 'Plans' },
-    { value: 'more', icon: Settings, label: 'More' },
+    { value: 'patients', icon: Users, label: 'Patients', badge: 0 },
+    { value: 'alerts', icon: AlertTriangle, label: 'Alerts', badge: 0 },
+    { value: 'labs', icon: FileText, label: 'Labs', badge: 0 },
+    { value: 'plans', icon: ClipboardList, label: 'Plans', badge: 0 },
+    { value: 'more', icon: Settings, label: 'More', badge: pendingCount },
   ];
 
   const renderMoreContent = () => {
