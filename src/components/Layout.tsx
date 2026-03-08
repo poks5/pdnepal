@@ -72,7 +72,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     : patientNav;
 
   return (
-    <NavContext.Provider value={{ activeTab, setActiveTab }}>
+    <NavContext.Provider value={{ activeTab, setActiveTab, badgeCounts, setBadgeCounts }}>
       <div className="min-h-screen bg-background">
         {/* Header */}
         <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
