@@ -35,7 +35,7 @@ export const useExchangeForm = () => {
   const [previousFillVolume, setPreviousFillVolume] = useState<number | null>(null);
   const [isUFAutoCalculated, setIsUFAutoCalculated] = useState(false);
 
-  // Get the most recent exchange's fill volume when component mounts
+  // Get the most recent exchange's fill volume and weight when component mounts
   useEffect(() => {
     if (exchangeLogs && exchangeLogs.length > 0) {
       const sortedLogs = [...exchangeLogs].sort((a, b) => 
@@ -44,6 +44,23 @@ export const useExchangeForm = () => {
       const lastExchange = sortedLogs[0];
       setPreviousFillVolume(lastExchange.fillVolume);
     }
+
+    // Fetch the last recorded weight from the database
+    const fetchLastWeight = async () => {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data } = await supabase
+        .from('exchange_logs')
+        .select('weight_after_kg')
+        .not('weight_after_kg', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (data?.weight_after_kg) {
+        setFormData(prev => ({ ...prev, weightAfter: Number(data.weight_after_kg) }));
+      }
+    };
+    fetchLastWeight();
   }, [exchangeLogs]);
 
   // Auto-calculate UF when drain volume changes
