@@ -10,7 +10,7 @@ import { Heart, Calendar, AlertTriangle, MessageSquare, User, BookOpen } from 'l
 import LearningCenter from './learning/LearningCenter';
 
 const CaregiverDashboard: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [patientData] = useState({
     name: 'Ram Bahadur Gurung',
     relationship: 'Father',
