@@ -38,7 +38,7 @@ const moreSubItems = [
 
 const DoctorDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { activeTab, setActiveTab } = useNav();
+  const { activeTab, setActiveTab, setBadgeCounts } = useNav();
   const [showPlanEditor, setShowPlanEditor] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
   const [selectedPatient, setSelectedPatient] = useState<RealPatient | null>(null);
