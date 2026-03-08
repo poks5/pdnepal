@@ -1,99 +1,149 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, TrendingUp } from 'lucide-react';
+import { Plus, FileText, TrendingUp, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { usePersistence } from '@/hooks/usePersistence';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import LabDataEntry from './LabDataEntry';
 import LabHistory from './LabHistory';
 import { LabTest } from '@/types/labData';
 
-const LabDataManagement: React.FC = () => {
+interface LabDataManagementProps {
+  patientId?: string;
+}
+
+const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
   const { toast } = useToast();
-  const { saveData, loadData } = usePersistence();
+  const { user } = useAuth();
+  const targetPatientId = patientId || user?.id;
   
-  const [labData, setLabData] = useState<LabTest[]>([
-    // Mock data for demonstration
-    {
-      id: 'lab_1',
-      patientId: 'patient_1',
-      testDate: '2024-06-10',
-      category: 'blood_chemistry',
-      rbs: 120,
-      fbs: 95,
-      pp: 140,
-      hba1c: 6.2,
-      urea: 42,
-      creatinine: 1.1,
-      sodium: 138,
-      potassium: 4.2,
-      calcium: 9.5,
-      phosphorus: 3.8,
-      albumin: 4.1,
-      ipth: 45,
-      tc: 7500,
-      neutrophil: 60,
-      lymphocyte: 30,
-      hemoglobin: 12.5,
-      platelets: 2.8,
-      notes: 'All parameters within normal range. Continue current treatment.',
-      reportedBy: 'lab',
-      createdAt: '2024-06-10T10:00:00Z',
-      updatedAt: '2024-06-10T10:00:00Z'
-    }
-  ]);
-  
+  const [labData, setLabData] = useState<LabTest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showEntryDialog, setShowEntryDialog] = useState(false);
   const [editingLab, setEditingLab] = useState<LabTest | undefined>(undefined);
 
-  // Load persisted lab data on mount
   useEffect(() => {
-    const persistedData = loadData();
+    if (!targetPatientId) return;
+    const fetchLabs = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('lab_results')
+          .select('*')
+          .eq('patient_id', targetPatientId)
+          .order('test_date', { ascending: false })
+          .limit(50);
+        if (error) throw error;
+        
+        // Map DB rows to LabTest type
+        const mapped: LabTest[] = (data || []).map(row => ({
+          id: row.id,
+          patientId: row.patient_id,
+          testDate: row.test_date,
+          category: (row.test_type as any) || 'blood_chemistry',
+          creatinine: row.creatinine ?? undefined,
+          potassium: row.potassium ?? undefined,
+          sodium: row.sodium ?? undefined,
+          calcium: row.calcium ?? undefined,
+          phosphorus: row.phosphorus ?? undefined,
+          albumin: row.albumin ?? undefined,
+          hemoglobin: row.hemoglobin ?? undefined,
+          glucose: row.glucose ?? undefined,
+          urea: row.bun ?? undefined,
+          notes: row.notes ?? undefined,
+          reportedBy: 'lab',
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+        }));
+        setLabData(mapped);
+      } catch (err) {
+        console.error('Failed to load lab data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLabs();
+  }, [targetPatientId]);
+
+  const handleSaveLabData = async (newLabData: Partial<LabTest>) => {
+    if (!targetPatientId || !user) return;
     
-    if (persistedData.labData && persistedData.labData.length > 0) {
-      setLabData(persistedData.labData);
-      console.log('Lab data loaded from persistence');
-    }
-  }, [loadData]);
+    try {
+      if (editingLab) {
+        const { error } = await supabase
+          .from('lab_results')
+          .update({
+            test_date: newLabData.testDate || editingLab.testDate,
+            creatinine: newLabData.creatinine ?? null,
+            potassium: newLabData.potassium ?? null,
+            sodium: newLabData.sodium ?? null,
+            calcium: newLabData.calcium ?? null,
+            phosphorus: newLabData.phosphorus ?? null,
+            albumin: newLabData.albumin ?? null,
+            hemoglobin: newLabData.hemoglobin ?? null,
+            glucose: newLabData.glucose ?? null,
+            bun: newLabData.urea ?? null,
+            notes: newLabData.notes ?? null,
+          })
+          .eq('id', editingLab.id);
+        if (error) throw error;
+        toast({ title: "Success", description: "Lab data updated" });
+      } else {
+        const { error } = await supabase
+          .from('lab_results')
+          .insert({
+            patient_id: targetPatientId,
+            entered_by: user.id,
+            test_date: newLabData.testDate || new Date().toISOString().split('T')[0],
+            test_type: newLabData.category || 'blood_chemistry',
+            creatinine: newLabData.creatinine ?? null,
+            potassium: newLabData.potassium ?? null,
+            sodium: newLabData.sodium ?? null,
+            calcium: newLabData.calcium ?? null,
+            phosphorus: newLabData.phosphorus ?? null,
+            albumin: newLabData.albumin ?? null,
+            hemoglobin: newLabData.hemoglobin ?? null,
+            glucose: newLabData.glucose ?? null,
+            bun: newLabData.urea ?? null,
+            notes: newLabData.notes ?? null,
+          });
+        if (error) throw error;
+        toast({ title: "Success", description: "Lab data added" });
+      }
 
-  // Auto-save lab data whenever it changes
-  useEffect(() => {
-    if (labData.length > 0) {
-      saveData('labData', labData);
-    }
-  }, [labData, saveData]);
-
-  const handleSaveLabData = (newLabData: Partial<LabTest>) => {
-    if (editingLab) {
-      // Update existing lab data
-      setLabData(prev => 
-        prev.map(lab => 
-          lab.id === editingLab.id 
-            ? { ...lab, ...newLabData } as LabTest
-            : lab
-        )
-      );
-      toast({
-        title: "Success",
-        description: "Lab data updated successfully"
-      });
-    } else {
-      // Add new lab data
-      const newLab: LabTest = {
-        id: `lab_${Date.now()}`,
-        patientId: 'patient_1',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        ...newLabData
-      } as LabTest;
+      // Refresh
+      const { data } = await supabase
+        .from('lab_results')
+        .select('*')
+        .eq('patient_id', targetPatientId)
+        .order('test_date', { ascending: false })
+        .limit(50);
       
-      setLabData(prev => [newLab, ...prev]);
-      toast({
-        title: "Success",
-        description: "New lab data added successfully"
-      });
+      if (data) {
+        setLabData(data.map(row => ({
+          id: row.id,
+          patientId: row.patient_id,
+          testDate: row.test_date,
+          category: (row.test_type as any) || 'blood_chemistry',
+          creatinine: row.creatinine ?? undefined,
+          potassium: row.potassium ?? undefined,
+          sodium: row.sodium ?? undefined,
+          calcium: row.calcium ?? undefined,
+          phosphorus: row.phosphorus ?? undefined,
+          albumin: row.albumin ?? undefined,
+          hemoglobin: row.hemoglobin ?? undefined,
+          glucose: row.glucose ?? undefined,
+          urea: row.bun ?? undefined,
+          notes: row.notes ?? undefined,
+          reportedBy: 'lab',
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+        })));
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
     
     setShowEntryDialog(false);
@@ -114,8 +164,8 @@ const LabDataManagement: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Lab Data Management</h1>
-          <p className="text-gray-600">Track and manage your monthly lab results</p>
+          <h1 className="text-2xl font-bold text-foreground">Lab Data Management</h1>
+          <p className="text-muted-foreground">Track and manage lab results</p>
         </div>
         <Button onClick={handleAddNew}>
           <Plus className="w-4 h-4 mr-2" />
@@ -123,47 +173,36 @@ const LabDataManagement: React.FC = () => {
         </Button>
       </div>
 
-      <Tabs defaultValue="history" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="history" className="flex items-center space-x-2">
-            <FileText className="w-4 h-4" />
-            <span>Lab History</span>
-          </TabsTrigger>
-          <TabsTrigger value="trends" className="flex items-center space-x-2">
-            <TrendingUp className="w-4 h-4" />
-            <span>Trends</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="history">
-          <LabHistory 
-            labData={labData}
-            onEdit={handleEditLab}
-          />
-        </TabsContent>
-
-        <TabsContent value="trends">
-          <div className="text-center py-8">
-            <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Trends Analysis</h3>
-            <p className="text-gray-600">
-              Trend charts and analysis will be available in the next phase.
-            </p>
-          </div>
-        </TabsContent>
-      </Tabs>
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+      ) : (
+        <Tabs defaultValue="history" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="history" className="flex items-center space-x-2">
+              <FileText className="w-4 h-4" /><span>Lab History</span>
+            </TabsTrigger>
+            <TabsTrigger value="trends" className="flex items-center space-x-2">
+              <TrendingUp className="w-4 h-4" /><span>Trends</span>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="history">
+            <LabHistory labData={labData} onEdit={handleEditLab} />
+          </TabsContent>
+          <TabsContent value="trends">
+            <div className="text-center py-8">
+              <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Trend analysis coming soon</p>
+            </div>
+          </TabsContent>
+        </Tabs>
+      )}
 
       <Dialog open={showEntryDialog} onOpenChange={setShowEntryDialog}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {editingLab ? 'Edit Lab Data' : 'Add New Lab Data'}
-            </DialogTitle>
+            <DialogTitle>{editingLab ? 'Edit Lab Data' : 'Add New Lab Data'}</DialogTitle>
           </DialogHeader>
-          <LabDataEntry
-            onSave={handleSaveLabData}
-            existingData={editingLab}
-          />
+          <LabDataEntry onSave={handleSaveLabData} existingData={editingLab} />
         </DialogContent>
       </Dialog>
     </div>

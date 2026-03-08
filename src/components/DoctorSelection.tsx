@@ -1,207 +1,129 @@
-
-import React, { useState } from 'react';
-import { Doctor } from '@/types/doctor';
-import { mockDoctors } from '@/data/doctors';
-import DoctorCard from '@/components/DoctorCard';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, Stethoscope } from 'lucide-react';
+import { Search, Stethoscope, MapPin, Award, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface DoctorProfile {
+  user_id: string;
+  full_name: string;
+  hospital: string | null;
+  specialization: string[] | null;
+}
 
 interface DoctorSelectionProps {
-  onDoctorSelect: (doctor: Doctor) => void;
+  onDoctorSelect: (doctor: any) => void;
   onCancel?: () => void;
   selectedDoctorId?: string;
 }
 
-const DoctorSelection: React.FC<DoctorSelectionProps> = ({ 
-  onDoctorSelect, 
-  onCancel, 
-  selectedDoctorId 
-}) => {
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(
-    selectedDoctorId ? mockDoctors.find(d => d.id === selectedDoctorId) || null : null
-  );
+const DoctorSelection: React.FC<DoctorSelectionProps> = ({ onDoctorSelect, onCancel, selectedDoctorId }) => {
+  const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDoctor, setSelectedDoctor] = useState<DoctorProfile | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [locationFilter, setLocationFilter] = useState('all');
-  const [availabilityFilter, setAvailabilityFilter] = useState('all');
-  const [experienceFilter, setExperienceFilter] = useState('all');
 
-  // Filter doctors based on search and filters
-  const filteredDoctors = mockDoctors.filter(doctor => {
-    const matchesSearch = doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doctor.hospital.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doctor.specialization.some(spec => spec.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesLocation = locationFilter === 'all' || doctor.location.toLowerCase().includes(locationFilter.toLowerCase());
-    const matchesAvailability = availabilityFilter === 'all' || doctor.availability === availabilityFilter;
-    const matchesExperience = experienceFilter === 'all' || 
-                             (experienceFilter === 'junior' && doctor.experience < 10) ||
-                             (experienceFilter === 'senior' && doctor.experience >= 10 && doctor.experience < 15) ||
-                             (experienceFilter === 'expert' && doctor.experience >= 15);
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      setLoading(true);
+      try {
+        const { data: doctorRoles } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'doctor');
 
-    return matchesSearch && matchesLocation && matchesAvailability && matchesExperience;
+        if (!doctorRoles?.length) { setDoctors([]); setLoading(false); return; }
+
+        const doctorIds = doctorRoles.map(r => r.user_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, hospital, specialization')
+          .in('user_id', doctorIds);
+
+        setDoctors(profiles || []);
+        if (selectedDoctorId) {
+          setSelectedDoctor((profiles || []).find(d => d.user_id === selectedDoctorId) || null);
+        }
+      } catch {
+        setDoctors([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDoctors();
+  }, [selectedDoctorId]);
+
+  const filtered = doctors.filter(d => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return d.full_name.toLowerCase().includes(term) ||
+      (d.hospital?.toLowerCase().includes(term)) ||
+      (d.specialization?.some(s => s.toLowerCase().includes(term)));
   });
-
-  const handleDoctorSelect = (doctor: Doctor) => {
-    setSelectedDoctor(doctor);
-  };
 
   const handleConfirmSelection = () => {
     if (selectedDoctor) {
-      onDoctorSelect(selectedDoctor);
+      onDoctorSelect({
+        id: selectedDoctor.user_id,
+        name: selectedDoctor.full_name,
+        hospital: selectedDoctor.hospital || '',
+        specialization: selectedDoctor.specialization || [],
+      });
     }
   };
 
-  const locations = ['all', 'kathmandu', 'lalitpur'];
-  const availabilityOptions = ['all', 'available', 'busy'];
-  const experienceOptions = [
-    { value: 'all', label: 'All Experience' },
-    { value: 'junior', label: 'Junior (< 10 years)' },
-    { value: 'senior', label: 'Senior (10-15 years)' },
-    { value: 'expert', label: 'Expert (15+ years)' }
-  ];
+  if (loading) {
+    return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Stethoscope className="w-5 h-5" />
-            <span>Choose Your Nephrologist</span>
+            <Stethoscope className="w-5 h-5" /><span>Choose Your Nephrologist</span>
           </CardTitle>
-          <CardDescription>
-            Select a qualified nephrologist to manage your peritoneal dialysis treatment. 
-            You can change your doctor later if needed.
-          </CardDescription>
+          <CardDescription>Select a doctor to manage your treatment.</CardDescription>
         </CardHeader>
       </Card>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Search by name, hospital, or specialization..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+        <Input placeholder="Search by name or hospital..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
+      </div>
 
-            {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Select value={locationFilter} onValueChange={setLocationFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  {locations.slice(1).map(location => (
-                    <SelectItem key={location} value={location}>
-                      {location.charAt(0).toUpperCase() + location.slice(1)}
-                    </SelectItem>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {filtered.map(doctor => (
+          <Card
+            key={doctor.user_id}
+            className={`cursor-pointer transition-all hover:shadow-md ${selectedDoctor?.user_id === doctor.user_id ? 'ring-2 ring-primary border-primary' : ''}`}
+            onClick={() => setSelectedDoctor(doctor)}
+          >
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-foreground">{doctor.full_name}</h3>
+              {doctor.hospital && <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{doctor.hospital}</p>}
+              {doctor.specialization && doctor.specialization.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {doctor.specialization.map(spec => (
+                    <Badge key={spec} variant="outline" className="text-xs"><Award className="w-2.5 h-2.5 mr-1" />{spec}</Badge>
                   ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Availability" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Availability</SelectItem>
-                  {availabilityOptions.slice(1).map(option => (
-                    <SelectItem key={option} value={option}>
-                      {option.charAt(0).toUpperCase() + option.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={experienceFilter} onValueChange={setExperienceFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Experience" />
-                </SelectTrigger>
-                <SelectContent>
-                  {experienceOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Active Filters */}
-            {(searchTerm || locationFilter !== 'all' || availabilityFilter !== 'all' || experienceFilter !== 'all') && (
-              <div className="flex flex-wrap gap-2">
-                {searchTerm && (
-                  <Badge variant="secondary" className="text-xs">
-                    Search: {searchTerm}
-                  </Badge>
-                )}
-                {locationFilter !== 'all' && (
-                  <Badge variant="secondary" className="text-xs">
-                    Location: {locationFilter}
-                  </Badge>
-                )}
-                {availabilityFilter !== 'all' && (
-                  <Badge variant="secondary" className="text-xs">
-                    Status: {availabilityFilter}
-                  </Badge>
-                )}
-                {experienceFilter !== 'all' && (
-                  <Badge variant="secondary" className="text-xs">
-                    Experience: {experienceOptions.find(e => e.value === experienceFilter)?.label}
-                  </Badge>
-                )}
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Doctors Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredDoctors.map((doctor) => (
-          <DoctorCard
-            key={doctor.id}
-            doctor={doctor}
-            onSelect={handleDoctorSelect}
-            isSelected={selectedDoctor?.id === doctor.id}
-          />
+                </div>
+              )}
+            </CardContent>
+          </Card>
         ))}
       </div>
 
-      {filteredDoctors.length === 0 && (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-gray-500">No doctors found matching your criteria.</p>
-            <p className="text-sm text-gray-400 mt-1">Try adjusting your filters or search terms.</p>
-          </CardContent>
-        </Card>
+      {filtered.length === 0 && (
+        <p className="text-center text-muted-foreground py-8">No doctors found. They need to register first.</p>
       )}
 
-      {/* Action Buttons */}
       <div className="flex justify-between space-x-4">
-        {onCancel && (
-          <Button variant="outline" onClick={onCancel} className="flex-1">
-            Cancel
-          </Button>
-        )}
-        <Button 
-          onClick={handleConfirmSelection} 
-          disabled={!selectedDoctor}
-          className="flex-1"
-        >
-          {selectedDoctor ? `Confirm Selection: ${selectedDoctor.name}` : 'Select a Doctor'}
+        {onCancel && <Button variant="outline" onClick={onCancel} className="flex-1">Cancel</Button>}
+        <Button onClick={handleConfirmSelection} disabled={!selectedDoctor} className="flex-1">
+          {selectedDoctor ? `Confirm: ${selectedDoctor.full_name}` : 'Select a Doctor'}
         </Button>
       </div>
     </div>
