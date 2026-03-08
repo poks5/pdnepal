@@ -17,6 +17,7 @@ interface Exchange {
   color: 'normal' | 'yellow' | 'red' | 'brown';
   pain: number;
   notes?: string;
+  symptoms?: string[];
 }
 
 interface ExchangeHistoryProps {
@@ -126,6 +127,16 @@ const ExchangeHistory: React.FC<ExchangeHistoryProps> = ({ exchanges = [] }) => 
                       <span className="text-xs text-muted-foreground capitalize">{ex.color}</span>
                     </div>
                   </div>
+
+                  {ex.symptoms && ex.symptoms.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
+                      {ex.symptoms.map((symptom) => (
+                        <Badge key={symptom} className="bg-amber-500/10 text-amber-700 border-0 text-[10px] px-1.5 py-0">
+                          {symptom}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
 
                   {ex.notes && (
                     <div className="mt-2.5 p-2.5 bg-muted/30 rounded-lg">
