@@ -23,8 +23,12 @@ import pdsathiLogo from '@/assets/pdsathi-logo.png';
 type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos' | 'timeline' | 'peritonitis' | 'exit_site' | 'center_analytics';
 
 const sectionDefs = [
-  { id: 'trends' as const, labelKey: 'ufTrends', emoji: '📈', icon: TrendingUp, color: 'from-primary/20 to-primary/5', descKey: 'trackUFPatterns' },
-  { id: 'alerts' as const, labelKey: 'labAlerts', emoji: '🔬', icon: AlertTriangle, color: 'from-destructive/15 to-destructive/5', descKey: 'smartLabAlerts' },
+  { id: 'timeline' as const, labelKey: 'pdTimeline', emoji: '🗓️', icon: TrendingUp, color: 'from-primary/20 to-primary/5', descKey: 'pdTimelineDesc' },
+  { id: 'peritonitis' as const, labelKey: 'peritonitisTracker', emoji: '🦠', icon: AlertTriangle, color: 'from-destructive/15 to-destructive/5', descKey: 'peritonitisDesc' },
+  { id: 'exit_site' as const, labelKey: 'exitSiteInfections', emoji: '⚠️', icon: AlertTriangle, color: 'from-[hsl(var(--coral))]/15 to-[hsl(var(--peach))]/5', descKey: 'exitSiteDesc' },
+  { id: 'center_analytics' as const, labelKey: 'centerAnalytics', emoji: '📊', icon: Download, color: 'from-[hsl(var(--sky))]/20 to-[hsl(var(--sky))]/5', descKey: 'centerAnalyticsDesc' },
+  { id: 'trends' as const, labelKey: 'ufTrends', emoji: '📈', icon: TrendingUp, color: 'from-[hsl(var(--mint))]/20 to-[hsl(var(--mint))]/5', descKey: 'trackUFPatterns' },
+  { id: 'alerts' as const, labelKey: 'labAlerts', emoji: '🔬', icon: AlertTriangle, color: 'from-[hsl(var(--lavender))]/15 to-[hsl(var(--lavender))]/5', descKey: 'smartLabAlerts' },
   { id: 'medications' as const, labelKey: 'medications', emoji: '💊', icon: Pill, color: 'from-[hsl(var(--mint))]/20 to-[hsl(var(--mint))]/5', descKey: 'trackMedsAdherence' },
   { id: 'symptoms' as const, labelKey: 'symptoms', emoji: '🩺', icon: Activity, color: 'from-[hsl(var(--coral))]/15 to-[hsl(var(--peach))]/5', descKey: 'logScoreSymptoms' },
   { id: 'photos' as const, labelKey: 'photos', emoji: '📸', icon: Camera, color: 'from-[hsl(var(--lavender))]/20 to-[hsl(var(--lavender))]/5', descKey: 'documentCatheterFluid' },
