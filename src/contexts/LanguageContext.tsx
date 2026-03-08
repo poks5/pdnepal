@@ -311,7 +311,6 @@ const translations: Translations = {
   gram_negative: { en: 'Gram −', ne: 'ग्राम −' },
   gram_fungal: { en: 'Fungal', ne: 'फंगल' },
   gram_mycobacterial: { en: 'Mycobacterial', ne: 'माइकोब्याक्टेरियल' },
-  photos: { en: 'Photos', ne: 'फोटोहरू' },
   uploadPhoto: { en: 'Upload Photo', ne: 'फोटो अपलोड गर्नुहोस्' },
   photosUploaded: { en: 'Photos uploaded', ne: 'फोटो अपलोड भयो' },
   maxPhotosReached: { en: 'Maximum photos reached', ne: 'अधिकतम फोटो पुगेको छ' },
