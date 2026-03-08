@@ -131,8 +131,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
               {/* Mobile */}
               <div className="flex md:hidden items-center gap-2">
+                <button
+                  onClick={() => setLanguage(language === 'en' ? 'ne' : 'en')}
+                  className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2 py-1 rounded-full"
+                >
+                  {language === 'en' ? 'ने' : 'EN'}
+                </button>
                 <Badge className={`text-[10px] px-2 py-0.5 border-0 font-semibold ${roleColor[user?.role ?? '']}`}>
-                  {roleEmoji[user?.role ?? '']} {roleLabel[user?.role ?? ''] ?? user?.role}
+                  {roleEmoji[user?.role ?? '']} {t(user?.role ?? 'patient')}
                 </Badge>
                 <Button variant="ghost" size="icon" className="rounded-full w-9 h-9" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                   {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
