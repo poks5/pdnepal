@@ -8,7 +8,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, Share2, ExternalLink, Droplets, He
 import { QRCodeSVG } from 'qrcode.react';
 import RegisterForm from './RegisterForm';
 import ForgotPasswordForm from './ForgotPasswordForm';
-import kidneyMascot from '@/assets/kidney-mascot.png';
+import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 const APP_URL = 'https://pdnepal.lovable.app';
 const ABOUT_URL = 'https://pdnepal.lovable.app';
