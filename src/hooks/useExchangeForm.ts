@@ -13,6 +13,7 @@ export interface ExchangeData {
   clarity: 'clear' | 'cloudy';
   color: 'normal' | 'yellow' | 'red' | 'brown';
   pain: number;
+  symptoms: string[];
   notes: string;
 }
 
@@ -29,6 +30,7 @@ export const useExchangeForm = () => {
     clarity: 'clear',
     color: 'normal',
     pain: 0,
+    symptoms: [],
     notes: ''
   });
 
