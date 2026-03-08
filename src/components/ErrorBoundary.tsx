@@ -24,37 +24,29 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.setState({
-      error,
-      errorInfo
-    });
-
-    // Log error to monitoring service in production
+    this.setState({ error, errorInfo });
     console.error('Error Boundary caught an error:', error, errorInfo);
-    
-    // In production, you'd send this to an error tracking service like Sentry
-    // sendErrorToMonitoring(error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
+              <div className="mx-auto mb-4 w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-destructive" />
               </div>
-              <CardTitle className="text-red-900">Something went wrong</CardTitle>
-              <CardDescription className="text-red-700">
+              <CardTitle className="text-foreground">Something went wrong</CardTitle>
+              <CardDescription>
                 We apologize for the inconvenience. The application has encountered an unexpected error.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <div className="bg-gray-100 p-3 rounded-md text-sm">
-                  <p className="font-medium text-gray-800">Error Details:</p>
-                  <p className="text-gray-600 break-all">{this.state.error.toString()}</p>
+              {import.meta.env.DEV && this.state.error && (
+                <div className="bg-muted p-3 rounded-md text-sm">
+                  <p className="font-medium text-foreground">Error Details:</p>
+                  <p className="text-muted-foreground break-all">{this.state.error.toString()}</p>
                 </div>
               )}
               
@@ -77,7 +69,7 @@ class ErrorBoundary extends Component<Props, State> {
                 </Button>
               </div>
               
-              <p className="text-xs text-gray-500 text-center">
+              <p className="text-xs text-muted-foreground text-center">
                 If the problem persists, please contact support.
               </p>
             </CardContent>
