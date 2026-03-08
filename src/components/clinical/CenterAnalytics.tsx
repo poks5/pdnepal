@@ -33,20 +33,16 @@ const CenterAnalytics: React.FC = () => {
       if (!user) return;
       setLoading(true);
 
-      // Load all peritonitis episodes accessible to this user
-      const { data: epData } = await supabase
-        .from('peritonitis_episodes')
-        .select('*')
-        .order('date_onset', { ascending: false });
-
-      const { data: exitData } = await supabase
-        .from('exit_site_infections')
-        .select('id')
+      const [{ data: epData }, { data: exitData }, { data: cathData }, { data: pdEventsData }] = await Promise.all([
+        supabase.from('peritonitis_episodes').select('*').order('date_onset', { ascending: false }),
+        supabase.from('exit_site_infections').select('id'),
+        supabase.from('pd_catheters').select('*'),
+        supabase.from('pd_events').select('patient_id, event_type, event_date').in('event_type', ['pd_start', 'catheter_insertion']),
+      ]);
 
       const allEp = (epData || []) as any[];
       setEpisodes(allEp);
 
-      // Unique patients
       const uniquePatients = new Set(allEp.map(e => e.patient_id));
 
       // Organism distribution
@@ -70,6 +66,56 @@ const CenterAnalytics: React.FC = () => {
         .filter(d => d >= 0);
       const avgClearance = clearances.length > 0 ? Math.round(clearances.reduce((a, b) => a + b, 0) / clearances.length) : null;
 
+      // Median time to first peritonitis
+      let medianTimeToFirstPeritonitis: number | null = null;
+      const pdStartMap = new Map<string, string>();
+      (pdEventsData || []).forEach((ev: any) => {
+        if (ev.event_type === 'pd_start' || ev.event_type === 'catheter_insertion') {
+          const existing = pdStartMap.get(ev.patient_id);
+          if (!existing || ev.event_date < existing) pdStartMap.set(ev.patient_id, ev.event_date);
+        }
+      });
+      const firstEpPerPatient = new Map<string, string>();
+      allEp.forEach(ep => {
+        const existing = firstEpPerPatient.get(ep.patient_id);
+        if (!existing || ep.date_onset < existing) firstEpPerPatient.set(ep.patient_id, ep.date_onset);
+      });
+      const timesToFirst: number[] = [];
+      firstEpPerPatient.forEach((onset, pid) => {
+        const pdStart = pdStartMap.get(pid);
+        if (pdStart) {
+          const days = Math.round((new Date(onset).getTime() - new Date(pdStart).getTime()) / 86400000);
+          if (days >= 0) timesToFirst.push(days);
+        }
+      });
+      if (timesToFirst.length > 0) {
+        timesToFirst.sort((a, b) => a - b);
+        const mid = Math.floor(timesToFirst.length / 2);
+        medianTimeToFirstPeritonitis = timesToFirst.length % 2 === 0
+          ? Math.round((timesToFirst[mid - 1] + timesToFirst[mid]) / 2)
+          : timesToFirst[mid];
+      }
+
+      // Catheter type vs infection rate
+      const allCatheters = (cathData || []) as any[];
+      const catheterVsInfection: { type: string; rate: number; episodes: number; patients: number }[] = [];
+      const cathTypeMap = new Map<string, Set<string>>();
+      allCatheters.forEach((c: any) => {
+        const type = c.catheter_type || 'unknown';
+        if (!cathTypeMap.has(type)) cathTypeMap.set(type, new Set());
+        cathTypeMap.get(type)!.add(c.patient_id);
+      });
+      cathTypeMap.forEach((patientSet, type) => {
+        const eps = allEp.filter(e => patientSet.has(e.patient_id)).length;
+        const patientCount = patientSet.size;
+        catheterVsInfection.push({
+          type: type.replace(/_/g, ' '),
+          rate: patientCount > 0 ? parseFloat((eps / patientCount).toFixed(2)) : 0,
+          episodes: eps,
+          patients: patientCount,
+        });
+      });
+
       setStats({
         totalPatients: uniquePatients.size,
         totalEpisodes: allEp.length,
@@ -77,6 +123,8 @@ const CenterAnalytics: React.FC = () => {
         organisms,
         exitSiteCount: exitData?.length || 0,
         avgClearanceDays: avgClearance,
+        medianTimeToFirstPeritonitis,
+        catheterVsInfection,
       });
       setLoading(false);
     };
