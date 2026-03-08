@@ -174,12 +174,14 @@ const CenterAnalytics: React.FC = () => {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {[
           { label: t('totalEpisodes'), value: stats.totalEpisodes, emoji: '🦠', bg: 'bg-destructive/10' },
           { label: t('peritonitisRate'), value: `${stats.peritonitisRate}/py`, emoji: '📈', bg: 'bg-primary/10' },
           { label: t('exitSiteInfections'), value: stats.exitSiteCount, emoji: '⚠️', bg: 'bg-[hsl(var(--coral))]/10' },
           { label: t('avgClearance'), value: stats.avgClearanceDays != null ? `${stats.avgClearanceDays}d` : '—', emoji: '⏱️', bg: 'bg-[hsl(var(--mint))]/10' },
+          { label: t('medianTimeFirstPeritonitis'), value: stats.medianTimeToFirstPeritonitis != null ? `${stats.medianTimeToFirstPeritonitis}d` : '—', emoji: '📅', bg: 'bg-[hsl(var(--lavender))]/10' },
+          { label: t('patients'), value: stats.totalPatients, emoji: '👥', bg: 'bg-[hsl(var(--sky))]/10' },
         ].map(m => (
           <Card key={m.label} className="border-border/30 shadow-sm rounded-2xl">
             <CardContent className="p-3.5 text-center">
@@ -190,6 +192,28 @@ const CenterAnalytics: React.FC = () => {
           </Card>
         ))}
       </div>
+
+      {/* Catheter Type vs Infection Rate */}
+      {stats.catheterVsInfection.length > 0 && (
+        <Card className="rounded-2xl border-border/30 shadow-sm">
+          <CardContent className="p-4">
+            <p className="font-bold text-sm mb-3 flex items-center gap-1.5"><Wrench className="w-4 h-4" /> {t('catheterVsInfection')}</p>
+            <div className="space-y-2">
+              {stats.catheterVsInfection.map(item => (
+                <div key={item.type} className="flex items-center justify-between p-2.5 rounded-xl bg-muted/30">
+                  <div>
+                    <p className="text-xs font-semibold capitalize">{item.type}</p>
+                    <p className="text-[10px] text-muted-foreground">{item.patients} {t('patients')} · {item.episodes} {t('totalEpisodes').toLowerCase()}</p>
+                  </div>
+                  <Badge variant={item.rate > 0.4 ? 'destructive' : 'outline'} className="text-xs font-bold">
+                    {item.rate}/py
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Organism Distribution */}
       {stats.organisms.length > 0 && (
