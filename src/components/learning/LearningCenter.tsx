@@ -125,16 +125,33 @@ const LearningCenter: React.FC = () => {
         )}
       </div>
 
-      {/* Doctor-assigned modules callout */}
-      {assignedModules.size > 0 && (
-        <Card className="border-primary/30 bg-primary/5 rounded-2xl">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-sm font-semibold text-primary flex items-center gap-2">
-              👨‍⚕️ {language === 'en' ? `Your doctor assigned ${assignedModules.size} module(s)` : `तपाईंको डाक्टरले ${assignedModules.size} मोड्युल(हरू) तोकेको छ`}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      {/* New Patient Education Pathway callout */}
+      {assignedModules.size > 0 && (() => {
+        const assignedNotDone = [...assignedModules].filter(m => !completedModules.has(m));
+        const assignedDone = [...assignedModules].filter(m => completedModules.has(m));
+        const pathwayProgress = assignedModules.size > 0 ? Math.round((assignedDone.length / assignedModules.size) * 100) : 0;
+        return (
+          <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-[hsl(var(--lavender))]/5 rounded-2xl">
+            <CardContent className="pt-4 pb-3 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-bold text-primary flex items-center gap-2">
+                  🎓 {language === 'en' ? 'New Patient Education Pathway' : 'नयाँ बिरामी शिक्षा मार्ग'}
+                </p>
+                <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+                  {assignedDone.length}/{assignedModules.size}
+                </Badge>
+              </div>
+              <Progress value={pathwayProgress} className="h-1.5" />
+              <p className="text-xs text-muted-foreground">
+                {assignedNotDone.length > 0
+                  ? (language === 'en' ? `${assignedNotDone.length} essential module(s) remaining` : `${assignedNotDone.length} आवश्यक मोड्युल(हरू) बाँकी`)
+                  : (language === 'en' ? '✅ Pathway complete! You\'re well prepared.' : '✅ मार्ग पूरा! तपाईं राम्ररी तयार हुनुहुन्छ।')
+                }
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Category filter */}
       <div className="overflow-x-auto -mx-4 px-4 no-scrollbar">
