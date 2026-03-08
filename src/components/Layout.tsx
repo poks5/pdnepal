@@ -160,6 +160,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {children}
         </main>
 
+        {/* Footer credit */}
+        <footer className="hidden md:block text-center py-4 border-t border-border/20">
+          <p className="text-[11px] text-muted-foreground/60">
+            Concept by <span className="font-semibold text-muted-foreground/80">Dr. Anil Pokhrel</span> · Consultant Nephrologist
+          </p>
+        </footer>
+
         {/* Modern mobile bottom nav */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="mx-3 mb-2 bg-card/90 backdrop-blur-2xl rounded-3xl border border-border/30 shadow-xl shadow-foreground/5">

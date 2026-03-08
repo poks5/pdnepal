@@ -140,6 +140,15 @@ const LoginForm: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+        {/* Credit */}
+        <div className="text-center space-y-1 pt-2">
+          <p className="text-[11px] text-muted-foreground/70 font-medium">
+            A concept by <span className="text-foreground/80 font-semibold">Dr. Anil Pokhrel</span>
+          </p>
+          <p className="text-[10px] text-muted-foreground/50">Consultant Nephrologist</p>
+        </div>
+      </div>
     </div>
   );
 };
