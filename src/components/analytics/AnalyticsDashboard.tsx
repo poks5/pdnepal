@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   TrendingUp, AlertTriangle, Download, Pill, Activity, Camera,
-  ArrowLeft, Droplets, Heart, BarChart3, Shield
+  ArrowLeft, Droplets, Heart, BarChart3, Shield, Wrench
 } from 'lucide-react';
 import TrendAnalysis from './TrendAnalysis';
 import DataExport from './DataExport';
