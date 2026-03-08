@@ -68,8 +68,8 @@ const AnalyticsDashboard: React.FC = () => {
             <img src={pdsathiLogo} alt="" className="w-10 h-10" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight">Analytics & Medical</h1>
-            <p className="text-sm opacity-80 mt-0.5">Comprehensive health insights at your fingertips</p>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight">{t('analyticsMedical')}</h1>
+            <p className="text-sm opacity-80 mt-0.5">{t('analyticsDesc')}</p>
           </div>
         </div>
       </div>
