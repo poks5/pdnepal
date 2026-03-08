@@ -15,7 +15,8 @@ import PatientList from '@/components/PatientList';
 import PlansTab from '@/components/PlansTab';
 import LabOverview from '@/components/LabOverview';
 import PendingPatientRequests from '@/components/PendingPatientRequests';
-import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings } from 'lucide-react';
+import DoctorLearningAssignments from '@/components/learning/DoctorLearningAssignments';
+import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings, BookOpen } from 'lucide-react';
 
 export interface RealPatient {
   id: string;
@@ -32,6 +33,7 @@ export interface RealPatient {
 
 const moreSubItems = [
   { id: 'requests', icon: UserPlus, label: 'Patient Requests', description: 'Pending assignment requests' },
+  { id: 'learning', icon: BookOpen, label: 'Learning Assignments', description: 'Assign education modules to patients' },
   { id: 'communication', icon: MessageSquare, label: 'Messages', description: 'Patient communications' },
   { id: 'export', icon: Download, label: 'Export Data', description: 'Download reports & data' },
 ];
@@ -203,6 +205,7 @@ const DoctorDashboard: React.FC = () => {
           Back
         </button>
         {moreView === 'requests' && <PendingPatientRequests />}
+        {moreView === 'learning' && <DoctorLearningAssignments />}
         {moreView === 'communication' && <CommentSystem patients={patients} />}
         {moreView === 'export' && <ExportTools />}
       </div>
