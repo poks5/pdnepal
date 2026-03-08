@@ -28,6 +28,7 @@ const PatientDashboard: React.FC = () => {
   const { activeTab, setActiveTab } = useNav();
   const { exchangeLogs, addExchangeLog, patientProfile } = usePatient();
   const [showAddExchange, setShowAddExchange] = useState(false);
+  const [savingExchange, setSavingExchange] = useState(false);
   const { toast } = useToast();
 
   const todayExchanges = { completed: 2, total: 4, nextTime: '18:00' };
@@ -37,6 +38,7 @@ const PatientDashboard: React.FC = () => {
 
   const handleSaveExchange = async (exchangeData: ExchangeData) => {
     if (!user) return;
+    setSavingExchange(true);
     try {
       const { error } = await supabase.from('exchange_logs').insert({
         patient_id: user.id,
@@ -73,6 +75,8 @@ const PatientDashboard: React.FC = () => {
       toast({ title: 'Exchange saved', description: 'Your exchange has been recorded securely.' });
     } catch (err: any) {
       toast({ title: 'Error saving exchange', description: err.message, variant: 'destructive' });
+    } finally {
+      setSavingExchange(false);
     }
   };
 
