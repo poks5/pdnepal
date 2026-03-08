@@ -68,6 +68,11 @@ export default {
 					amber: 'hsl(var(--medical-amber))',
 					surface: 'hsl(var(--medical-surface))',
 				},
+				coral: 'hsl(var(--coral))',
+				peach: 'hsl(var(--peach))',
+				lavender: 'hsl(var(--lavender))',
+				sky: 'hsl(var(--sky))',
+				mint: 'hsl(var(--mint))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
