@@ -97,6 +97,7 @@ export type Database = {
           patient_id: string
           recorded_by: string
           solution_type: string
+          symptoms: string[] | null
           temperature: number | null
           ultrafiltration_ml: number | null
           updated_at: string
@@ -119,6 +120,7 @@ export type Database = {
           patient_id: string
           recorded_by: string
           solution_type: string
+          symptoms?: string[] | null
           temperature?: number | null
           ultrafiltration_ml?: number | null
           updated_at?: string
@@ -141,6 +143,7 @@ export type Database = {
           patient_id?: string
           recorded_by?: string
           solution_type?: string
+          symptoms?: string[] | null
           temperature?: number | null
           ultrafiltration_ml?: number | null
           updated_at?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.exchange_logs ADD COLUMN symptoms text[] DEFAULT '{}'::text[];
