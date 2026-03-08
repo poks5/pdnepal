@@ -200,6 +200,9 @@ const CaregiverDashboard: React.FC = () => {
         </CardContent>
       </Card>
     </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
