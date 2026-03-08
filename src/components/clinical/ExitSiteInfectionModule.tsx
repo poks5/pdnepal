@@ -131,6 +131,11 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
               <Input type="number" placeholder={t('durationDays')} value={form.duration_days} onChange={e => setForm(p => ({ ...p, duration_days: e.target.value }))} className="rounded-xl" />
             </div>
             <Input placeholder={t('notes')} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} className="rounded-xl" />
+            <ClinicalPhotoUpload
+              photoUrls={form.photo_urls}
+              folder={`exit-site/${targetPatient}`}
+              onPhotosChange={(urls) => setForm(p => ({ ...p, photo_urls: urls }))}
+            />
             <div className="flex gap-2">
               <Button size="sm" className="rounded-full flex-1" onClick={handleAdd}>{t('save')}</Button>
               <Button size="sm" variant="outline" className="rounded-full" onClick={() => setShowAdd(false)}>{t('cancel')}</Button>
