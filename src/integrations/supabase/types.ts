@@ -635,7 +635,12 @@ export type Database = {
         Row: {
           batch_number: string | null
           brand: string | null
+          catheter_cuff_type: string | null
           catheter_insertion_date: string | null
+          catheter_length_cm: string | null
+          catheter_model: string | null
+          catheter_size_fr: string | null
+          catheter_tip_type: string | null
           catheter_type: string | null
           created_at: string
           daily_exchanges: number | null
@@ -654,7 +659,12 @@ export type Database = {
         Insert: {
           batch_number?: string | null
           brand?: string | null
+          catheter_cuff_type?: string | null
           catheter_insertion_date?: string | null
+          catheter_length_cm?: string | null
+          catheter_model?: string | null
+          catheter_size_fr?: string | null
+          catheter_tip_type?: string | null
           catheter_type?: string | null
           created_at?: string
           daily_exchanges?: number | null
@@ -673,7 +683,12 @@ export type Database = {
         Update: {
           batch_number?: string | null
           brand?: string | null
+          catheter_cuff_type?: string | null
           catheter_insertion_date?: string | null
+          catheter_length_cm?: string | null
+          catheter_model?: string | null
+          catheter_size_fr?: string | null
+          catheter_tip_type?: string | null
           catheter_type?: string | null
           created_at?: string
           daily_exchanges?: number | null
