@@ -5,10 +5,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, BookOpen, Star, ChevronRight } from 'lucide-react';
+import { CheckCircle2, BookOpen, Star, ChevronRight, Shield, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { learningModules, categories } from './learningContent';
 import LearningModuleViewer from './LearningModuleViewer';
+import PeritonitisPathway from './PeritonitisPathway';
 import { useToast } from '@/hooks/use-toast';
 
 const LearningCenter: React.FC = () => {
@@ -20,6 +21,7 @@ const LearningCenter: React.FC = () => {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [showPathway, setShowPathway] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -85,6 +87,16 @@ const LearningCenter: React.FC = () => {
     : 0;
 
   const selectedModuleData = learningModules.find(m => m.id === selectedModule);
+
+  if (showPathway) {
+    return (
+      <PeritonitisPathway
+        onBack={() => setShowPathway(false)}
+        completedModules={completedModules}
+        onMarkComplete={handleMarkComplete}
+      />
+    );
+  }
 
   if (selectedModuleData) {
     return (
@@ -158,6 +170,42 @@ const LearningCenter: React.FC = () => {
           </Card>
         );
       })()}
+
+      {/* Peritonitis Prevention Pathway CTA */}
+      <button
+        onClick={() => setShowPathway(true)}
+        className={`w-full text-left p-4 rounded-2xl border-2 transition-all group card-hover ${
+          completedModules.has('peritonitis-pathway')
+            ? 'border-accent/30 bg-gradient-to-r from-accent/5 to-accent/10'
+            : 'border-destructive/30 bg-gradient-to-r from-destructive/5 to-[hsl(var(--warning))]/5'
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+            completedModules.has('peritonitis-pathway') ? 'bg-accent/15' : 'bg-destructive/10'
+          }`}>
+            {completedModules.has('peritonitis-pathway')
+              ? <Award className="w-6 h-6 text-accent" />
+              : <Shield className="w-6 h-6 text-destructive" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-bold text-foreground">
+                {language === 'en' ? 'Peritonitis Prevention Pathway' : 'पेरिटोनाइटिस रोकथाम मार्ग'}
+              </p>
+              {completedModules.has('peritonitis-pathway') && (
+                <Badge className="bg-accent/15 text-accent border-accent/30 text-[10px] gap-1">
+                  <Award className="w-3 h-3" /> {language === 'en' ? 'Certified' : 'प्रमाणित'}
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {language === 'en' ? 'Risk assessment · 10-question quiz · Certification badge' : 'जोखिम मूल्याङ्कन · १०-प्रश्न क्विज · प्रमाणपत्र ब्याज'}
+            </p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+        </div>
+      </button>
 
       {/* Category filter */}
       <div className="overflow-x-auto -mx-4 px-4 no-scrollbar">
