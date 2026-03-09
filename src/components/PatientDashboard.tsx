@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,6 +24,7 @@ import { formatExchangeForHistory } from '@/utils/exchangeFormatters';
 import { ExchangeData } from '@/hooks/useExchangeForm';
 import { DailyExchangeLog } from '@/types/patient';
 import { useToast } from '@/hooks/use-toast';
+import { learningModules } from './learning/learningContent';
 
 const settingsSubItems = [
   { id: 'profile', icon: FileText, label: 'Profile', description: 'Personal information', emoji: '👤', gradient: 'from-primary/10 to-[hsl(var(--lavender))]/8' },
