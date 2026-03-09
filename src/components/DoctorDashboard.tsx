@@ -290,7 +290,7 @@ const DoctorDashboard: React.FC = () => {
 
       <Dialog open={showPlanEditor} onOpenChange={setShowPlanEditor}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <ExchangePlanEditor onSave={() => setShowPlanEditor(false)} onCancel={() => setShowPlanEditor(false)} />
+          <ExchangePlanEditor patientId={editingPatient?.id} patientName={editingPatient?.name} onSave={() => setShowPlanEditor(false)} onCancel={() => setShowPlanEditor(false)} />
         </DialogContent>
       </Dialog>
     </div>

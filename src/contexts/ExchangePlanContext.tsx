@@ -1,40 +1,45 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { usePersistence } from '@/hooks/usePersistence';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { Json } from '@/integrations/supabase/types';
 
 export interface ExchangeSchedule {
   id: string;
   time: string;
   type: 'morning' | 'afternoon' | 'evening' | 'night';
   fillVolume: number;
-  dwellTime: number; // in minutes
-  solution: 'low' | 'medium' | 'high'; // glucose concentration
+  dwellTime: number;
+  solution: 'low' | 'medium' | 'high';
   enabled: boolean;
 }
 
 export interface ExchangePlan {
   id: string;
   patientId: string;
-  patientName: string;
+  patientName?: string;
   doctorId: string;
   name: string;
-  description: string;
+  description?: string;
   schedules: ExchangeSchedule[];
   isActive: boolean;
   createdAt: string;
   modifiedAt: string;
-  modifiedBy: string;
-  totalDailyVolume: number;
+  effectiveFrom?: string;
+  effectiveUntil?: string | null;
   notes: string;
+  totalDailyVolume: number;
 }
 
 interface ExchangePlanContextType {
   plans: ExchangePlan[];
   currentPlan: ExchangePlan | null;
-  createPlan: (plan: Omit<ExchangePlan, 'id' | 'createdAt' | 'modifiedAt'>) => void;
-  updatePlan: (planId: string, updates: Partial<ExchangePlan>) => void;
-  setActivePlan: (planId: string) => void;
+  loading: boolean;
+  createPlan: (plan: Omit<ExchangePlan, 'id' | 'createdAt' | 'modifiedAt'>) => Promise<void>;
+  updatePlan: (planId: string, updates: Partial<ExchangePlan>) => Promise<void>;
+  setActivePlan: (planId: string) => Promise<void>;
   getPlanForPatient: (patientId: string) => ExchangePlan | null;
-  deletePlan: (planId: string) => void;
+  deletePlan: (planId: string) => Promise<void>;
+  refreshPlans: () => Promise<void>;
 }
 
 const ExchangePlanContext = createContext<ExchangePlanContextType | undefined>(undefined);
@@ -47,134 +52,117 @@ export const useExchangePlan = () => {
   return context;
 };
 
+// Map DB row to ExchangePlan
+const mapRowToPlan = (row: any): ExchangePlan => ({
+  id: row.id,
+  patientId: row.patient_id,
+  doctorId: row.prescribed_by,
+  name: row.plan_name,
+  schedules: (Array.isArray(row.exchanges) ? row.exchanges : []) as ExchangeSchedule[],
+  isActive: row.is_active ?? false,
+  createdAt: row.created_at,
+  modifiedAt: row.updated_at,
+  effectiveFrom: row.effective_from,
+  effectiveUntil: row.effective_until,
+  notes: row.notes || '',
+  totalDailyVolume: ((Array.isArray(row.exchanges) ? row.exchanges : []) as ExchangeSchedule[])
+    .filter(s => s.enabled)
+    .reduce((sum, s) => sum + (s.fillVolume || 0), 0),
+});
+
 export const ExchangePlanProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { saveData, loadData } = usePersistence();
-  
-  const [plans, setPlans] = useState<ExchangePlan[]>([
-    {
-      id: 'plan1',
-      patientId: 'pat1',
-      patientName: 'Ram Bahadur Gurung',
-      doctorId: 'doc1',
-      name: 'Standard CAPD Plan',
-      description: 'Four exchanges daily with 2L solution',
-      schedules: [
-        {
-          id: 'sched1',
-          time: '06:00',
-          type: 'morning',
-          fillVolume: 2000,
-          dwellTime: 360,
-          solution: 'low',
-          enabled: true
-        },
-        {
-          id: 'sched2',
-          time: '12:00',
-          type: 'afternoon',
-          fillVolume: 2000,
-          dwellTime: 360,
-          solution: 'medium',
-          enabled: true
-        },
-        {
-          id: 'sched3',
-          time: '18:00',
-          type: 'evening',
-          fillVolume: 2000,
-          dwellTime: 360,
-          solution: 'medium',
-          enabled: true
-        },
-        {
-          id: 'sched4',
-          time: '22:00',
-          type: 'night',
-          fillVolume: 2000,
-          dwellTime: 480,
-          solution: 'high',
-          enabled: true
-        }
-      ],
-      isActive: true,
-      createdAt: '2024-06-10',
-      modifiedAt: '2024-06-15',
-      modifiedBy: 'Dr. Pramod Sharma',
-      totalDailyVolume: 8000,
-      notes: 'Patient responding well to current regimen'
+  const { user } = useAuth();
+  const [plans, setPlans] = useState<ExchangePlan[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPlans = useCallback(async () => {
+    if (!user) { setPlans([]); setLoading(false); return; }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('exchange_plans')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPlans((data || []).map(mapRowToPlan));
+    } catch (err) {
+      console.error('Failed to fetch exchange plans:', err);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }, [user]);
 
-  const [currentPlan, setCurrentPlan] = useState<ExchangePlan | null>(null);
+  useEffect(() => { fetchPlans(); }, [fetchPlans]);
 
-  // Load persisted exchange plans on mount
-  useEffect(() => {
-    const persistedData = loadData();
-    
-    if (persistedData.exchangePlans && persistedData.exchangePlans.length > 0) {
-      setPlans(persistedData.exchangePlans);
-      console.log('Exchange plans loaded from persistence');
-    }
-  }, [loadData]);
+  const currentPlan = plans.find(p => p.isActive) || null;
 
-  // Auto-save exchange plans whenever they change
-  useEffect(() => {
-    if (plans.length > 0) {
-      saveData('exchangePlans', plans);
-    }
-  }, [plans, saveData]);
-
-  useEffect(() => {
-    // Set the active plan as current
-    const activePlan = plans.find(plan => plan.isActive);
-    setCurrentPlan(activePlan || null);
-  }, [plans]);
-
-  const createPlan = (planData: Omit<ExchangePlan, 'id' | 'createdAt' | 'modifiedAt'>) => {
-    const newPlan: ExchangePlan = {
-      ...planData,
-      id: `plan_${Date.now()}`,
-      createdAt: new Date().toISOString().split('T')[0],
-      modifiedAt: new Date().toISOString().split('T')[0]
-    };
-    setPlans(prev => [...prev, newPlan]);
+  const createPlan = async (planData: Omit<ExchangePlan, 'id' | 'createdAt' | 'modifiedAt'>) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('exchange_plans')
+      .insert({
+        patient_id: planData.patientId,
+        prescribed_by: user.id,
+        plan_name: planData.name,
+        exchanges: planData.schedules as unknown as Json,
+        is_active: planData.isActive ?? false,
+        notes: planData.notes || null,
+        effective_from: planData.effectiveFrom || new Date().toISOString().split('T')[0],
+        effective_until: planData.effectiveUntil || null,
+      });
+    if (error) throw error;
+    await fetchPlans();
   };
 
-  const updatePlan = (planId: string, updates: Partial<ExchangePlan>) => {
-    setPlans(prev => prev.map(plan => 
-      plan.id === planId 
-        ? { 
-            ...plan, 
-            ...updates, 
-            modifiedAt: new Date().toISOString().split('T')[0] 
-          }
-        : plan
-    ));
+  const updatePlan = async (planId: string, updates: Partial<ExchangePlan>) => {
+    const updatePayload: any = { updated_at: new Date().toISOString() };
+    if (updates.name !== undefined) updatePayload.plan_name = updates.name;
+    if (updates.schedules !== undefined) updatePayload.exchanges = updates.schedules as unknown as Json;
+    if (updates.isActive !== undefined) updatePayload.is_active = updates.isActive;
+    if (updates.notes !== undefined) updatePayload.notes = updates.notes;
+    if (updates.effectiveUntil !== undefined) updatePayload.effective_until = updates.effectiveUntil;
+
+    const { error } = await supabase
+      .from('exchange_plans')
+      .update(updatePayload)
+      .eq('id', planId);
+    if (error) throw error;
+    await fetchPlans();
   };
 
-  const setActivePlan = (planId: string) => {
-    setPlans(prev => prev.map(plan => ({
-      ...plan,
-      isActive: plan.id === planId
-    })));
+  const setActivePlan = async (planId: string) => {
+    const plan = plans.find(p => p.id === planId);
+    if (!plan) return;
+    // Deactivate other plans for same patient
+    const samePt = plans.filter(p => p.patientId === plan.patientId && p.id !== planId);
+    for (const p of samePt) {
+      await supabase.from('exchange_plans').update({ is_active: false }).eq('id', p.id);
+    }
+    await supabase.from('exchange_plans').update({ is_active: true }).eq('id', planId);
+    await fetchPlans();
   };
 
   const getPlanForPatient = (patientId: string) => {
     return plans.find(plan => plan.patientId === patientId && plan.isActive) || null;
   };
 
-  const deletePlan = (planId: string) => {
-    setPlans(prev => prev.filter(plan => plan.id !== planId));
+  const deletePlan = async (planId: string) => {
+    const { error } = await supabase.from('exchange_plans').delete().eq('id', planId);
+    if (error) throw error;
+    await fetchPlans();
   };
 
   const value = {
     plans,
     currentPlan,
+    loading,
     createPlan,
     updatePlan,
     setActivePlan,
     getPlanForPatient,
-    deletePlan
+    deletePlan,
+    refreshPlans: fetchPlans,
   };
 
   return (

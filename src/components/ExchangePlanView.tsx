@@ -123,7 +123,7 @@ const ExchangePlanView: React.FC = () => {
               <Stethoscope className="w-5 h-5 text-green-500" />
               <div>
                 <p className="text-sm text-gray-600">Last Modified By</p>
-                <p className="font-medium">{currentPlan.modifiedBy}</p>
+                <p className="font-medium">{currentPlan.modifiedAt}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -210,7 +210,7 @@ const ExchangePlanView: React.FC = () => {
                   <div>
                     <p className="font-medium">{plan.name}</p>
                     <p className="text-sm text-gray-600">
-                      Modified {plan.modifiedAt} by {plan.modifiedBy}
+                      Modified {plan.modifiedAt}
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
