@@ -242,7 +242,9 @@ const DoctorDashboard: React.FC = () => {
         </button>
         {moreView === 'requests' && <PendingPatientRequests />}
         {moreView === 'learning' && <DoctorLearningAssignments />}
+        {moreView === 'preview-education' && <LearningCenter />}
         {moreView === 'communication' && <CommentSystem patients={patients} />}
+        {moreView === 'export' && <ExportTools />}
         {moreView === 'export' && <ExportTools />}
       </div>
     );
