@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Eye } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNav } from '@/components/Layout';
@@ -17,6 +18,7 @@ import LabOverview from '@/components/LabOverview';
 import PendingPatientRequests from '@/components/PendingPatientRequests';
 import DoctorLearningAssignments from '@/components/learning/DoctorLearningAssignments';
 import DailySummary from '@/components/DailySummary';
+import LearningCenter from '@/components/learning/LearningCenter';
 import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings, BookOpen } from 'lucide-react';
 
 export interface RealPatient {
@@ -35,6 +37,7 @@ export interface RealPatient {
 const moreSubItems = [
   { id: 'requests', icon: UserPlus, label: 'Patient Requests', description: 'Pending assignment requests', emoji: '📋' },
   { id: 'learning', icon: BookOpen, label: 'Learning Assignments', description: 'Assign education modules to patients', emoji: '📚' },
+  { id: 'preview-education', icon: Eye, label: 'Preview Education Content', description: 'Review all patient learning materials', emoji: '👁️' },
   { id: 'communication', icon: MessageSquare, label: 'Messages', description: 'Patient communications', emoji: '💬' },
   { id: 'export', icon: Download, label: 'Export Data', description: 'Download reports & data', emoji: '📥' },
 ];
@@ -239,7 +242,9 @@ const DoctorDashboard: React.FC = () => {
         </button>
         {moreView === 'requests' && <PendingPatientRequests />}
         {moreView === 'learning' && <DoctorLearningAssignments />}
+        {moreView === 'preview-education' && <LearningCenter />}
         {moreView === 'communication' && <CommentSystem patients={patients} />}
+        {moreView === 'export' && <ExportTools />}
         {moreView === 'export' && <ExportTools />}
       </div>
     );
