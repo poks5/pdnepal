@@ -88,6 +88,16 @@ const LearningCenter: React.FC = () => {
 
   const selectedModuleData = learningModules.find(m => m.id === selectedModule);
 
+  if (showPathway) {
+    return (
+      <PeritonitisPathway
+        onBack={() => setShowPathway(false)}
+        completedModules={completedModules}
+        onMarkComplete={handleMarkComplete}
+      />
+    );
+  }
+
   if (selectedModuleData) {
     return (
       <LearningModuleViewer
