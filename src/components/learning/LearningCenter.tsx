@@ -21,6 +21,7 @@ const LearningCenter: React.FC = () => {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [showPathway, setShowPathway] = useState(false);
 
   useEffect(() => {
     if (!user) return;
