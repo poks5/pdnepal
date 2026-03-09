@@ -19,31 +19,73 @@ export type Database = {
           action: string
           created_at: string
           id: string
+          ip_address: string | null
           new_data: Json | null
           old_data: Json | null
           record_id: string | null
           table_name: string
+          user_agent: string | null
           user_id: string | null
         }
         Insert: {
           action: string
           created_at?: string
           id?: string
+          ip_address?: string | null
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string | null
           table_name: string
+          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
           created_at?: string
           id?: string
+          ip_address?: string | null
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string | null
           table_name?: string
+          user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      centers: {
+        Row: {
+          address: string | null
+          code: string
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          code: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          code?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -849,6 +891,7 @@ export type Database = {
         Row: {
           address: string | null
           avatar_url: string | null
+          center_id: string | null
           created_at: string
           date_of_birth: string | null
           emergency_contact_name: string | null
@@ -865,6 +908,7 @@ export type Database = {
         Insert: {
           address?: string | null
           avatar_url?: string | null
+          center_id?: string | null
           created_at?: string
           date_of_birth?: string | null
           emergency_contact_name?: string | null
@@ -881,6 +925,7 @@ export type Database = {
         Update: {
           address?: string | null
           avatar_url?: string | null
+          center_id?: string | null
           created_at?: string
           date_of_birth?: string | null
           emergency_contact_name?: string | null
@@ -893,6 +938,110 @@ export type Database = {
           specialization?: string[] | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_center_id_fkey"
+            columns: ["center_id"]
+            isOneToOne: false
+            referencedRelation: "centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      record_locks: {
+        Row: {
+          id: string
+          lock_reason: string | null
+          locked_at: string
+          locked_by: string
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          id?: string
+          lock_reason?: string | null
+          locked_at?: string
+          locked_by: string
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          id?: string
+          lock_reason?: string | null
+          locked_at?: string
+          locked_by?: string
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
+      record_versions: {
+        Row: {
+          change_reason: string | null
+          changed_at: string
+          changed_by: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string
+          table_name: string
+          version_number: number
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_at?: string
+          changed_by: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id: string
+          table_name: string
+          version_number?: number
+        }
+        Update: {
+          change_reason?: string | null
+          changed_at?: string
+          changed_by?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string
+          table_name?: string
+          version_number?: number
+        }
+        Relationships: []
+      }
+      system_config: {
+        Row: {
+          category: string
+          config_key: string
+          config_value: Json
+          created_at: string
+          description: string | null
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category?: string
+          config_key: string
+          config_value?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          config_key?: string
+          config_value?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
