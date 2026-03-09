@@ -110,7 +110,7 @@ const LearningCenter: React.FC = () => {
               {language === 'en' ? 'Learning Center' : 'सिकाइ केन्द्र'}
             </h2>
             <p className="text-xs text-muted-foreground">
-              {language === 'en' ? 'Your PD education journey' : 'तपाईंको PD शिक्षा यात्रा'}
+              {language === 'en' ? `${learningModules.reduce((s, m) => s + m.cards.length, 0)} infographic slides · ${learningModules.length} modules` : `${learningModules.reduce((s, m) => s + m.cards.length, 0)} इन्फोग्राफिक स्लाइड · ${learningModules.length} मोड्युल`}
             </p>
           </div>
         </div>
