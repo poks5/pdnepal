@@ -16,6 +16,7 @@ import PlansTab from '@/components/PlansTab';
 import LabOverview from '@/components/LabOverview';
 import PendingPatientRequests from '@/components/PendingPatientRequests';
 import DoctorLearningAssignments from '@/components/learning/DoctorLearningAssignments';
+import DailySummary from '@/components/DailySummary';
 import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings, BookOpen } from 'lucide-react';
 
 export interface RealPatient {
@@ -246,6 +247,7 @@ const DoctorDashboard: React.FC = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      <DailySummary />
       <DashboardHeader patientCount={patients.length} totalAlerts={totalAlerts} avgAdherence={avgAdherence} criticalCount={criticalCount} />
       <DashboardCards patientCount={patients.length} totalAlerts={totalAlerts} totalMissedExchanges={totalMissedExchanges} avgAdherence={avgAdherence} criticalCount={criticalCount} pendingLabCount={pendingLabCount} />
 
