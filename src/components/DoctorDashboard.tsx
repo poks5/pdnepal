@@ -36,6 +36,7 @@ export interface RealPatient {
 const moreSubItems = [
   { id: 'requests', icon: UserPlus, label: 'Patient Requests', description: 'Pending assignment requests', emoji: '📋' },
   { id: 'learning', icon: BookOpen, label: 'Learning Assignments', description: 'Assign education modules to patients', emoji: '📚' },
+  { id: 'preview-education', icon: Eye, label: 'Preview Education Content', description: 'Review all patient learning materials', emoji: '👁️' },
   { id: 'communication', icon: MessageSquare, label: 'Messages', description: 'Patient communications', emoji: '💬' },
   { id: 'export', icon: Download, label: 'Export Data', description: 'Download reports & data', emoji: '📥' },
 ];
