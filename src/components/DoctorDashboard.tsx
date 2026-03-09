@@ -18,6 +18,7 @@ import LabOverview from '@/components/LabOverview';
 import PendingPatientRequests from '@/components/PendingPatientRequests';
 import DoctorLearningAssignments from '@/components/learning/DoctorLearningAssignments';
 import DailySummary from '@/components/DailySummary';
+import LearningCenter from '@/components/learning/LearningCenter';
 import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings, BookOpen } from 'lucide-react';
 
 export interface RealPatient {
