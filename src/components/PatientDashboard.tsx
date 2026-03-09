@@ -38,13 +38,34 @@ const settingsSubItems = [
 const PatientDashboard: React.FC = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  const { activeTab, setActiveTab } = useNav();
+  const { activeTab, setActiveTab, setBadgeCounts } = useNav();
   const { exchangeLogs, addExchangeLog } = usePatient();
   const [showAddExchange, setShowAddExchange] = useState(false);
   const [savingExchange, setSavingExchange] = useState(false);
   const [settingsView, setSettingsView] = useState<string | null>(null);
   const [learningKey, setLearningKey] = useState(0);
   const { toast } = useToast();
+
+  // Fetch unread learning assignments count
+  const fetchLearningBadge = useCallback(async () => {
+    if (!user) return;
+    const [{ data: assignments }, { data: progress }] = await Promise.all([
+      supabase.from('learning_assignments').select('module_id').eq('patient_id', user.id),
+      supabase.from('learning_progress').select('module_id').eq('user_id', user.id).eq('completed', true),
+    ]);
+    const completedIds = new Set((progress || []).map(p => p.module_id));
+    const unread = (assignments || []).filter(a => !completedIds.has(a.module_id)).length;
+    setBadgeCounts(prev => ({ ...prev, learning: unread }));
+  }, [user, setBadgeCounts]);
+
+  useEffect(() => { fetchLearningBadge(); }, [fetchLearningBadge, learningKey]);
+
+  // Clear badge when viewing learning tab
+  useEffect(() => {
+    if (activeTab === 'learning') {
+      setBadgeCounts(prev => ({ ...prev, learning: 0 }));
+    }
+  }, [activeTab, setBadgeCounts]);
 
   // Realtime listener for new learning assignments
   useEffect(() => {
