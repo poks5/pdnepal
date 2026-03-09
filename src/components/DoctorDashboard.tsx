@@ -247,6 +247,7 @@ const DoctorDashboard: React.FC = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      <DailySummary />
       <DashboardHeader patientCount={patients.length} totalAlerts={totalAlerts} avgAdherence={avgAdherence} criticalCount={criticalCount} />
       <DashboardCards patientCount={patients.length} totalAlerts={totalAlerts} totalMissedExchanges={totalMissedExchanges} avgAdherence={avgAdherence} criticalCount={criticalCount} pendingLabCount={pendingLabCount} />
 
