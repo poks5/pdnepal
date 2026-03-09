@@ -205,7 +205,7 @@ const PatientDashboard: React.FC = () => {
         <TabsContent value="exchanges"><ExchangeHistory exchanges={formattedExchanges} /></TabsContent>
         <TabsContent value="analytics"><AnalyticsDashboard /></TabsContent>
         <TabsContent value="lab-data"><LabDataManagement /></TabsContent>
-        <TabsContent value="learning"><LearningCenter /></TabsContent>
+        <TabsContent value="learning"><LearningCenter key={learningKey} /></TabsContent>
         <TabsContent value="settings">{renderSettingsContent()}</TabsContent>
       </Tabs>
 
