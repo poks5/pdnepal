@@ -5,10 +5,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, BookOpen, Star, ChevronRight } from 'lucide-react';
+import { CheckCircle2, BookOpen, Star, ChevronRight, Shield, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { learningModules, categories } from './learningContent';
 import LearningModuleViewer from './LearningModuleViewer';
+import PeritonitisPathway from './PeritonitisPathway';
 import { useToast } from '@/hooks/use-toast';
 
 const LearningCenter: React.FC = () => {
