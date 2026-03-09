@@ -36,14 +36,45 @@ const settingsSubItems = [
 ];
 
 const PatientDashboard: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const { activeTab, setActiveTab } = useNav();
   const { exchangeLogs, addExchangeLog } = usePatient();
   const [showAddExchange, setShowAddExchange] = useState(false);
   const [savingExchange, setSavingExchange] = useState(false);
   const [settingsView, setSettingsView] = useState<string | null>(null);
+  const [learningKey, setLearningKey] = useState(0);
   const { toast } = useToast();
+
+  // Realtime listener for new learning assignments
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('learning-assignments-notify')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'learning_assignments',
+          filter: `patient_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const moduleId = payload.new?.module_id as string;
+          const mod = learningModules.find(m => m.id === moduleId);
+          const title = mod?.title[language] || moduleId;
+          toast({
+            title: language === 'en' ? '📚 New Learning Module Assigned' : '📚 नयाँ सिकाइ मोड्युल तोकियो',
+            description: title,
+          });
+          // Force LearningCenter to refetch
+          setLearningKey(k => k + 1);
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user, language, toast]);
 
   const todayExchanges = { completed: 2, total: 4, nextTime: '18:00' };
   const weeklyStats = { adherence: 85, avgUF: 350, missedExchanges: 1 };
