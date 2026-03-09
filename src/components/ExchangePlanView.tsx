@@ -210,7 +210,7 @@ const ExchangePlanView: React.FC = () => {
                   <div>
                     <p className="font-medium">{plan.name}</p>
                     <p className="text-sm text-gray-600">
-                      Modified {plan.modifiedAt} by {plan.modifiedBy}
+                      Modified {plan.modifiedAt}
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
