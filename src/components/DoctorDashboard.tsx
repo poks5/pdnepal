@@ -32,10 +32,10 @@ export interface RealPatient {
 }
 
 const moreSubItems = [
-  { id: 'requests', icon: UserPlus, label: 'Patient Requests', description: 'Pending assignment requests' },
-  { id: 'learning', icon: BookOpen, label: 'Learning Assignments', description: 'Assign education modules to patients' },
-  { id: 'communication', icon: MessageSquare, label: 'Messages', description: 'Patient communications' },
-  { id: 'export', icon: Download, label: 'Export Data', description: 'Download reports & data' },
+  { id: 'requests', icon: UserPlus, label: 'Patient Requests', description: 'Pending assignment requests', emoji: '📋' },
+  { id: 'learning', icon: BookOpen, label: 'Learning Assignments', description: 'Assign education modules to patients', emoji: '📚' },
+  { id: 'communication', icon: MessageSquare, label: 'Messages', description: 'Patient communications', emoji: '💬' },
+  { id: 'export', icon: Download, label: 'Export Data', description: 'Download reports & data', emoji: '📥' },
 ];
 
 const DoctorDashboard: React.FC = () => {
@@ -48,6 +48,7 @@ const DoctorDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [moreView, setMoreView] = useState<string | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
+  const [pendingLabCount, setPendingLabCount] = useState(0);
 
   // Fetch pending request count
   useEffect(() => {
@@ -64,6 +65,28 @@ const DoctorDashboard: React.FC = () => {
     };
     fetchPending();
   }, [user]);
+
+  // Fetch pending labs (unverified)
+  useEffect(() => {
+    if (!user) return;
+    const fetchPendingLabs = async () => {
+      const { data: assignments } = await supabase
+        .from('doctor_patient_assignments')
+        .select('patient_id')
+        .eq('doctor_id', user.id)
+        .eq('status', 'active');
+      if (!assignments?.length) return;
+      const patientIds = assignments.map(a => a.patient_id);
+      const { count } = await supabase
+        .from('lab_results')
+        .select('*', { count: 'exact', head: true })
+        .in('patient_id', patientIds)
+        .is('verified_by', null);
+      setPendingLabCount(count || 0);
+    };
+    fetchPendingLabs();
+  }, [user]);
+
   useEffect(() => {
     if (!user) return;
     const fetchPatients = async () => {
@@ -121,8 +144,8 @@ const DoctorDashboard: React.FC = () => {
             const diff = Date.now() - new Date(lastLog.created_at).getTime();
             const hours = Math.floor(diff / (1000 * 60 * 60));
             if (hours < 1) lastExchange = 'Just now';
-            else if (hours < 24) lastExchange = `${hours} hours ago`;
-            else lastExchange = `${Math.floor(hours / 24)} days ago`;
+            else if (hours < 24) lastExchange = `${hours}h ago`;
+            else lastExchange = `${Math.floor(hours / 24)}d ago`;
           }
 
           return {
@@ -151,6 +174,8 @@ const DoctorDashboard: React.FC = () => {
 
   const totalAlerts = patients.reduce((sum, p) => sum + p.alerts, 0);
   const totalMissedExchanges = patients.reduce((sum, p) => sum + p.missedExchanges, 0);
+  const avgAdherence = patients.length > 0 ? Math.round(patients.reduce((sum, p) => sum + p.adherence, 0) / patients.length) : 0;
+  const criticalCount = patients.filter(p => p.status === 'attention').length;
 
   const handleManagePlan = (patient: any) => { setEditingPatient(patient); setShowPlanEditor(true); };
   const handleViewPatient = (patient: any) => setSelectedPatient(patient);
@@ -165,8 +190,8 @@ const DoctorDashboard: React.FC = () => {
 
   const tabItems = [
     { value: 'patients', icon: Users, label: 'Patients', badge: 0 },
-    { value: 'alerts', icon: AlertTriangle, label: 'Alerts', badge: 0 },
-    { value: 'labs', icon: FileText, label: 'Labs', badge: 0 },
+    { value: 'alerts', icon: AlertTriangle, label: 'Alerts', badge: totalAlerts },
+    { value: 'labs', icon: FileText, label: 'Labs', badge: pendingLabCount },
     { value: 'plans', icon: ClipboardList, label: 'Plans', badge: 0 },
     { value: 'more', icon: Settings, label: 'More', badge: pendingCount },
   ];
@@ -175,17 +200,24 @@ const DoctorDashboard: React.FC = () => {
     if (!moreView) {
       return (
         <div className="space-y-2">
-          {moreSubItems.map(({ id, icon: Icon, label, description }) => (
+          {moreSubItems.map(({ id, icon: Icon, label, description, emoji }) => (
             <button
               key={id}
               onClick={() => setMoreView(id)}
               className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 hover:shadow-sm transition-all group text-left"
             >
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                <Icon className="w-5 h-5 text-primary" />
+              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                <span className="text-xl">{emoji}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">{label}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  {id === 'requests' && pendingCount > 0 && (
+                    <span className="min-w-[20px] h-5 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5">
+                      {pendingCount}
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">{description}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
@@ -214,8 +246,8 @@ const DoctorDashboard: React.FC = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <DashboardHeader patientCount={patients.length} totalAlerts={totalAlerts} />
-      <DashboardCards patientCount={patients.length} totalAlerts={totalAlerts} totalMissedExchanges={totalMissedExchanges} />
+      <DashboardHeader patientCount={patients.length} totalAlerts={totalAlerts} avgAdherence={avgAdherence} criticalCount={criticalCount} />
+      <DashboardCards patientCount={patients.length} totalAlerts={totalAlerts} totalMissedExchanges={totalMissedExchanges} avgAdherence={avgAdherence} criticalCount={criticalCount} pendingLabCount={pendingLabCount} />
 
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v !== 'more') setMoreView(null); }} className="space-y-4 sm:space-y-6">
         <div className="overflow-x-auto -mx-4 px-4 no-scrollbar">
