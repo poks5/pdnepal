@@ -17,7 +17,6 @@ const ROLES: { role: UserRole; icon: React.ReactNode; label: string; desc: strin
   { role: 'patient', icon: <Heart className="w-7 h-7" />, label: 'Patient', desc: 'Manage your PD care' },
   { role: 'doctor', icon: <Stethoscope className="w-7 h-7" />, label: 'Doctor', desc: 'Monitor your patients' },
   { role: 'caregiver', icon: <Users className="w-7 h-7" />, label: 'Caregiver', desc: 'Support a loved one' },
-  { role: 'coordinator', icon: <Building2 className="w-7 h-7" />, label: 'Coordinator', desc: 'Hospital staff' },
 ];
 
 const RegisterForm: React.FC<Props> = ({ onBack }) => {
