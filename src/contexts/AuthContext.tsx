@@ -72,6 +72,7 @@ async function fetchAppUser(supabaseUser: SupabaseUser): Promise<AppUser | null>
     id: supabaseUser.id,
     email: supabaseUser.email ?? '',
     role,
+    roles: userRoles,
     fullName: profile.full_name,
     phone: profile.phone ?? undefined,
     language: profile.language,
