@@ -60,7 +60,10 @@ async function fetchAppUser(supabaseUser: SupabaseUser): Promise<AppUser | null>
     .select('role')
     .eq('user_id', supabaseUser.id);
 
-  const role = (roles?.[0]?.role as UserRole) ?? 'patient';
+  // Priority: admin > coordinator > doctor > caregiver > patient
+  const rolePriority: UserRole[] = ['admin', 'coordinator', 'doctor', 'caregiver', 'patient'];
+  const userRoles = (roles ?? []).map(r => r.role as UserRole);
+  const role = rolePriority.find(r => userRoles.includes(r)) ?? 'patient';
 
   if (!profile) return null;
 
