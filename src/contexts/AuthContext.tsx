@@ -9,6 +9,7 @@ export interface AppUser {
   id: string;
   email: string;
   role: UserRole;
+  roles: UserRole[];
   fullName: string;
   phone?: string;
   language: string;
