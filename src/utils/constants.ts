@@ -12,7 +12,7 @@ export const APP_CONFIG = {
 } as const;
 
 export const API_ENDPOINTS = {
-  base: process.env.NODE_ENV === 'production' ? 'https://api.pdsathi.com' : 'http://localhost:3000',
+  base: import.meta.env.PROD ? 'https://api.pdsathi.com' : 'http://localhost:3000',
   auth: '/api/auth',
   patients: '/api/patients',
   doctors: '/api/doctors',
