@@ -18,7 +18,7 @@ const VoiceNote: React.FC<VoiceNoteProps> = ({ onSave, onCancel }) => {
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { toast } = useToast();
 
   const startRecording = async () => {

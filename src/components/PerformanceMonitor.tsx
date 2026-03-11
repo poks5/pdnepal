@@ -19,7 +19,7 @@ const PerformanceMonitor = () => {
           };
 
           // In production, send to analytics service
-          if (process.env.NODE_ENV === 'production') {
+          if (import.meta.env.PROD) {
             console.log('Performance metrics:', metrics);
             // sendToAnalytics('performance', metrics);
           }
