@@ -945,6 +945,8 @@ export type Database = {
           hospital: string | null
           id: string
           language: string
+          nagrita_district: string | null
+          nagrita_number: string | null
           phone: string | null
           specialization: string[] | null
           updated_at: string
@@ -962,6 +964,8 @@ export type Database = {
           hospital?: string | null
           id?: string
           language?: string
+          nagrita_district?: string | null
+          nagrita_number?: string | null
           phone?: string | null
           specialization?: string[] | null
           updated_at?: string
@@ -979,6 +983,8 @@ export type Database = {
           hospital?: string | null
           id?: string
           language?: string
+          nagrita_district?: string | null
+          nagrita_number?: string | null
           phone?: string | null
           specialization?: string[] | null
           updated_at?: string
