@@ -22,6 +22,7 @@ interface DashboardOverviewProps {
     missedExchanges: number;
   };
   recentExchanges: DailyExchangeLog[];
+  allExchangeLogs: DailyExchangeLog[];
   onAddExchange: () => void;
 }
 
