@@ -13,7 +13,7 @@ const TrendAnalysis: React.FC = () => {
 
   const daysBack = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 90;
 
-  const { ufData, drainColorData, exchangeCountData, stats, alerts } = useMemo(() => {
+  const { ufData, drainColorData, exchangeCountData, weightData, painData, stats, alerts } = useMemo(() => {
     const cutoff = new Date(Date.now() - daysBack * 86400000);
     const filtered = exchangeLogs.filter(l => new Date(l.timestamp) >= cutoff);
 
@@ -34,6 +34,34 @@ const TrendAnalysis: React.FC = () => {
       .map(([date, { count }]) => ({ date, count }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    // Weight trend
+    const dailyWeight = new Map<string, number[]>();
+    filtered.forEach(log => {
+      if (log.weightAfterKg) {
+        const date = new Date(log.timestamp).toISOString().split('T')[0];
+        const prev = dailyWeight.get(date) || [];
+        prev.push(log.weightAfterKg);
+        dailyWeight.set(date, prev);
+      }
+    });
+    const weightData = Array.from(dailyWeight.entries())
+      .map(([date, weights]) => ({ date, weight: Math.round((weights.reduce((s, w) => s + w, 0) / weights.length) * 10) / 10 }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Pain trend
+    const dailyPain = new Map<string, number[]>();
+    filtered.forEach(log => {
+      if (log.painLevel !== undefined && log.painLevel !== null) {
+        const date = new Date(log.timestamp).toISOString().split('T')[0];
+        const prev = dailyPain.get(date) || [];
+        prev.push(log.painLevel);
+        dailyPain.set(date, prev);
+      }
+    });
+    const painData = Array.from(dailyPain.entries())
+      .map(([date, pains]) => ({ date, pain: Math.round((pains.reduce((s, p) => s + p, 0) / pains.length) * 10) / 10 }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
     // Drain color distribution
     const colorCounts: Record<string, number> = {};
     filtered.forEach(log => {
@@ -49,6 +77,10 @@ const TrendAnalysis: React.FC = () => {
     const prevAvg = prev7.length ? prev7.reduce((s, d) => s + d.uf, 0) / prev7.length : recentAvg;
     const change = prevAvg ? Math.round(((recentAvg - prevAvg) / prevAvg) * 100) : 0;
 
+    const latestWeight = weightData.length ? weightData[weightData.length - 1].weight : null;
+    const prevWeight = weightData.length >= 2 ? weightData[weightData.length - 2].weight : null;
+    const weightChange = latestWeight && prevWeight ? Math.round((latestWeight - prevWeight) * 10) / 10 : null;
+
     // Alerts
     const alerts: { type: string; message: string; tip: string }[] = [];
     if (recent7.length >= 5) {
@@ -58,10 +90,17 @@ const TrendAnalysis: React.FC = () => {
     if (recentAvg > 0 && recentAvg < 300) {
       alerts.push({ type: 'alert', message: 'Average UF below 300ml', tip: 'Consult nephrologist about adequacy' });
     }
+    if (weightChange !== null && weightChange > 2) {
+      alerts.push({ type: 'warning', message: `Weight increased by ${weightChange}kg`, tip: 'Monitor fluid intake and UF adequacy' });
+    }
 
     return {
-      ufData, drainColorData, exchangeCountData,
-      stats: { avg: recentAvg, change, trend: change >= 0 ? 'up' : 'down' as const, days: ufData.length, total: filtered.length },
+      ufData, drainColorData, exchangeCountData, weightData, painData,
+      stats: {
+        avg: recentAvg, change, trend: change >= 0 ? 'up' : 'down' as const,
+        days: ufData.length, total: filtered.length,
+        latestWeight, weightChange,
+      },
       alerts,
     };
   }, [exchangeLogs, daysBack]);
