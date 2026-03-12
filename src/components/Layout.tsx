@@ -22,9 +22,10 @@ export const useNav = () => useContext(NavContext);
 
 interface LayoutProps {
   children: React.ReactNode;
+  viewRole?: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
   const { user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -78,8 +79,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
 
-  const navItems = user?.role === 'doctor' ? doctorNav
-    : user?.role === 'admin' || user?.role === 'coordinator' ? adminNav
+  const navRole = viewRole ?? user?.role;
+  const navItems = navRole === 'doctor' ? doctorNav
+    : navRole === 'admin' || navRole === 'coordinator' ? adminNav
     : patientNav;
 
   return (

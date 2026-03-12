@@ -1,5 +1,5 @@
-import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState } from 'react';
+import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ExchangePlanProvider } from '@/contexts/ExchangePlanContext';
 import { PatientProvider } from '@/contexts/PatientContext';
@@ -9,9 +9,14 @@ import PatientDashboard from '@/components/PatientDashboard';
 import DoctorDashboard from '@/components/DoctorDashboard';
 import CaregiverDashboard from '@/components/CaregiverDashboard';
 import AdminDashboard from '@/components/AdminDashboard';
+import RoleSwitcher from '@/components/RoleSwitcher';
 
 const AppContent: React.FC = () => {
   const { user, isAuthenticated, loading } = useAuth();
+  const [viewRole, setViewRole] = useState<UserRole | null>(null);
+
+  // Reset viewRole when user changes
+  const effectiveRole = viewRole ?? user?.role ?? 'patient';
 
   if (loading) {
     return (
@@ -32,7 +37,7 @@ const AppContent: React.FC = () => {
   }
 
   const renderDashboard = () => {
-    switch (user.role) {
+    switch (effectiveRole) {
       case 'patient': return <PatientDashboard />;
       case 'doctor': return <DoctorDashboard />;
       case 'caregiver': return <CaregiverDashboard />;
@@ -43,7 +48,15 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <Layout>
+    <Layout viewRole={effectiveRole}>
+      {user.roles?.includes('admin') && (
+        <div className="mb-4">
+          <RoleSwitcher
+            activeViewRole={effectiveRole}
+            onSwitchRole={(role) => setViewRole(role)}
+          />
+        </div>
+      )}
       {renderDashboard()}
     </Layout>
   );
