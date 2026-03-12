@@ -10,6 +10,7 @@ export interface ExchangeData {
   fillVolume: number;
   ultrafiltration: number;
   weightAfter: number | null;
+  solutionType: string;
   clarity: 'clear' | 'cloudy';
   color: 'normal' | 'yellow' | 'red' | 'brown';
   pain: number;
@@ -27,6 +28,7 @@ export const useExchangeForm = () => {
     fillVolume: 2000,
     ultrafiltration: 0,
     weightAfter: null,
+    solutionType: 'Dianeal 1.5%',
     clarity: 'clear',
     color: 'normal',
     pain: 0,

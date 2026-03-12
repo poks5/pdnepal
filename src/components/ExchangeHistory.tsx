@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Droplets, AlertTriangle, Filter } from 'lucide-react';
+import { Calendar, Clock, Droplets, AlertTriangle, Scale } from 'lucide-react';
 
 interface Exchange {
   id: string;
@@ -18,6 +18,8 @@ interface Exchange {
   pain: number;
   notes?: string;
   symptoms?: string[];
+  solutionType?: string;
+  weightAfterKg?: number | null;
 }
 
 interface ExchangeHistoryProps {
@@ -85,6 +87,11 @@ const ExchangeHistory: React.FC<ExchangeHistoryProps> = ({ exchanges = [] }) => 
                       <Badge className={`${tc.bg} ${tc.text} border-0 text-[10px] px-1.5 py-0`}>
                         {t(ex.type)}
                       </Badge>
+                      {ex.solutionType && (
+                        <Badge className="bg-primary/10 text-primary border-0 text-[10px] px-1.5 py-0">
+                          {ex.solutionType}
+                        </Badge>
+                      )}
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Clock className="w-3 h-3" /> {ex.time}
                       </span>
@@ -93,8 +100,8 @@ const ExchangeHistory: React.FC<ExchangeHistoryProps> = ({ exchanges = [] }) => 
                     {concern && <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />}
                   </div>
 
-                  {/* Stats grid — 2x2 on mobile, 4 col on desktop */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                  {/* Stats grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
                     <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
                       <span className="text-[10px] text-muted-foreground block">{t('drain')}</span>
                       <span className="font-semibold text-foreground">{ex.drainVolume}ml</span>
@@ -115,6 +122,14 @@ const ExchangeHistory: React.FC<ExchangeHistoryProps> = ({ exchanges = [] }) => 
                         {ex.pain}/10
                       </span>
                     </div>
+                    {ex.weightAfterKg != null && (
+                      <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
+                        <span className="text-[10px] text-muted-foreground block flex items-center gap-0.5">
+                          <Scale className="w-2.5 h-2.5" /> {t('weight') || 'Weight'}
+                        </span>
+                        <span className="font-semibold text-foreground">{ex.weightAfterKg}kg</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Clarity & color */}

@@ -5,9 +5,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calculator } from 'lucide-react';
 import { ExchangeData } from '@/hooks/useExchangeForm';
 import { calculateUF, getUFCalculationMessage } from '@/utils/ufCalculations';
+import { MEDICAL_CONSTANTS } from '@/utils/constants';
 
 interface VolumeSectionProps {
   formData: ExchangeData;
@@ -40,6 +42,19 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <Label htmlFor="solutionType">{t('solutionType') || 'Solution Type'}</Label>
+        <Select value={formData.solutionType} onValueChange={(value) => updateField('solutionType', value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select solution" />
+          </SelectTrigger>
+          <SelectContent>
+            {MEDICAL_CONSTANTS.solutionTypes.map((sol) => (
+              <SelectItem key={sol} value={sol}>{sol}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div>
         <Label htmlFor="drainVolume">{t('drainVolume')}</Label>
         <Input

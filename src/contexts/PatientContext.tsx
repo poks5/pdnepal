@@ -145,11 +145,12 @@ export const PatientProvider: React.FC<PatientProviderProps> = ({ children }) =>
             clarity: row.drain_color === 'cloudy' ? 'cloudy' : 'clear',
             painLevel: row.pain_level ?? 0,
             dwellTime: 4,
-            dialysateStrength: (row.solution_type as any) || '1.5%',
+            dialysateStrength: row.solution_type || 'Dianeal 1.5%',
             notes: row.notes ?? undefined,
             exchangeType: row.exchange_type as any,
             photos: [],
             symptomTags: (row as any).symptoms ?? [],
+            weightAfterKg: row.weight_after_kg ? Number(row.weight_after_kg) : null,
           }));
           setExchangeLogs(mapped);
         }

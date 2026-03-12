@@ -135,7 +135,7 @@ const PatientDashboard: React.FC = () => {
         recorded_by: user.id,
         dwell_start: new Date().toISOString(),
         exchange_type: exchangeData.type,
-        solution_type: '1.5%',
+        solution_type: exchangeData.solutionType || 'Dianeal 1.5%',
         fill_volume_ml: exchangeData.fillVolume,
         drain_volume_ml: exchangeData.drainVolume,
         drain_color: exchangeData.clarity,
@@ -156,11 +156,12 @@ const PatientDashboard: React.FC = () => {
         clarity: exchangeData.clarity === 'clear' ? 'clear' : 'cloudy',
         painLevel: exchangeData.pain,
         dwellTime: 4,
-        dialysateStrength: '1.5%',
+        dialysateStrength: exchangeData.solutionType || 'Dianeal 1.5%',
         notes: exchangeData.notes,
         exchangeType: exchangeData.type,
         photos: [],
-        symptomTags: exchangeData.symptoms as any
+        symptomTags: exchangeData.symptoms as any,
+        weightAfterKg: exchangeData.weightAfter,
       };
       addExchangeLog(newExchangeLog);
       setShowAddExchange(false);
