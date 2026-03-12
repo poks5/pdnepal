@@ -65,14 +65,15 @@ export const useExchangeForm = () => {
     fetchLastWeight();
   }, [exchangeLogs]);
 
-  // Auto-calculate UF when drain volume changes
+  // Auto-calculate UF whenever drain or fill volume changes
   useEffect(() => {
-    if (previousFillVolume && formData.drainVolume > 0 && !isUFAutoCalculated) {
-      const calculatedUF = calculateUF(formData.drainVolume, previousFillVolume, formData.fillVolume);
+    if (formData.drainVolume && formData.drainVolume > 0) {
+      const infillVolume = previousFillVolume ?? formData.fillVolume;
+      const calculatedUF = calculateUF(formData.drainVolume, infillVolume, formData.fillVolume);
       setFormData(prev => ({ ...prev, ultrafiltration: calculatedUF }));
       setIsUFAutoCalculated(true);
     }
-  }, [formData.drainVolume, previousFillVolume, isUFAutoCalculated]);
+  }, [formData.drainVolume, formData.fillVolume, previousFillVolume]);
 
   const updateField = (field: keyof ExchangeData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
