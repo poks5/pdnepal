@@ -24,7 +24,7 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.drainVolume < 0 || formData.fillVolume <= 0) {
+    if (!formData.drainVolume || formData.drainVolume < 0 || formData.fillVolume <= 0) {
       toast({ title: t('validationError'), description: t('enterValidVolumes'), variant: 'destructive' });
       return;
     }
