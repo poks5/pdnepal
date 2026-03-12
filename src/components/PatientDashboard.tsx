@@ -156,7 +156,7 @@ const PatientDashboard: React.FC = () => {
         clarity: exchangeData.clarity === 'clear' ? 'clear' : 'cloudy',
         painLevel: exchangeData.pain,
         dwellTime: 4,
-        dialysateStrength: '1.5%',
+        dialysateStrength: exchangeData.solutionType || 'Dianeal 1.5%',
         notes: exchangeData.notes,
         exchangeType: exchangeData.type,
         photos: [],

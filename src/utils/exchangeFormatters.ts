@@ -14,6 +14,8 @@ export interface FormattedExchange {
   pain: number;
   notes?: string;
   symptoms?: string[];
+  solutionType?: string;
+  weightAfterKg?: number | null;
 }
 
 export const formatExchangeForHistory = (log: DailyExchangeLog): FormattedExchange => ({
@@ -28,5 +30,7 @@ export const formatExchangeForHistory = (log: DailyExchangeLog): FormattedExchan
   color: 'normal',
   pain: log.painLevel || 0,
   notes: log.notes,
-  symptoms: log.symptomTags || []
+  symptoms: log.symptomTags || [],
+  solutionType: log.dialysateStrength || undefined,
+  weightAfterKg: log.weightAfterKg ?? null,
 });

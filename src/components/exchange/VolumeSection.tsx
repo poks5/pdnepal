@@ -43,6 +43,19 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div>
+        <Label htmlFor="solutionType">{t('solutionType') || 'Solution Type'}</Label>
+        <Select value={formData.solutionType} onValueChange={(value) => updateField('solutionType', value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select solution" />
+          </SelectTrigger>
+          <SelectContent>
+            {MEDICAL_CONSTANTS.solutionTypes.map((sol) => (
+              <SelectItem key={sol} value={sol}>{sol}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
         <Label htmlFor="drainVolume">{t('drainVolume')}</Label>
         <Input
           id="drainVolume"
