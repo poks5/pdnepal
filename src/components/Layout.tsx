@@ -79,8 +79,9 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
     { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
 
-  const navItems = user?.role === 'doctor' ? doctorNav
-    : user?.role === 'admin' || user?.role === 'coordinator' ? adminNav
+  const navRole = viewRole ?? user?.role;
+  const navItems = navRole === 'doctor' ? doctorNav
+    : navRole === 'admin' || navRole === 'coordinator' ? adminNav
     : patientNav;
 
   return (
