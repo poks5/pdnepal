@@ -98,9 +98,10 @@ export interface DailyExchangeLog {
   clarity: FluidClarity;
   painLevel: number; // 0-10 scale
   dwellTime: number; // in hours
-  dialysateStrength: DialysateStrength;
+  dialysateStrength: string;
   photos?: string[];
   symptomTags?: SymptomTag[];
   notes?: string;
   exchangeType: 'morning' | 'afternoon' | 'evening' | 'night';
+  weightAfterKg?: number | null;
 }
