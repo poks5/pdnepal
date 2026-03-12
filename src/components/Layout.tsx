@@ -22,9 +22,10 @@ export const useNav = () => useContext(NavContext);
 
 interface LayoutProps {
   children: React.ReactNode;
+  viewRole?: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
   const { user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
