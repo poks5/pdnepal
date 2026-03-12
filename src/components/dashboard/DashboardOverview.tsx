@@ -30,6 +30,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   todayExchanges,
   weeklyStats,
   recentExchanges,
+  allExchangeLogs,
   onAddExchange
 }) => {
   const { user } = useAuth();
