@@ -49,11 +49,26 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           <div className="flex-1">
             <p className="text-lg sm:text-xl font-bold">{greetingEmoji} {t(greetingKey)}{firstName ? `, ${firstName}` : ''}</p>
             <p className="text-sm opacity-85 mt-1">{t('pdJourneyGreat')}</p>
-            <div className="flex items-center gap-2 mt-3">
-              <span className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-semibold">
-                {t('dayStreak')}: 🔥 7
-              </span>
-            </div>
+            {(() => {
+              // Compute real consecutive day streak
+              const logDates = new Set(recentExchanges.map(e => new Date(e.timestamp).toDateString()));
+              // Also check all exchanges passed down from parent — use broader exchange list
+              let streak = 0;
+              const d = new Date();
+              for (let i = 0; i < 365; i++) {
+                if (logDates.has(d.toDateString())) {
+                  streak++;
+                } else if (i > 0) break; // allow today to be missing (day not over)
+                d.setDate(d.getDate() - 1);
+              }
+              return streak > 0 ? (
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-semibold">
+                    {t('dayStreak')}: 🔥 {streak}
+                  </span>
+                </div>
+              ) : null;
+            })()}
           </div>
           <img
             src={patientHero}

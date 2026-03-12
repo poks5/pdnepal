@@ -97,8 +97,32 @@ const PatientDashboard: React.FC = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user, language, toast]);
 
-  const todayExchanges = { completed: 2, total: 4, nextTime: '18:00' };
-  const weeklyStats = { adherence: 85, avgUF: 350, missedExchanges: 1 };
+  // Compute real today's progress from exchange logs
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayLogs = exchangeLogs.filter(log => new Date(log.timestamp) >= today);
+  const dailyTarget = 4; // from PD settings or default
+  const exchangeTimes = ['06:00', '12:00', '18:00', '22:00'];
+  const nextPendingIdx = todayLogs.length < exchangeTimes.length ? todayLogs.length : exchangeTimes.length - 1;
+  const todayExchanges = {
+    completed: todayLogs.length,
+    total: dailyTarget,
+    nextTime: todayLogs.length >= dailyTarget ? 'Done ✅' : exchangeTimes[nextPendingIdx] || '—',
+  };
+
+  // Compute real weekly stats
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const weekLogs = exchangeLogs.filter(log => new Date(log.timestamp) >= sevenDaysAgo);
+  const weeklyTarget = dailyTarget * 7;
+  const weeklyAdherence = weeklyTarget > 0 ? Math.min(100, Math.round((weekLogs.length / weeklyTarget) * 100)) : 0;
+  const weeklyAvgUF = weekLogs.length > 0 ? Math.round(weekLogs.reduce((sum, l) => sum + (l.ultrafiltration || 0), 0) / weekLogs.length) : 0;
+  const weeklyStats = {
+    adherence: weeklyAdherence,
+    avgUF: weeklyAvgUF,
+    missedExchanges: Math.max(0, weeklyTarget - weekLogs.length),
+  };
+
   const recentExchanges = exchangeLogs.slice(0, 3);
   const formattedExchanges = exchangeLogs.map(formatExchangeForHistory);
 
