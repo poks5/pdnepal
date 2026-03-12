@@ -135,7 +135,7 @@ const PatientDashboard: React.FC = () => {
         recorded_by: user.id,
         dwell_start: new Date().toISOString(),
         exchange_type: exchangeData.type,
-        solution_type: '1.5%',
+        solution_type: exchangeData.solutionType || 'Dianeal 1.5%',
         fill_volume_ml: exchangeData.fillVolume,
         drain_volume_ml: exchangeData.drainVolume,
         drain_color: exchangeData.clarity,
