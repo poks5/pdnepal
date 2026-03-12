@@ -1,35 +1,168 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Calendar, AlertTriangle, MessageSquare, User, BookOpen } from 'lucide-react';
+import { Heart, Calendar, AlertTriangle, User, BookOpen, Loader2, RefreshCw } from 'lucide-react';
 import LearningCenter from './learning/LearningCenter';
+
+interface AssignedPatient {
+  id: string;
+  name: string;
+  relationship: string;
+}
+
+interface ExchangeLog {
+  id: string;
+  exchange_type: string;
+  drain_color: string | null;
+  created_at: string;
+  fill_volume_ml: number;
+  drain_volume_ml: number | null;
+  ultrafiltration_ml: number | null;
+}
+
+interface ClinicalAlert {
+  id: string;
+  title: string;
+  message: string;
+  severity: string;
+  created_at: string;
+  acknowledged: boolean;
+}
 
 const CaregiverDashboard: React.FC = () => {
   const { t, language } = useLanguage();
-  const [patientData] = useState({
-    name: 'Ram Bahadur Gurung',
-    relationship: 'Father',
-    todayExchanges: { completed: 2, total: 4 },
-    adherence: 85,
-    lastExchange: '2 hours ago',
-    alerts: 1
+  const { user } = useAuth();
+  const [caregiverTab, setCaregiverTab] = useState('overview');
+  const [loading, setLoading] = useState(true);
+  const [patients, setPatients] = useState<AssignedPatient[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<AssignedPatient | null>(null);
+  const [todayExchanges, setTodayExchanges] = useState<ExchangeLog[]>([]);
+  const [weekExchanges, setWeekExchanges] = useState<ExchangeLog[]>([]);
+  const [alerts, setAlerts] = useState<ClinicalAlert[]>([]);
+
+  // Fetch assigned patients
+  useEffect(() => {
+    if (!user) return;
+    const fetchAssignments = async () => {
+      setLoading(true);
+      try {
+        const { data: assignments } = await supabase
+          .from('caregiver_patient_assignments')
+          .select('patient_id, relationship')
+          .eq('caregiver_id', user.id)
+          .eq('status', 'active');
+
+        if (!assignments?.length) {
+          setPatients([]);
+          setLoading(false);
+          return;
+        }
+
+        const patientIds = assignments.map(a => a.patient_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', patientIds);
+
+        const mapped: AssignedPatient[] = (profiles || []).map(p => {
+          const assignment = assignments.find(a => a.patient_id === p.user_id);
+          return {
+            id: p.user_id,
+            name: p.full_name,
+            relationship: assignment?.relationship || '',
+          };
+        });
+
+        setPatients(mapped);
+        if (mapped.length > 0) setSelectedPatient(mapped[0]);
+      } catch (err) {
+        console.error('Failed to load caregiver assignments:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAssignments();
+  }, [user]);
+
+  // Fetch patient data when selected patient changes
+  useEffect(() => {
+    if (!selectedPatient) return;
+    const fetchPatientData = async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const [exchangeRes, alertRes] = await Promise.all([
+        supabase
+          .from('exchange_logs')
+          .select('id, exchange_type, drain_color, created_at, fill_volume_ml, drain_volume_ml, ultrafiltration_ml')
+          .eq('patient_id', selectedPatient.id)
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('clinical_alerts')
+          .select('id, title, message, severity, created_at, acknowledged')
+          .eq('patient_id', selectedPatient.id)
+          .eq('acknowledged', false)
+          .order('created_at', { ascending: false })
+          .limit(10),
+      ]);
+
+      const allExchanges = (exchangeRes.data || []) as ExchangeLog[];
+      setWeekExchanges(allExchanges);
+      setTodayExchanges(allExchanges.filter(e => new Date(e.created_at) >= today));
+      setAlerts((alertRes.data || []) as ClinicalAlert[]);
+    };
+    fetchPatientData();
+  }, [selectedPatient]);
+
+  const dailyTarget = 4;
+  const completedToday = todayExchanges.length;
+  const adherencePercent = Math.round((completedToday / dailyTarget) * 100);
+  const weeklyAdherence = Math.min(100, Math.round((weekExchanges.length / (dailyTarget * 7)) * 100));
+
+  // Schedule display
+  const exchangeTimes = ['06:00', '12:00', '18:00', '22:00'];
+  const schedule = exchangeTimes.map((time, idx) => {
+    const log = todayExchanges[idx];
+    return {
+      time,
+      type: ['morning', 'afternoon', 'evening', 'night'][idx],
+      completed: idx < completedToday,
+      clarity: log?.drain_color || null,
+    };
   });
 
-  const [recentExchanges] = useState([
-    { time: '06:00', type: 'morning', completed: true, clarity: 'clear' },
-    { time: '12:00', type: 'afternoon', completed: true, clarity: 'clear' },
-    { time: '18:00', type: 'evening', completed: false, clarity: null },
-    { time: '22:00', type: 'night', completed: false, clarity: null }
-  ]);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-  const adherencePercent = (patientData.todayExchanges.completed / patientData.todayExchanges.total) * 100;
-
-  const [caregiverTab, setCaregiverTab] = useState('overview');
+  if (patients.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 space-y-4">
+        <Heart className="w-16 h-16 text-muted-foreground/40" />
+        <h2 className="text-xl font-bold text-foreground">
+          {language === 'en' ? 'No Patient Assigned' : 'कुनै बिरामी तोकिएको छैन'}
+        </h2>
+        <p className="text-muted-foreground text-center max-w-sm">
+          {language === 'en'
+            ? 'Ask your patient to add you as a caregiver from their Settings → Caregivers section.'
+            : 'तपाईंको बिरामीलाई सेटिङ्स → हेरचाहकर्ता खण्डबाट तपाईंलाई हेरचाहकर्ताको रूपमा थप्न भन्नुहोस्।'}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -50,156 +183,202 @@ const CaregiverDashboard: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="overview">
-    <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-violet-600 rounded-xl p-6 text-white">
-        <h1 className="text-2xl font-bold mb-2">{t('welcome')}, Maya!</h1>
-        <p className="text-purple-100">
-          Caring for {patientData.name} ({patientData.relationship})
-        </p>
-        <div className="mt-4 flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Heart className="w-5 h-5" />
-            <span className="text-sm">Caregiver Dashboard</span>
-          </div>
-          <Badge className="bg-purple-100 text-purple-800">Read-only Access</Badge>
-        </div>
-      </div>
+          <div className="space-y-6">
+            {/* Welcome Section */}
+            <div className="bg-gradient-to-r from-[hsl(var(--lavender))] to-primary rounded-xl p-6 text-primary-foreground">
+              <h1 className="text-2xl font-bold mb-2">
+                {t('welcome')}, {user?.fullName?.split(' ')[0] || ''}!
+              </h1>
+              <p className="opacity-85">
+                {language === 'en' ? 'Caring for' : 'हेरचाह गर्दै'} {selectedPatient?.name}
+                {selectedPatient?.relationship ? ` (${selectedPatient.relationship})` : ''}
+              </p>
+              <div className="mt-4 flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Heart className="w-5 h-5" />
+                  <span className="text-sm">{language === 'en' ? 'Caregiver Dashboard' : 'हेरचाहकर्ता ड्यासबोर्ड'}</span>
+                </div>
+                <Badge className="bg-primary-foreground/20 text-primary-foreground border-0">
+                  {language === 'en' ? 'Read-only Access' : 'हेर्ने मात्र'}
+                </Badge>
+              </div>
 
-      {/* Patient Status Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <User className="w-5 h-5" />
-              <span>Patient Status</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Today's Progress</span>
-                  <span>{patientData.todayExchanges.completed}/{patientData.todayExchanges.total}</span>
+              {/* Patient selector if multiple */}
+              {patients.length > 1 && (
+                <div className="mt-4 flex gap-2 flex-wrap">
+                  {patients.map(p => (
+                    <Button
+                      key={p.id}
+                      size="sm"
+                      variant={selectedPatient?.id === p.id ? 'secondary' : 'ghost'}
+                      className="text-xs rounded-full"
+                      onClick={() => setSelectedPatient(p)}
+                    >
+                      {p.name}
+                    </Button>
+                  ))}
                 </div>
-                <Progress value={adherencePercent} className="h-2" />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{patientData.adherence}%</div>
-                  <div className="text-xs text-gray-600">Weekly Adherence</div>
-                </div>
-                <div className="p-3 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{patientData.alerts}</div>
-                  <div className="text-xs text-gray-600">Active Alerts</div>
-                </div>
-              </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <MessageSquare className="w-5 h-5" />
-              <span>Doctor's Notes</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-700">
-                  "Patient showing good progress. Continue current routine. Monitor for any cloudy drainage."
-                </p>
-                <p className="text-xs text-gray-500 mt-2">Dr. Sharma - 2 hours ago</p>
-              </div>
-              <Button variant="outline" size="sm" className="w-full">
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Contact Doctor
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Today's Exchange Schedule */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Calendar className="w-5 h-5" />
-            <span>Today's Exchange Schedule</span>
-          </CardTitle>
-          <CardDescription>Monitor your loved one's dialysis exchanges</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentExchanges.map((exchange, index) => (
-              <div
-                key={index}
-                className={`p-4 rounded-lg border-2 ${
-                  exchange.completed
-                    ? 'border-green-200 bg-green-50'
-                    : 'border-gray-200 bg-gray-50'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${
-                      exchange.completed ? 'bg-green-500' : 'bg-gray-300'
-                    }`} />
+            {/* Patient Status Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <User className="w-5 h-5" />
+                    <span>{language === 'en' ? 'Patient Status' : 'बिरामीको स्थिति'}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
                     <div>
-                      <p className="font-medium text-gray-900">
-                        {exchange.time} - {t(exchange.type)}
-                      </p>
-                      {exchange.completed && exchange.clarity && (
-                        <p className="text-sm text-gray-600">
-                          Clarity: {exchange.clarity}
-                        </p>
-                      )}
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{language === 'en' ? "Today's Progress" : 'आजको प्रगति'}</span>
+                        <span>{completedToday}/{dailyTarget}</span>
+                      </div>
+                      <Progress value={adherencePercent} className="h-2" />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      <div className="p-3 bg-primary/10 rounded-lg">
+                        <div className="text-2xl font-bold text-primary">{weeklyAdherence}%</div>
+                        <div className="text-xs text-muted-foreground">{language === 'en' ? 'Weekly Adherence' : 'साप्ताहिक पालना'}</div>
+                      </div>
+                      <div className="p-3 bg-destructive/10 rounded-lg">
+                        <div className="text-2xl font-bold text-destructive">{alerts.length}</div>
+                        <div className="text-xs text-muted-foreground">{language === 'en' ? 'Active Alerts' : 'सक्रिय अलर्ट'}</div>
+                      </div>
                     </div>
                   </div>
-                  <Badge
-                    variant={exchange.completed ? "default" : "secondary"}
-                    className={exchange.completed ? "bg-green-100 text-green-800" : ""}
-                  >
-                    {exchange.completed ? t('completed') : t('pending')}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                </CardContent>
+              </Card>
 
-      {/* Alerts & Reminders */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <AlertTriangle className="w-5 h-5" />
-            <span>Alerts & Reminders</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-              <div className="w-2 h-2 bg-blue-500 rounded-full" />
-              <p className="text-sm text-gray-700">Next exchange reminder in 2 hours (6:00 PM)</p>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <RefreshCw className="w-5 h-5" />
+                    <span>{language === 'en' ? 'This Week Summary' : 'यो हप्ताको सारांश'}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{language === 'en' ? 'Total Exchanges' : 'कुल एक्सचेन्ज'}</span>
+                      <span className="font-bold">{weekExchanges.length}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{language === 'en' ? 'Avg UF' : 'औसत UF'}</span>
+                      <span className="font-bold">
+                        {weekExchanges.length > 0
+                          ? `${Math.round(weekExchanges.reduce((s, e) => s + (e.ultrafiltration_ml || 0), 0) / weekExchanges.length)} ml`
+                          : '—'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{language === 'en' ? 'Cloudy Drains' : 'धमिलो ड्रेन'}</span>
+                      <span className={`font-bold ${weekExchanges.filter(e => e.drain_color === 'cloudy').length > 0 ? 'text-destructive' : 'text-accent'}`}>
+                        {weekExchanges.filter(e => e.drain_color === 'cloudy').length}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-            <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-              <div className="w-2 h-2 bg-green-500 rounded-full" />
-              <p className="text-sm text-gray-700">Patient maintaining good adherence - 3 day streak!</p>
-            </div>
-            {patientData.alerts > 0 && (
-              <div className="flex items-center space-x-3 p-3 bg-yellow-50 rounded-lg">
-                <AlertTriangle className="w-4 h-4 text-yellow-500" />
-                <p className="text-sm text-gray-700">Doctor wants to review recent UF trends</p>
-              </div>
+
+            {/* Today's Exchange Schedule */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5" />
+                  <span>{language === 'en' ? "Today's Exchange Schedule" : 'आजको एक्सचेन्ज तालिका'}</span>
+                </CardTitle>
+                <CardDescription>
+                  {language === 'en' ? "Monitor your loved one's dialysis exchanges" : 'तपाईंको प्रियजनको डायलिसिस एक्सचेन्ज निगरानी गर्नुहोस्'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {schedule.map((exchange, index) => (
+                    <div
+                      key={index}
+                      className={`p-4 rounded-lg border-2 ${
+                        exchange.completed
+                          ? 'border-accent/30 bg-accent/5'
+                          : 'border-border bg-muted/30'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-3 h-3 rounded-full ${
+                            exchange.completed ? 'bg-accent' : 'bg-muted-foreground/30'
+                          }`} />
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {exchange.time} - {t(exchange.type)}
+                            </p>
+                            {exchange.completed && exchange.clarity && (
+                              <p className="text-sm text-muted-foreground">
+                                {language === 'en' ? 'Clarity' : 'स्पष्टता'}: {exchange.clarity}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Badge
+                          variant={exchange.completed ? "default" : "secondary"}
+                          className={exchange.completed ? "bg-accent/15 text-accent border-0" : ""}
+                        >
+                          {exchange.completed ? t('completed') : t('pending')}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Active Alerts */}
+            {alerts.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <AlertTriangle className="w-5 h-5 text-destructive" />
+                    <span>{language === 'en' ? 'Active Alerts' : 'सक्रिय अलर्टहरू'}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {alerts.map(alert => (
+                      <div key={alert.id} className={`flex items-start space-x-3 p-3 rounded-lg ${
+                        alert.severity === 'critical' ? 'bg-destructive/10' :
+                        alert.severity === 'high' ? 'bg-[hsl(var(--coral))]/10' : 'bg-primary/5'
+                      }`}>
+                        <AlertTriangle className={`w-4 h-4 mt-0.5 ${
+                          alert.severity === 'critical' ? 'text-destructive' : 'text-[hsl(var(--coral))]'
+                        }`} />
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{alert.title}</p>
+                          <p className="text-xs text-muted-foreground">{alert.message}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* No alerts state */}
+            {alerts.length === 0 && (
+              <Card className="border-accent/20 bg-accent/5">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-accent" />
+                  <p className="text-sm text-foreground font-medium">
+                    {language === 'en' ? 'No active alerts — everything looks good!' : 'कुनै सक्रिय अलर्ट छैन — सबै ठीक देखिन्छ!'}
+                  </p>
+                </CardContent>
+              </Card>
             )}
           </div>
-        </CardContent>
-      </Card>
-    </div>
         </TabsContent>
       </Tabs>
     </div>
