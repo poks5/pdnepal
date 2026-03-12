@@ -162,7 +162,7 @@ const TrendAnalysis: React.FC = () => {
         {[
           { label: 'Avg UF', value: `${stats.avg}ml`, emoji: '💧', trend: stats.change, trendDir: stats.trend },
           { label: 'Target Hit', value: `${stats.avg > 0 ? Math.round((stats.avg / 500) * 100) : 0}%`, emoji: '🎯' },
-          { label: 'Weight', value: stats.latestWeight ? `${stats.latestWeight}kg` : '—', emoji: '⚖️', trend: stats.weightChange !== null ? Math.round(stats.weightChange * 10) : undefined, trendDir: stats.weightChange !== null ? (stats.weightChange <= 0 ? 'up' : 'down') as const : undefined },
+          { label: 'Weight', value: stats.latestWeight ? `${stats.latestWeight}kg` : '—', emoji: '⚖️', trend: stats.weightChange !== null ? Math.round((stats.weightChange ?? 0) * 10) : undefined, trendDir: stats.weightChange !== null ? (stats.weightChange! <= 0 ? ('up' as const) : ('down' as const)) : undefined },
           { label: 'Days Tracked', value: stats.days, emoji: '📅' },
           { label: 'Total Exchanges', value: stats.total, emoji: '🔄' },
           { label: 'Drain Quality', value: `${drainColorData.find(d => d.name === 'clear')?.value || 0}/${exchangeLogs.length > 0 ? stats.total : 0}`, emoji: '🧪' },
