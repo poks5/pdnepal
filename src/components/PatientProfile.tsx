@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { User, Phone, FileText, UserPlus, Save, Loader2 } from 'lucide-react';
+import { User, FileText, UserPlus, Save, Loader2, Calendar, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { adToBS, bsToAD, formatBSDate, parseBSDate, calculateAge, ageToADDate } from '@/utils/nepaliDateConverter';
 
 interface ProfileFormData {
   full_name: string;
@@ -20,7 +21,22 @@ interface ProfileFormData {
   address: string;
   emergency_contact_name: string;
   emergency_contact_phone: string;
+  nagrita_number: string;
+  nagrita_district: string;
 }
+
+const NEPAL_DISTRICTS = [
+  'Achham', 'Arghakhanchi', 'Baglung', 'Baitadi', 'Bajhang', 'Bajura', 'Banke', 'Bara',
+  'Bardiya', 'Bhaktapur', 'Bhojpur', 'Chitwan', 'Dadeldhura', 'Dailekh', 'Dang', 'Darchula',
+  'Dhading', 'Dhankuta', 'Dhanusa', 'Dolakha', 'Dolpa', 'Doti', 'Eastern Rukum', 'Gorkha',
+  'Gulmi', 'Humla', 'Ilam', 'Jajarkot', 'Jhapa', 'Jumla', 'Kailali', 'Kalikot', 'Kanchanpur',
+  'Kapilvastu', 'Kaski', 'Kathmandu', 'Kavrepalanchok', 'Khotang', 'Lalitpur', 'Lamjung',
+  'Mahottari', 'Makwanpur', 'Manang', 'Morang', 'Mugu', 'Mustang', 'Myagdi', 'Nawalparasi East',
+  'Nawalparasi West', 'Nuwakot', 'Okhaldhunga', 'Palpa', 'Panchthar', 'Parbat', 'Parsa',
+  'Pyuthan', 'Ramechhap', 'Rasuwa', 'Rautahat', 'Rolpa', 'Rupandehi', 'Salyan', 'Sankhuwasabha',
+  'Saptari', 'Sarlahi', 'Sindhuli', 'Sindhupalchok', 'Siraha', 'Solukhumbu', 'Sunsari',
+  'Surkhet', 'Syangja', 'Tanahu', 'Taplejung', 'Terhathum', 'Udayapur', 'Western Rukum',
+];
 
 const PatientProfile: React.FC = () => {
   const { t } = useLanguage();
@@ -28,6 +44,8 @@ const PatientProfile: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [ageInput, setAgeInput] = useState('');
+  const [bsDateInput, setBsDateInput] = useState('');
 
   const [formData, setFormData] = useState<ProfileFormData>({
     full_name: '',
@@ -38,7 +56,28 @@ const PatientProfile: React.FC = () => {
     address: '',
     emergency_contact_name: '',
     emergency_contact_phone: '',
+    nagrita_number: '',
+    nagrita_district: '',
   });
+
+  // Derived BS date and age from AD date
+  const derivedValues = useMemo(() => {
+    if (!formData.date_of_birth) return { bsDate: '', age: '' };
+    const adDate = new Date(formData.date_of_birth);
+    if (isNaN(adDate.getTime())) return { bsDate: '', age: '' };
+    const bs = adToBS(adDate);
+    const age = calculateAge(adDate);
+    return {
+      bsDate: bs ? formatBSDate(bs) : '',
+      age: age >= 0 ? String(age) : '',
+    };
+  }, [formData.date_of_birth]);
+
+  // Sync derived values to display inputs
+  useEffect(() => {
+    if (derivedValues.bsDate) setBsDateInput(derivedValues.bsDate);
+    if (derivedValues.age) setAgeInput(derivedValues.age);
+  }, [derivedValues]);
 
   useEffect(() => {
     if (!user) return;
@@ -61,6 +100,8 @@ const PatientProfile: React.FC = () => {
             address: data.address || '',
             emergency_contact_name: data.emergency_contact_name || '',
             emergency_contact_phone: data.emergency_contact_phone || '',
+            nagrita_number: (data as any).nagrita_number || '',
+            nagrita_district: (data as any).nagrita_district || '',
           });
         }
       } catch (err: any) {
@@ -74,6 +115,35 @@ const PatientProfile: React.FC = () => {
 
   const handleChange = (field: keyof ProfileFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // When user types age → compute AD and BS dates
+  const handleAgeChange = (value: string) => {
+    setAgeInput(value);
+    const age = parseInt(value);
+    if (!isNaN(age) && age >= 0 && age <= 150) {
+      const adDate = ageToADDate(age);
+      const adStr = adDate.toISOString().split('T')[0];
+      setFormData(prev => ({ ...prev, date_of_birth: adStr }));
+    }
+  };
+
+  // When user types BS date → compute AD date and age
+  const handleBSDateChange = (value: string) => {
+    setBsDateInput(value);
+    const bs = parseBSDate(value);
+    if (bs) {
+      const adDate = bsToAD(bs);
+      if (adDate) {
+        const adStr = adDate.toISOString().split('T')[0];
+        setFormData(prev => ({ ...prev, date_of_birth: adStr }));
+      }
+    }
+  };
+
+  // When user picks AD date → BS and age auto-update via derivedValues
+  const handleADDateChange = (value: string) => {
+    setFormData(prev => ({ ...prev, date_of_birth: value }));
   };
 
   const handleSave = async () => {
@@ -95,7 +165,9 @@ const PatientProfile: React.FC = () => {
           address: formData.address || null,
           emergency_contact_name: formData.emergency_contact_name || null,
           emergency_contact_phone: formData.emergency_contact_phone || null,
-        })
+          nagrita_number: formData.nagrita_number || null,
+          nagrita_district: formData.nagrita_district || null,
+        } as any)
         .eq('user_id', user.id);
       if (error) throw error;
       toast({ title: 'Profile Saved', description: 'Your profile has been updated successfully.' });
@@ -128,6 +200,7 @@ const PatientProfile: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Personal Information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -140,10 +213,6 @@ const PatientProfile: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="name">Full Name *</Label>
               <Input id="name" value={formData.full_name} onChange={(e) => handleChange('full_name', e.target.value)} placeholder="Enter your full name" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dob">Date of Birth</Label>
-              <Input id="dob" type="date" value={formData.date_of_birth} onChange={(e) => handleChange('date_of_birth', e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Contact Phone</Label>
@@ -162,6 +231,88 @@ const PatientProfile: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Age & Date of Birth - AD/BS Auto-conversion */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="w-5 h-5" />
+              <span>Age & Date of Birth</span>
+            </CardTitle>
+            <CardDescription>Enter any one field — the others auto-convert</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="age">Age (Years)</Label>
+              <Input
+                id="age"
+                type="number"
+                min={0}
+                max={150}
+                value={ageInput}
+                onChange={(e) => handleAgeChange(e.target.value)}
+                placeholder="Enter age"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dob-ad">Date of Birth (AD)</Label>
+              <Input
+                id="dob-ad"
+                type="date"
+                value={formData.date_of_birth}
+                onChange={(e) => handleADDateChange(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dob-bs">Date of Birth (BS - बि.सं.)</Label>
+              <Input
+                id="dob-bs"
+                value={bsDateInput}
+                onChange={(e) => handleBSDateChange(e.target.value)}
+                placeholder="YYYY/MM/DD (e.g. 2045/03/15)"
+              />
+              <p className="text-xs text-muted-foreground">Format: YYYY/MM/DD (e.g. 2045/03/15)</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Nagrita (Citizenship) Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <CreditCard className="w-5 h-5" />
+              <span>Nagrita (Citizenship) Details</span>
+            </CardTitle>
+            <CardDescription>Nepali citizenship certificate information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="nagritaNumber">Nagrita Number (नागरिकता नं.)</Label>
+              <Input
+                id="nagritaNumber"
+                value={formData.nagrita_number}
+                onChange={(e) => handleChange('nagrita_number', e.target.value)}
+                placeholder="Enter citizenship number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="nagritaDistrict">District of Nagrita Taken (जारी जिल्ला)</Label>
+              <Select value={formData.nagrita_district} onValueChange={(v) => handleChange('nagrita_district', v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select district" />
+                </SelectTrigger>
+                <SelectContent>
+                  {NEPAL_DISTRICTS.map(d => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Medical Information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -183,6 +334,7 @@ const PatientProfile: React.FC = () => {
         </Card>
       </div>
 
+      {/* Emergency Contact */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
