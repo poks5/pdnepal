@@ -160,7 +160,8 @@ const PatientDashboard: React.FC = () => {
         notes: exchangeData.notes,
         exchangeType: exchangeData.type,
         photos: [],
-        symptomTags: exchangeData.symptoms as any
+        symptomTags: exchangeData.symptoms as any,
+        weightAfterKg: exchangeData.weightAfter,
       };
       addExchangeLog(newExchangeLog);
       setShowAddExchange(false);
