@@ -245,7 +245,7 @@ const PatientDashboard: React.FC = () => {
         </div>
 
         <TabsContent value="overview">
-          <DashboardOverview todayExchanges={todayExchanges} weeklyStats={weeklyStats} recentExchanges={recentExchanges} onAddExchange={() => setShowAddExchange(true)} />
+          <DashboardOverview todayExchanges={todayExchanges} weeklyStats={weeklyStats} recentExchanges={recentExchanges} allExchangeLogs={exchangeLogs} onAddExchange={() => setShowAddExchange(true)} />
         </TabsContent>
         <TabsContent value="exchanges"><ExchangeHistory exchanges={formattedExchanges} /></TabsContent>
         <TabsContent value="analytics"><AnalyticsDashboard /></TabsContent>
