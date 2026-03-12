@@ -109,6 +109,8 @@ const TrendAnalysis: React.FC = () => {
     uf: { label: 'UF (ml)', color: 'hsl(var(--primary))' },
     target: { label: 'Target', color: 'hsl(var(--mint))' },
     count: { label: 'Exchanges', color: 'hsl(var(--lavender))' },
+    weight: { label: 'Weight (kg)', color: 'hsl(var(--peach))' },
+    pain: { label: 'Pain Level', color: 'hsl(var(--coral))' },
   };
 
   const ranges = [
