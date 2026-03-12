@@ -22,6 +22,7 @@ interface DashboardOverviewProps {
     missedExchanges: number;
   };
   recentExchanges: DailyExchangeLog[];
+  allExchangeLogs: DailyExchangeLog[];
   onAddExchange: () => void;
 }
 
@@ -29,6 +30,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   todayExchanges,
   weeklyStats,
   recentExchanges,
+  allExchangeLogs,
   onAddExchange
 }) => {
   const { user } = useAuth();
@@ -51,7 +53,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <p className="text-sm opacity-85 mt-1">{t('pdJourneyGreat')}</p>
             {(() => {
               // Compute real consecutive day streak
-              const logDates = new Set(recentExchanges.map(e => new Date(e.timestamp).toDateString()));
+              const logDates = new Set(allExchangeLogs.map(e => new Date(e.timestamp).toDateString()));
               // Also check all exchanges passed down from parent — use broader exchange list
               let streak = 0;
               const d = new Date();
