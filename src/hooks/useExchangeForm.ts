@@ -23,7 +23,7 @@ export const useExchangeForm = () => {
   const [formData, setFormData] = useState<ExchangeData>({
     time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
     type: 'morning',
-    drainVolume: 0,
+    drainVolume: null as unknown as number,
     fillVolume: 2000,
     ultrafiltration: 0,
     weightAfter: null,

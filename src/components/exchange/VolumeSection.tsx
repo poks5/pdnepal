@@ -46,8 +46,9 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
           id="drainVolume"
           type="number"
           min="0"
-          value={formData.drainVolume}
-          onChange={(e) => updateField('drainVolume', Number(e.target.value))}
+          value={formData.drainVolume ?? ''}
+          onChange={(e) => updateField('drainVolume', e.target.value ? Number(e.target.value) : null)}
+          placeholder="Enter drain volume"
           required
         />
       </div>
