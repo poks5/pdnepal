@@ -53,6 +53,36 @@ export type Database = {
         }
         Relationships: []
       }
+      caregiver_patient_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          caregiver_id: string
+          id: string
+          patient_id: string
+          relationship: string | null
+          status: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          caregiver_id: string
+          id?: string
+          patient_id: string
+          relationship?: string | null
+          status?: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          caregiver_id?: string
+          id?: string
+          patient_id?: string
+          relationship?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       centers: {
         Row: {
           address: string | null
