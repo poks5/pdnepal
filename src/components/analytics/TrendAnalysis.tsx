@@ -13,7 +13,7 @@ const TrendAnalysis: React.FC = () => {
 
   const daysBack = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 90;
 
-  const { ufData, drainColorData, exchangeCountData, stats, alerts } = useMemo(() => {
+  const { ufData, drainColorData, exchangeCountData, weightData, painData, stats, alerts } = useMemo(() => {
     const cutoff = new Date(Date.now() - daysBack * 86400000);
     const filtered = exchangeLogs.filter(l => new Date(l.timestamp) >= cutoff);
 
@@ -34,6 +34,34 @@ const TrendAnalysis: React.FC = () => {
       .map(([date, { count }]) => ({ date, count }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    // Weight trend
+    const dailyWeight = new Map<string, number[]>();
+    filtered.forEach(log => {
+      if (log.weightAfterKg) {
+        const date = new Date(log.timestamp).toISOString().split('T')[0];
+        const prev = dailyWeight.get(date) || [];
+        prev.push(log.weightAfterKg);
+        dailyWeight.set(date, prev);
+      }
+    });
+    const weightData = Array.from(dailyWeight.entries())
+      .map(([date, weights]) => ({ date, weight: Math.round((weights.reduce((s, w) => s + w, 0) / weights.length) * 10) / 10 }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Pain trend
+    const dailyPain = new Map<string, number[]>();
+    filtered.forEach(log => {
+      if (log.painLevel !== undefined && log.painLevel !== null) {
+        const date = new Date(log.timestamp).toISOString().split('T')[0];
+        const prev = dailyPain.get(date) || [];
+        prev.push(log.painLevel);
+        dailyPain.set(date, prev);
+      }
+    });
+    const painData = Array.from(dailyPain.entries())
+      .map(([date, pains]) => ({ date, pain: Math.round((pains.reduce((s, p) => s + p, 0) / pains.length) * 10) / 10 }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
     // Drain color distribution
     const colorCounts: Record<string, number> = {};
     filtered.forEach(log => {
@@ -49,6 +77,10 @@ const TrendAnalysis: React.FC = () => {
     const prevAvg = prev7.length ? prev7.reduce((s, d) => s + d.uf, 0) / prev7.length : recentAvg;
     const change = prevAvg ? Math.round(((recentAvg - prevAvg) / prevAvg) * 100) : 0;
 
+    const latestWeight = weightData.length ? weightData[weightData.length - 1].weight : null;
+    const prevWeight = weightData.length >= 2 ? weightData[weightData.length - 2].weight : null;
+    const weightChange = latestWeight && prevWeight ? Math.round((latestWeight - prevWeight) * 10) / 10 : null;
+
     // Alerts
     const alerts: { type: string; message: string; tip: string }[] = [];
     if (recent7.length >= 5) {
@@ -58,10 +90,17 @@ const TrendAnalysis: React.FC = () => {
     if (recentAvg > 0 && recentAvg < 300) {
       alerts.push({ type: 'alert', message: 'Average UF below 300ml', tip: 'Consult nephrologist about adequacy' });
     }
+    if (weightChange !== null && weightChange > 2) {
+      alerts.push({ type: 'warning', message: `Weight increased by ${weightChange}kg`, tip: 'Monitor fluid intake and UF adequacy' });
+    }
 
     return {
-      ufData, drainColorData, exchangeCountData,
-      stats: { avg: recentAvg, change, trend: change >= 0 ? 'up' : 'down' as const, days: ufData.length, total: filtered.length },
+      ufData, drainColorData, exchangeCountData, weightData, painData,
+      stats: {
+        avg: recentAvg, change, trend: change >= 0 ? 'up' : 'down' as const,
+        days: ufData.length, total: filtered.length,
+        latestWeight, weightChange,
+      },
       alerts,
     };
   }, [exchangeLogs, daysBack]);
@@ -70,6 +109,8 @@ const TrendAnalysis: React.FC = () => {
     uf: { label: 'UF (ml)', color: 'hsl(var(--primary))' },
     target: { label: 'Target', color: 'hsl(var(--mint))' },
     count: { label: 'Exchanges', color: 'hsl(var(--lavender))' },
+    weight: { label: 'Weight (kg)', color: 'hsl(var(--peach))' },
+    pain: { label: 'Pain Level', color: 'hsl(var(--coral))' },
   };
 
   const ranges = [
@@ -117,12 +158,14 @@ const TrendAnalysis: React.FC = () => {
       )}
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { label: 'Avg UF', value: `${stats.avg}ml`, icon: Droplets, emoji: '💧', trend: stats.change, trendDir: stats.trend },
-          { label: 'Target Hit', value: `${stats.avg > 0 ? Math.round((stats.avg / 500) * 100) : 0}%`, icon: Activity, emoji: '🎯' },
-          { label: 'Days Tracked', value: stats.days, icon: Scale, emoji: '📅' },
-          { label: 'Total Exchanges', value: stats.total, icon: TrendingUp, emoji: '🔄' },
+          { label: 'Avg UF', value: `${stats.avg}ml`, emoji: '💧', trend: stats.change, trendDir: stats.trend },
+          { label: 'Target Hit', value: `${stats.avg > 0 ? Math.round((stats.avg / 500) * 100) : 0}%`, emoji: '🎯' },
+          { label: 'Weight', value: stats.latestWeight ? `${stats.latestWeight}kg` : '—', emoji: '⚖️', trend: stats.weightChange !== null ? Math.round((stats.weightChange ?? 0) * 10) : undefined, trendDir: stats.weightChange !== null ? (stats.weightChange! <= 0 ? ('up' as const) : ('down' as const)) : undefined },
+          { label: 'Days Tracked', value: stats.days, emoji: '📅' },
+          { label: 'Total Exchanges', value: stats.total, emoji: '🔄' },
+          { label: 'Drain Quality', value: `${drainColorData.find(d => d.name === 'clear')?.value || 0}/${exchangeLogs.length > 0 ? stats.total : 0}`, emoji: '🧪' },
         ].map(({ label, value, emoji, trend, trendDir }) => (
           <Card key={label} className="rounded-2xl border-border/30 shadow-sm">
             <CardContent className="p-3.5">
@@ -130,9 +173,9 @@ const TrendAnalysis: React.FC = () => {
               <p className="text-lg font-black text-foreground mt-1 leading-none">{value}</p>
               <div className="flex items-center gap-1.5 mt-1">
                 <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">{label}</p>
-                {trend !== undefined && (
+                {trend !== undefined && trendDir !== undefined && (
                   <span className={`text-[10px] font-bold ${trendDir === 'up' ? 'text-[hsl(var(--mint))]' : 'text-destructive'}`}>
-                    {trendDir === 'up' ? '↑' : '↓'}{Math.abs(trend)}%
+                    {trendDir === 'up' ? '↑' : '↓'}{typeof trend === 'number' ? Math.abs(trend) : trend}{label === 'Weight' ? 'kg' : '%'}
                   </span>
                 )}
               </div>
@@ -173,27 +216,88 @@ const TrendAnalysis: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Exchange Count Bar Chart */}
+      {/* Weight Trend Chart */}
       <Card className="rounded-2xl border-border/30 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-bold">Daily Exchange Count</CardTitle>
+          <CardTitle className="text-sm font-bold">⚖️ Weight Trend</CardTitle>
         </CardHeader>
         <CardContent>
-          {exchangeCountData.length > 0 ? (
-            <ChartContainer config={chartConfig} className="h-[200px]">
-              <BarChart data={exchangeCountData}>
+          {weightData.length > 0 ? (
+            <ChartContainer config={chartConfig} className="h-[220px] sm:h-[260px]">
+              <AreaChart data={weightData}>
+                <defs>
+                  <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--peach))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--peach))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
-                <XAxis dataKey="date" tickFormatter={v => new Date(v).toLocaleDateString(undefined, { day: 'numeric' })} tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                <XAxis dataKey="date" tickFormatter={v => new Date(v).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} domain={['dataMin - 1', 'dataMax + 1']} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="count" fill="hsl(var(--lavender))" radius={[6, 6, 0, 0]} />
-              </BarChart>
+                <Area type="monotone" dataKey="weight" stroke="hsl(var(--peach))" fill="url(#weightGrad)" strokeWidth={2.5} />
+              </AreaChart>
             </ChartContainer>
           ) : (
-            <p className="text-center text-sm text-muted-foreground py-8">No data available</p>
+            <div className="text-center py-8">
+              <span className="text-3xl">⚖️</span>
+              <p className="text-sm text-muted-foreground mt-2">No weight data yet. Record weight in your exchanges to track trends.</p>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Exchange Count Bar Chart */}
+        <Card className="rounded-2xl border-border/30 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-bold">Daily Exchange Count</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {exchangeCountData.length > 0 ? (
+              <ChartContainer config={chartConfig} className="h-[200px]">
+                <BarChart data={exchangeCountData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                  <XAxis dataKey="date" tickFormatter={v => new Date(v).toLocaleDateString(undefined, { day: 'numeric' })} tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="count" fill="hsl(var(--lavender))" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ChartContainer>
+            ) : (
+              <p className="text-center text-sm text-muted-foreground py-8">No data available</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Pain Level Trend */}
+        <Card className="rounded-2xl border-border/30 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-bold">😣 Pain Level Trend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {painData.length > 0 ? (
+              <ChartContainer config={chartConfig} className="h-[200px]">
+                <AreaChart data={painData}>
+                  <defs>
+                    <linearGradient id="painGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--coral))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--coral))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                  <XAxis dataKey="date" tickFormatter={v => new Date(v).toLocaleDateString(undefined, { day: 'numeric' })} tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} domain={[0, 10]} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area type="monotone" dataKey="pain" stroke="hsl(var(--coral))" fill="url(#painGrad)" strokeWidth={2} />
+                </AreaChart>
+              </ChartContainer>
+            ) : (
+              <p className="text-center text-sm text-muted-foreground py-8">No pain data recorded</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Drain Clarity Distribution */}
       {drainColorData.length > 0 && (
