@@ -9,7 +9,7 @@ import ExchangePlanEditor from '@/components/ExchangePlanEditor';
 import PatientDetailView from '@/components/PatientDetailView';
 import AlertCenter from '@/components/AlertCenter';
 import ExportTools from '@/components/ExportTools';
-import CommentSystem from '@/components/CommentSystem';
+import SecureMessaging from './SecureMessaging';
 import DashboardHeader from '@/components/DashboardHeader';
 import DashboardCards from '@/components/DashboardCards';
 import PatientList from '@/components/PatientList';
