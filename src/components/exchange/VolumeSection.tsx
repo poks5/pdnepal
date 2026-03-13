@@ -112,6 +112,43 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
           placeholder={t('weightAfterFill')}
         />
       </div>
+      <div>
+        <Label htmlFor="bpSystolic">BP Systolic (mmHg)</Label>
+        <Input
+          id="bpSystolic"
+          type="number"
+          min="50"
+          max="250"
+          value={formData.bloodPressureSystolic ?? ''}
+          onChange={(e) => updateField('bloodPressureSystolic', e.target.value ? Number(e.target.value) : null)}
+          placeholder="e.g. 120"
+        />
+      </div>
+      <div>
+        <Label htmlFor="bpDiastolic">BP Diastolic (mmHg)</Label>
+        <Input
+          id="bpDiastolic"
+          type="number"
+          min="30"
+          max="150"
+          value={formData.bloodPressureDiastolic ?? ''}
+          onChange={(e) => updateField('bloodPressureDiastolic', e.target.value ? Number(e.target.value) : null)}
+          placeholder="e.g. 80"
+        />
+      </div>
+      <div>
+        <Label htmlFor="temperature">Temperature (°C)</Label>
+        <Input
+          id="temperature"
+          type="number"
+          step="0.1"
+          min="34"
+          max="42"
+          value={formData.temperature ?? ''}
+          onChange={(e) => updateField('temperature', e.target.value ? Number(e.target.value) : null)}
+          placeholder="e.g. 36.5"
+        />
+      </div>
     </div>
   );
 };

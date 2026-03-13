@@ -144,6 +144,9 @@ const PatientDashboard: React.FC = () => {
         notes: exchangeData.notes || null,
         weight_after_kg: exchangeData.weightAfter,
         symptoms: exchangeData.symptoms,
+        blood_pressure_systolic: exchangeData.bloodPressureSystolic,
+        blood_pressure_diastolic: exchangeData.bloodPressureDiastolic,
+        temperature: exchangeData.temperature,
       });
       if (error) throw error;
 
@@ -163,6 +166,9 @@ const PatientDashboard: React.FC = () => {
         photos: [],
         symptomTags: exchangeData.symptoms as any,
         weightAfterKg: exchangeData.weightAfter,
+        bloodPressureSystolic: exchangeData.bloodPressureSystolic,
+        bloodPressureDiastolic: exchangeData.bloodPressureDiastolic,
+        temperature: exchangeData.temperature,
       };
       addExchangeLog(newExchangeLog);
       setShowAddExchange(false);
