@@ -42,11 +42,15 @@ const SecureMessaging: React.FC = () => {
   const { language } = useLanguage();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
+  const [chatMode, setChatMode] = useState<'direct' | 'group'>('direct');
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedTag, setSelectedTag] = useState('general');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [groupPatients, setGroupPatients] = useState<Contact[]>([]);
+  const [selectedGroupPatient, setSelectedGroupPatient] = useState<string | null>(null);
+  const [contactNames, setContactNames] = useState<Record<string, string>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,33 +59,39 @@ const SecureMessaging: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!selectedContact || !user) return;
-    loadMessages();
+    if (chatMode === 'direct' && selectedContact && user) {
+      loadDirectMessages();
+    } else if (chatMode === 'group' && selectedGroupPatient && user) {
+      loadGroupMessages();
+    }
+  }, [selectedContact, selectedGroupPatient, chatMode, user]);
 
-    // Realtime subscription
+  useEffect(() => {
+    // Realtime for new messages
+    if (!user) return;
     const channel = supabase
-      .channel(`messages-${selectedContact}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-      }, (payload) => {
+      .channel('messaging-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         const msg = payload.new as Message;
-        if (
-          (msg.sender_id === user.id && msg.recipient_id === selectedContact) ||
-          (msg.sender_id === selectedContact && msg.recipient_id === user.id)
-        ) {
-          setMessages(prev => [...prev, msg]);
-          // Mark as read if we're the recipient
-          if (msg.recipient_id === user.id) {
-            supabase.from('messages').update({ is_read: true, read_at: new Date().toISOString() }).eq('id', msg.id).then();
+        if (chatMode === 'direct' && selectedContact) {
+          if (
+            (msg.sender_id === user.id && msg.recipient_id === selectedContact) ||
+            (msg.sender_id === selectedContact && msg.recipient_id === user.id)
+          ) {
+            setMessages(prev => [...prev, msg]);
+            if (msg.recipient_id === user.id) {
+              supabase.from('messages').update({ is_read: true, read_at: new Date().toISOString() }).eq('id', msg.id).then();
+            }
+          }
+        } else if (chatMode === 'group' && selectedGroupPatient) {
+          if (msg.conversation_type === 'group' && msg.patient_id === selectedGroupPatient) {
+            setMessages(prev => [...prev, msg]);
           }
         }
       })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
-  }, [selectedContact, user]);
+  }, [user, chatMode, selectedContact, selectedGroupPatient]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -91,44 +101,107 @@ const SecureMessaging: React.FC = () => {
     if (!user) return;
     setLoading(true);
 
-    // Get contacts based on role
-    let contactIds: string[] = [];
+    const allContacts: Contact[] = [];
+    const allGroupPatients: Contact[] = [];
+    const nameMap: Record<string, string> = {};
+
     if (user.role === 'patient') {
-      const { data } = await supabase
+      // Load doctors
+      const { data: docAssign } = await supabase
         .from('doctor_patient_assignments')
         .select('doctor_id')
         .eq('patient_id', user.id)
         .eq('status', 'active');
-      contactIds = (data ?? []).map(d => d.doctor_id);
-    } else {
-      const { data } = await supabase
-        .from('doctor_patient_assignments')
-        .select('patient_id')
-        .eq('doctor_id', user.id)
+      const docIds = (docAssign ?? []).map(d => d.doctor_id);
+
+      // Load dieticians
+      const { data: dietAssign } = await supabase
+        .from('dietician_patient_assignments')
+        .select('dietician_id')
+        .eq('patient_id', user.id)
         .eq('status', 'active');
-      contactIds = (data ?? []).map(d => d.patient_id);
+      const dietIds = (dietAssign ?? []).map(d => d.dietician_id);
+
+      // Load caregivers
+      const { data: cgAssign } = await supabase
+        .from('caregiver_patient_assignments')
+        .select('caregiver_id')
+        .eq('patient_id', user.id)
+        .eq('status', 'active');
+      const cgIds = (cgAssign ?? []).map(d => d.caregiver_id);
+
+      const contactIds = [...new Set([...docIds, ...dietIds, ...cgIds])];
+
+      if (contactIds.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', contactIds);
+        const { data: roles } = await supabase.from('user_roles').select('user_id, role').in('user_id', contactIds);
+
+        (profiles ?? []).forEach(p => {
+          const role = roles?.find(r => r.user_id === p.user_id)?.role || 'patient';
+          allContacts.push({ id: p.user_id, name: p.full_name, role });
+          nameMap[p.user_id] = p.full_name;
+        });
+      }
+
+      // For group chat, the patient IS the patient
+      allGroupPatients.push({ id: user.id, name: 'My Care Team', role: 'patient' });
+
+    } else {
+      // Doctor/Nurse/Dietician: load assigned patients
+      let patientIds: string[] = [];
+
+      if (user.role === 'doctor' || user.role === 'nurse') {
+        const { data } = await supabase.from('doctor_patient_assignments').select('patient_id').eq('doctor_id', user.id).eq('status', 'active');
+        patientIds = (data ?? []).map(d => d.patient_id);
+      } else if (user.role === 'dietician') {
+        const { data } = await supabase.from('dietician_patient_assignments').select('patient_id').eq('dietician_id', user.id).eq('status', 'active');
+        patientIds = (data ?? []).map(d => d.patient_id);
+      } else if (user.role === 'caregiver') {
+        const { data } = await supabase.from('caregiver_patient_assignments').select('patient_id').eq('caregiver_id', user.id).eq('status', 'active');
+        patientIds = (data ?? []).map(d => d.patient_id);
+      }
+
+      if (patientIds.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', patientIds);
+
+        (profiles ?? []).forEach(p => {
+          allContacts.push({ id: p.user_id, name: p.full_name, role: 'patient' });
+          allGroupPatients.push({ id: p.user_id, name: `${p.full_name}'s Team`, role: 'patient' });
+          nameMap[p.user_id] = p.full_name;
+        });
+
+        // Also load other care team members for these patients (for direct messaging)
+        const { data: docAssigns } = await supabase.from('doctor_patient_assignments').select('doctor_id, patient_id').in('patient_id', patientIds).eq('status', 'active');
+        const { data: dietAssigns } = await supabase.from('dietician_patient_assignments').select('dietician_id, patient_id').in('patient_id', patientIds).eq('status', 'active');
+        const { data: cgAssigns } = await supabase.from('caregiver_patient_assignments').select('caregiver_id, patient_id').in('patient_id', patientIds).eq('status', 'active');
+
+        const teamIds = [...new Set([
+          ...(docAssigns ?? []).map(d => d.doctor_id),
+          ...(dietAssigns ?? []).map(d => d.dietician_id),
+          ...(cgAssigns ?? []).map(d => d.caregiver_id),
+        ])].filter(id => id !== user.id && !allContacts.find(c => c.id === id));
+
+        if (teamIds.length > 0) {
+          const { data: teamProfiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', teamIds);
+          const { data: teamRoles } = await supabase.from('user_roles').select('user_id, role').in('user_id', teamIds);
+          (teamProfiles ?? []).forEach(p => {
+            const role = teamRoles?.find(r => r.user_id === p.user_id)?.role || 'patient';
+            allContacts.push({ id: p.user_id, name: p.full_name, role });
+            nameMap[p.user_id] = p.full_name;
+          });
+        }
+      }
     }
 
-    if (contactIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name')
-        .in('user_id', contactIds);
-
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('user_id', contactIds);
-
-      const contactList: Contact[] = (profiles ?? []).map(p => ({
-        id: p.user_id,
-        name: p.full_name,
-        role: roles?.find(r => r.user_id === p.user_id)?.role || 'patient',
-      }));
-      setContacts(contactList);
-      if (contactList.length > 0 && !selectedContact) {
-        setSelectedContact(contactList[0].id);
-      }
+    nameMap[user.id] = user.fullName;
+    setContacts(allContacts);
+    setGroupPatients(allGroupPatients);
+    setContactNames(nameMap);
+    if (allContacts.length > 0 && !selectedContact) {
+      setSelectedContact(allContacts[0].id);
+    }
+    if (allGroupPatients.length > 0 && !selectedGroupPatient) {
+      setSelectedGroupPatient(allGroupPatients[0].id);
     }
     setLoading(false);
   };
