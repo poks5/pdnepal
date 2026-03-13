@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Line, BarChart, Bar } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Line, BarChart, Bar, LineChart, ReferenceLine } from 'recharts';
 import { TrendingUp, TrendingDown, AlertTriangle, Droplets, Activity, Scale } from 'lucide-react';
 import { usePatient } from '@/contexts/PatientContext';
 
