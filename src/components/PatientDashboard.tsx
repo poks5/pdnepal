@@ -166,6 +166,9 @@ const PatientDashboard: React.FC = () => {
         photos: [],
         symptomTags: exchangeData.symptoms as any,
         weightAfterKg: exchangeData.weightAfter,
+        bloodPressureSystolic: exchangeData.bloodPressureSystolic,
+        bloodPressureDiastolic: exchangeData.bloodPressureDiastolic,
+        temperature: exchangeData.temperature,
       };
       addExchangeLog(newExchangeLog);
       setShowAddExchange(false);

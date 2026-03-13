@@ -16,6 +16,9 @@ export interface ExchangeData {
   pain: number;
   symptoms: string[];
   notes: string;
+  bloodPressureSystolic: number | null;
+  bloodPressureDiastolic: number | null;
+  temperature: number | null;
 }
 
 export const useExchangeForm = () => {
@@ -33,7 +36,10 @@ export const useExchangeForm = () => {
     color: 'normal',
     pain: 0,
     symptoms: [],
-    notes: ''
+    notes: '',
+    bloodPressureSystolic: null,
+    bloodPressureDiastolic: null,
+    temperature: null,
   });
 
   const [previousFillVolume, setPreviousFillVolume] = useState<number | null>(null);
