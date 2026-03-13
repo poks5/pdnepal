@@ -208,46 +208,69 @@ const SecureMessaging: React.FC = () => {
     setLoading(false);
   };
 
-  const loadMessages = async () => {
+  const loadDirectMessages = async () => {
     if (!user || !selectedContact) return;
     const { data } = await supabase
       .from('messages')
       .select('*')
+      .eq('conversation_type', 'direct')
       .or(`and(sender_id.eq.${user.id},recipient_id.eq.${selectedContact}),and(sender_id.eq.${selectedContact},recipient_id.eq.${user.id})`)
       .order('created_at', { ascending: true })
       .limit(100);
 
     if (data) {
       setMessages(data as Message[]);
-      // Mark unread messages as read
       const unread = data.filter(m => m.recipient_id === user.id && !m.is_read);
       if (unread.length > 0) {
-        await supabase
-          .from('messages')
-          .update({ is_read: true, read_at: new Date().toISOString() })
-          .in('id', unread.map(m => m.id));
+        await supabase.from('messages').update({ is_read: true, read_at: new Date().toISOString() }).in('id', unread.map(m => m.id));
       }
     }
   };
 
+  const loadGroupMessages = async () => {
+    if (!user || !selectedGroupPatient) return;
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_type', 'group')
+      .eq('patient_id', selectedGroupPatient)
+      .order('created_at', { ascending: true })
+      .limit(200);
+
+    if (data) {
+      setMessages(data as Message[]);
+    }
+  };
+
   const handleSend = async () => {
-    if (!newMessage.trim() || !user || !selectedContact) return;
+    if (!newMessage.trim() || !user) return;
     setSending(true);
 
-    const patientId = user.role === 'patient' ? user.id : selectedContact;
-
-    const { error } = await supabase.from('messages').insert({
-      sender_id: user.id,
-      recipient_id: selectedContact,
-      patient_id: patientId,
-      content: newMessage.trim(),
-      message_type: 'text',
-      tag: selectedTag !== 'general' ? selectedTag : null,
-    });
-
-    if (!error) {
-      setNewMessage('');
+    if (chatMode === 'direct' && selectedContact) {
+      const patientId = user.role === 'patient' ? user.id : selectedContact;
+      await supabase.from('messages').insert({
+        sender_id: user.id,
+        recipient_id: selectedContact,
+        patient_id: patientId,
+        content: newMessage.trim(),
+        message_type: 'text',
+        tag: selectedTag !== 'general' ? selectedTag : null,
+        conversation_type: 'direct',
+      });
+    } else if (chatMode === 'group' && selectedGroupPatient) {
+      await supabase.from('messages').insert({
+        sender_id: user.id,
+        recipient_id: user.id, // self for group
+        patient_id: selectedGroupPatient,
+        content: newMessage.trim(),
+        message_type: 'text',
+        tag: selectedTag !== 'general' ? selectedTag : null,
+        conversation_type: 'group',
+        conversation_id: `team-${selectedGroupPatient}`,
+      });
     }
+
+    setNewMessage('');
     setSending(false);
   };
 
