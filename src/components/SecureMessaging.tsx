@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Send, Paperclip, Image, FileText, AlertCircle, MessageSquare, Loader2 } from 'lucide-react';
+import { Send, Paperclip, Image, FileText, AlertCircle, MessageSquare, Loader2, Users } from 'lucide-react';
 
 interface Message {
   id: string;
