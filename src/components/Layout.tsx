@@ -80,7 +80,7 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
   ];
 
   const navRole = viewRole ?? user?.role;
-  const navItems = navRole === 'doctor' ? doctorNav
+  const navItems = navRole === 'doctor' || navRole === 'nurse' || navRole === 'dietician' ? doctorNav
     : navRole === 'admin' || navRole === 'coordinator' ? adminNav
     : patientNav;
 
