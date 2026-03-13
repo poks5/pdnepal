@@ -138,6 +138,8 @@ const TrendAnalysis: React.FC = () => {
     count: { label: 'Exchanges', color: 'hsl(var(--lavender))' },
     weight: { label: 'Weight (kg)', color: 'hsl(var(--peach))' },
     pain: { label: 'Pain Level', color: 'hsl(var(--coral))' },
+    systolic: { label: 'Systolic', color: 'hsl(var(--coral))' },
+    diastolic: { label: 'Diastolic', color: 'hsl(var(--primary))' },
   };
 
   const ranges = [
