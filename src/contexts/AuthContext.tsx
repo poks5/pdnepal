@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 
-export type UserRole = 'patient' | 'doctor' | 'caregiver' | 'admin' | 'coordinator';
+export type UserRole = 'patient' | 'doctor' | 'caregiver' | 'admin' | 'coordinator' | 'nurse' | 'dietician';
 
 export interface AppUser {
   id: string;
