@@ -517,6 +517,54 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          attachment_type: string | null
+          attachment_url: string | null
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message_type: string
+          patient_id: string
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+          tag: string | null
+          updated_at: string
+        }
+        Insert: {
+          attachment_type?: string | null
+          attachment_url?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message_type?: string
+          patient_id: string
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+          tag?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attachment_type?: string | null
+          attachment_url?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message_type?: string
+          patient_id?: string
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+          tag?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pd_catheters: {
         Row: {
           catheter_brand: string | null
@@ -1131,7 +1179,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "patient" | "doctor" | "caregiver" | "admin" | "coordinator"
+      app_role:
+        | "patient"
+        | "doctor"
+        | "caregiver"
+        | "admin"
+        | "coordinator"
+        | "nurse"
+        | "dietician"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1259,7 +1314,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["patient", "doctor", "caregiver", "admin", "coordinator"],
+      app_role: [
+        "patient",
+        "doctor",
+        "caregiver",
+        "admin",
+        "coordinator",
+        "nurse",
+        "dietician",
+      ],
     },
   },
 } as const

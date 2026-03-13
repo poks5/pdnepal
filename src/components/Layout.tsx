@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Phone, LogOut, Menu, X, User, Bell,
   Home, Activity, FileText, Settings, FlaskConical,
-  Users, BarChart, Shield, Globe, BookOpen
+  Users, BarChart, Shield, Globe, BookOpen, MessageSquare
 } from 'lucide-react';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
@@ -59,7 +59,7 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
   const patientNav = [
     { icon: Home, label: t('home'), id: 'overview', emoji: '🏠' },
     { icon: Activity, label: t('exchanges'), id: 'exchanges', emoji: '💧' },
-    { icon: BookOpen, label: t('learningCenter'), id: 'learning', emoji: '📖' },
+    { icon: MessageSquare, label: t('messages') || 'Messages', id: 'messages', emoji: '💬' },
     { icon: BarChart, label: t('analytics'), id: 'analytics', emoji: '📊' },
     { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
@@ -80,7 +80,7 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
   ];
 
   const navRole = viewRole ?? user?.role;
-  const navItems = navRole === 'doctor' ? doctorNav
+  const navItems = navRole === 'doctor' || navRole === 'nurse' || navRole === 'dietician' ? doctorNav
     : navRole === 'admin' || navRole === 'coordinator' ? adminNav
     : patientNav;
 

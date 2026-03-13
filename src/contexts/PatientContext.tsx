@@ -151,6 +151,9 @@ export const PatientProvider: React.FC<PatientProviderProps> = ({ children }) =>
             photos: [],
             symptomTags: (row as any).symptoms ?? [],
             weightAfterKg: row.weight_after_kg ? Number(row.weight_after_kg) : null,
+            bloodPressureSystolic: row.blood_pressure_systolic ?? null,
+            bloodPressureDiastolic: row.blood_pressure_diastolic ?? null,
+            temperature: row.temperature ? Number(row.temperature) : null,
           }));
           setExchangeLogs(mapped);
         }

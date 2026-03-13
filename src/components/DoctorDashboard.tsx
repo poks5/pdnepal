@@ -9,7 +9,7 @@ import ExchangePlanEditor from '@/components/ExchangePlanEditor';
 import PatientDetailView from '@/components/PatientDetailView';
 import AlertCenter from '@/components/AlertCenter';
 import ExportTools from '@/components/ExportTools';
-import CommentSystem from '@/components/CommentSystem';
+import SecureMessaging from './SecureMessaging';
 import DashboardHeader from '@/components/DashboardHeader';
 import DashboardCards from '@/components/DashboardCards';
 import PatientList from '@/components/PatientList';
@@ -243,7 +243,7 @@ const DoctorDashboard: React.FC = () => {
         {moreView === 'requests' && <PendingPatientRequests />}
         {moreView === 'learning' && <DoctorLearningAssignments />}
         {moreView === 'preview-education' && <LearningCenter />}
-        {moreView === 'communication' && <CommentSystem patients={patients} />}
+        {moreView === 'communication' && <SecureMessaging />}
         {moreView === 'export' && <ExportTools />}
         {moreView === 'export' && <ExportTools />}
       </div>

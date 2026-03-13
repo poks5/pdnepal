@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Line, BarChart, Bar } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Line, BarChart, Bar, LineChart, ReferenceLine } from 'recharts';
 import { TrendingUp, TrendingDown, AlertTriangle, Droplets, Activity, Scale } from 'lucide-react';
 import { usePatient } from '@/contexts/PatientContext';
 
@@ -13,7 +13,7 @@ const TrendAnalysis: React.FC = () => {
 
   const daysBack = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 90;
 
-  const { ufData, drainColorData, exchangeCountData, weightData, painData, stats, alerts } = useMemo(() => {
+  const { ufData, drainColorData, exchangeCountData, weightData, painData, bpData, stats, alerts } = useMemo(() => {
     const cutoff = new Date(Date.now() - daysBack * 86400000);
     const filtered = exchangeLogs.filter(l => new Date(l.timestamp) >= cutoff);
 
@@ -62,6 +62,25 @@ const TrendAnalysis: React.FC = () => {
       .map(([date, pains]) => ({ date, pain: Math.round((pains.reduce((s, p) => s + p, 0) / pains.length) * 10) / 10 }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    // Blood pressure trend
+    const dailyBP = new Map<string, { sys: number[]; dia: number[] }>();
+    filtered.forEach(log => {
+      if (log.bloodPressureSystolic && log.bloodPressureDiastolic) {
+        const date = new Date(log.timestamp).toISOString().split('T')[0];
+        const prev = dailyBP.get(date) || { sys: [], dia: [] };
+        prev.sys.push(log.bloodPressureSystolic);
+        prev.dia.push(log.bloodPressureDiastolic);
+        dailyBP.set(date, prev);
+      }
+    });
+    const bpData = Array.from(dailyBP.entries())
+      .map(([date, { sys, dia }]) => ({
+        date,
+        systolic: Math.round(sys.reduce((s, v) => s + v, 0) / sys.length),
+        diastolic: Math.round(dia.reduce((s, v) => s + v, 0) / dia.length),
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
     // Drain color distribution
     const colorCounts: Record<string, number> = {};
     filtered.forEach(log => {
@@ -94,8 +113,16 @@ const TrendAnalysis: React.FC = () => {
       alerts.push({ type: 'warning', message: `Weight increased by ${weightChange}kg`, tip: 'Monitor fluid intake and UF adequacy' });
     }
 
+    // BP alerts
+    if (bpData.length > 0) {
+      const latest = bpData[bpData.length - 1];
+      if (latest.systolic > 140 || latest.diastolic > 90) {
+        alerts.push({ type: 'alert', message: `BP elevated: ${latest.systolic}/${latest.diastolic}`, tip: 'Monitor fluid intake and consult doctor' });
+      }
+    }
+
     return {
-      ufData, drainColorData, exchangeCountData, weightData, painData,
+      ufData, drainColorData, exchangeCountData, weightData, painData, bpData,
       stats: {
         avg: recentAvg, change, trend: change >= 0 ? 'up' : 'down' as const,
         days: ufData.length, total: filtered.length,
@@ -111,6 +138,8 @@ const TrendAnalysis: React.FC = () => {
     count: { label: 'Exchanges', color: 'hsl(var(--lavender))' },
     weight: { label: 'Weight (kg)', color: 'hsl(var(--peach))' },
     pain: { label: 'Pain Level', color: 'hsl(var(--coral))' },
+    systolic: { label: 'Systolic', color: 'hsl(var(--coral))' },
+    diastolic: { label: 'Diastolic', color: 'hsl(var(--primary))' },
   };
 
   const ranges = [
@@ -242,6 +271,34 @@ const TrendAnalysis: React.FC = () => {
             <div className="text-center py-8">
               <span className="text-3xl">⚖️</span>
               <p className="text-sm text-muted-foreground mt-2">No weight data yet. Record weight in your exchanges to track trends.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Blood Pressure Trend Chart */}
+      <Card className="rounded-2xl border-border/30 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-bold">🩺 Blood Pressure Trend</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {bpData.length > 0 ? (
+            <ChartContainer config={chartConfig} className="h-[220px] sm:h-[260px]">
+              <LineChart data={bpData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                <XAxis dataKey="date" tickFormatter={v => new Date(v).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} domain={[50, 200]} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ReferenceLine y={140} stroke="hsl(var(--destructive))" strokeDasharray="4 4" strokeOpacity={0.5} label={{ value: 'High', fontSize: 9, fill: 'hsl(var(--destructive))' }} />
+                <ReferenceLine y={90} stroke="hsl(var(--mint))" strokeDasharray="4 4" strokeOpacity={0.5} label={{ value: 'Normal', fontSize: 9, fill: 'hsl(var(--mint))' }} />
+                <Line type="monotone" dataKey="systolic" stroke="hsl(var(--coral))" strokeWidth={2.5} dot={{ r: 3 }} name="Systolic" />
+                <Line type="monotone" dataKey="diastolic" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} name="Diastolic" />
+              </LineChart>
+            </ChartContainer>
+          ) : (
+            <div className="text-center py-8">
+              <span className="text-3xl">🩺</span>
+              <p className="text-sm text-muted-foreground mt-2">No blood pressure data yet. Record BP in your exchanges to track trends.</p>
             </div>
           )}
         </CardContent>

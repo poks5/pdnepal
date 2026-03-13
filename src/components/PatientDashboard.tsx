@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen } from 'lucide-react';
+import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen, MessageSquare } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNav } from '@/components/Layout';
@@ -21,6 +21,7 @@ import AnalyticsDashboard from './analytics/AnalyticsDashboard';
 import MyDoctor from './MyDoctor';
 import LearningCenter from './learning/LearningCenter';
 import { formatExchangeForHistory } from '@/utils/exchangeFormatters';
+import SecureMessaging from './SecureMessaging';
 import { ExchangeData } from '@/hooks/useExchangeForm';
 import { DailyExchangeLog } from '@/types/patient';
 import { useToast } from '@/hooks/use-toast';
@@ -176,6 +177,7 @@ const PatientDashboard: React.FC = () => {
   const mainTabs = [
     { value: 'overview', icon: Calendar, label: t('overview') },
     { value: 'exchanges', icon: Droplets, label: t('exchanges') },
+    { value: 'messages', icon: MessageSquare, label: 'Messages' },
     { value: 'analytics', icon: BarChart, label: 'Analytics' },
     { value: 'lab-data', icon: FlaskConical, label: 'Labs' },
     { value: 'learning', icon: BookOpen, label: t('learningCenter') },
@@ -250,6 +252,7 @@ const PatientDashboard: React.FC = () => {
         </TabsContent>
         <TabsContent value="exchanges"><ExchangeHistory exchanges={formattedExchanges} /></TabsContent>
         <TabsContent value="analytics"><AnalyticsDashboard /></TabsContent>
+        <TabsContent value="messages"><SecureMessaging /></TabsContent>
         <TabsContent value="lab-data"><LabDataManagement /></TabsContent>
         <TabsContent value="learning"><LearningCenter key={learningKey} /></TabsContent>
         <TabsContent value="settings">{renderSettingsContent()}</TabsContent>
