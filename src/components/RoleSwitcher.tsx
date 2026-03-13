@@ -12,6 +12,8 @@ const allRoles: { role: UserRole; label: string; emoji: string; color: string }[
   { role: 'admin', label: 'Admin', emoji: '🛡️', color: 'bg-destructive/15 text-destructive border-destructive/30' },
   { role: 'coordinator', label: 'Coordinator', emoji: '📋', color: 'bg-[hsl(var(--lavender))]/15 text-[hsl(var(--lavender))] border-[hsl(var(--lavender))]/30' },
   { role: 'doctor', label: 'Doctor', emoji: '👨‍⚕️', color: 'bg-[hsl(var(--mint))]/15 text-[hsl(var(--mint))] border-[hsl(var(--mint))]/30' },
+  { role: 'nurse', label: 'Nurse', emoji: '👩‍⚕️', color: 'bg-[hsl(var(--mint))]/15 text-[hsl(var(--mint))] border-[hsl(var(--mint))]/30' },
+  { role: 'dietician', label: 'Dietician', emoji: '🥗', color: 'bg-[hsl(var(--peach))]/15 text-[hsl(var(--peach))] border-[hsl(var(--peach))]/30' },
   { role: 'caregiver', label: 'Caregiver', emoji: '🤝', color: 'bg-[hsl(var(--peach))]/15 text-[hsl(var(--coral))] border-[hsl(var(--coral))]/30' },
   { role: 'patient', label: 'Patient', emoji: '🩺', color: 'bg-primary/15 text-primary border-primary/30' },
 ];

@@ -104,4 +104,7 @@ export interface DailyExchangeLog {
   notes?: string;
   exchangeType: 'morning' | 'afternoon' | 'evening' | 'night';
   weightAfterKg?: number | null;
+  bloodPressureSystolic?: number | null;
+  bloodPressureDiastolic?: number | null;
+  temperature?: number | null;
 }
