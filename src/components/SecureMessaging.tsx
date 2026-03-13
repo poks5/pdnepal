@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Send, Paperclip, Image, FileText, AlertCircle, MessageSquare, Loader2 } from 'lucide-react';
+import { Send, Paperclip, Image, FileText, AlertCircle, MessageSquare, Loader2, Users } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -21,6 +21,8 @@ interface Message {
   attachment_type: string | null;
   is_read: boolean;
   created_at: string;
+  conversation_type?: string;
+  conversation_id?: string;
 }
 
 interface Contact {
@@ -42,11 +44,15 @@ const SecureMessaging: React.FC = () => {
   const { language } = useLanguage();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
+  const [chatMode, setChatMode] = useState<'direct' | 'group'>('direct');
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedTag, setSelectedTag] = useState('general');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [groupPatients, setGroupPatients] = useState<Contact[]>([]);
+  const [selectedGroupPatient, setSelectedGroupPatient] = useState<string | null>(null);
+  const [contactNames, setContactNames] = useState<Record<string, string>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,33 +61,39 @@ const SecureMessaging: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!selectedContact || !user) return;
-    loadMessages();
+    if (chatMode === 'direct' && selectedContact && user) {
+      loadDirectMessages();
+    } else if (chatMode === 'group' && selectedGroupPatient && user) {
+      loadGroupMessages();
+    }
+  }, [selectedContact, selectedGroupPatient, chatMode, user]);
 
-    // Realtime subscription
+  useEffect(() => {
+    // Realtime for new messages
+    if (!user) return;
     const channel = supabase
-      .channel(`messages-${selectedContact}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-      }, (payload) => {
+      .channel('messaging-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         const msg = payload.new as Message;
-        if (
-          (msg.sender_id === user.id && msg.recipient_id === selectedContact) ||
-          (msg.sender_id === selectedContact && msg.recipient_id === user.id)
-        ) {
-          setMessages(prev => [...prev, msg]);
-          // Mark as read if we're the recipient
-          if (msg.recipient_id === user.id) {
-            supabase.from('messages').update({ is_read: true, read_at: new Date().toISOString() }).eq('id', msg.id).then();
+        if (chatMode === 'direct' && selectedContact) {
+          if (
+            (msg.sender_id === user.id && msg.recipient_id === selectedContact) ||
+            (msg.sender_id === selectedContact && msg.recipient_id === user.id)
+          ) {
+            setMessages(prev => [...prev, msg]);
+            if (msg.recipient_id === user.id) {
+              supabase.from('messages').update({ is_read: true, read_at: new Date().toISOString() }).eq('id', msg.id).then();
+            }
+          }
+        } else if (chatMode === 'group' && selectedGroupPatient) {
+          if (msg.conversation_type === 'group' && msg.patient_id === selectedGroupPatient) {
+            setMessages(prev => [...prev, msg]);
           }
         }
       })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
-  }, [selectedContact, user]);
+  }, [user, chatMode, selectedContact, selectedGroupPatient]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -91,118 +103,210 @@ const SecureMessaging: React.FC = () => {
     if (!user) return;
     setLoading(true);
 
-    // Get contacts based on role
-    let contactIds: string[] = [];
+    const allContacts: Contact[] = [];
+    const allGroupPatients: Contact[] = [];
+    const nameMap: Record<string, string> = {};
+
     if (user.role === 'patient') {
-      const { data } = await supabase
+      // Load doctors
+      const { data: docAssign } = await supabase
         .from('doctor_patient_assignments')
         .select('doctor_id')
         .eq('patient_id', user.id)
         .eq('status', 'active');
-      contactIds = (data ?? []).map(d => d.doctor_id);
-    } else {
-      const { data } = await supabase
-        .from('doctor_patient_assignments')
-        .select('patient_id')
-        .eq('doctor_id', user.id)
+      const docIds = (docAssign ?? []).map(d => d.doctor_id);
+
+      // Load dieticians
+      const { data: dietAssign } = await supabase
+        .from('dietician_patient_assignments')
+        .select('dietician_id')
+        .eq('patient_id', user.id)
         .eq('status', 'active');
-      contactIds = (data ?? []).map(d => d.patient_id);
+      const dietIds = (dietAssign ?? []).map(d => d.dietician_id);
+
+      // Load caregivers
+      const { data: cgAssign } = await supabase
+        .from('caregiver_patient_assignments')
+        .select('caregiver_id')
+        .eq('patient_id', user.id)
+        .eq('status', 'active');
+      const cgIds = (cgAssign ?? []).map(d => d.caregiver_id);
+
+      const contactIds = [...new Set([...docIds, ...dietIds, ...cgIds])];
+
+      if (contactIds.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', contactIds);
+        const { data: roles } = await supabase.from('user_roles').select('user_id, role').in('user_id', contactIds);
+
+        (profiles ?? []).forEach(p => {
+          const role = roles?.find(r => r.user_id === p.user_id)?.role || 'patient';
+          allContacts.push({ id: p.user_id, name: p.full_name, role });
+          nameMap[p.user_id] = p.full_name;
+        });
+      }
+
+      // For group chat, the patient IS the patient
+      allGroupPatients.push({ id: user.id, name: 'My Care Team', role: 'patient' });
+
+    } else {
+      // Doctor/Nurse/Dietician: load assigned patients
+      let patientIds: string[] = [];
+
+      if (user.role === 'doctor' || user.role === 'nurse') {
+        const { data } = await supabase.from('doctor_patient_assignments').select('patient_id').eq('doctor_id', user.id).eq('status', 'active');
+        patientIds = (data ?? []).map(d => d.patient_id);
+      } else if (user.role === 'dietician') {
+        const { data } = await supabase.from('dietician_patient_assignments').select('patient_id').eq('dietician_id', user.id).eq('status', 'active');
+        patientIds = (data ?? []).map(d => d.patient_id);
+      } else if (user.role === 'caregiver') {
+        const { data } = await supabase.from('caregiver_patient_assignments').select('patient_id').eq('caregiver_id', user.id).eq('status', 'active');
+        patientIds = (data ?? []).map(d => d.patient_id);
+      }
+
+      if (patientIds.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', patientIds);
+
+        (profiles ?? []).forEach(p => {
+          allContacts.push({ id: p.user_id, name: p.full_name, role: 'patient' });
+          allGroupPatients.push({ id: p.user_id, name: `${p.full_name}'s Team`, role: 'patient' });
+          nameMap[p.user_id] = p.full_name;
+        });
+
+        // Also load other care team members for these patients (for direct messaging)
+        const { data: docAssigns } = await supabase.from('doctor_patient_assignments').select('doctor_id, patient_id').in('patient_id', patientIds).eq('status', 'active');
+        const { data: dietAssigns } = await supabase.from('dietician_patient_assignments').select('dietician_id, patient_id').in('patient_id', patientIds).eq('status', 'active');
+        const { data: cgAssigns } = await supabase.from('caregiver_patient_assignments').select('caregiver_id, patient_id').in('patient_id', patientIds).eq('status', 'active');
+
+        const teamIds = [...new Set([
+          ...(docAssigns ?? []).map(d => d.doctor_id),
+          ...(dietAssigns ?? []).map(d => d.dietician_id),
+          ...(cgAssigns ?? []).map(d => d.caregiver_id),
+        ])].filter(id => id !== user.id && !allContacts.find(c => c.id === id));
+
+        if (teamIds.length > 0) {
+          const { data: teamProfiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', teamIds);
+          const { data: teamRoles } = await supabase.from('user_roles').select('user_id, role').in('user_id', teamIds);
+          (teamProfiles ?? []).forEach(p => {
+            const role = teamRoles?.find(r => r.user_id === p.user_id)?.role || 'patient';
+            allContacts.push({ id: p.user_id, name: p.full_name, role });
+            nameMap[p.user_id] = p.full_name;
+          });
+        }
+      }
     }
 
-    if (contactIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name')
-        .in('user_id', contactIds);
-
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('user_id', contactIds);
-
-      const contactList: Contact[] = (profiles ?? []).map(p => ({
-        id: p.user_id,
-        name: p.full_name,
-        role: roles?.find(r => r.user_id === p.user_id)?.role || 'patient',
-      }));
-      setContacts(contactList);
-      if (contactList.length > 0 && !selectedContact) {
-        setSelectedContact(contactList[0].id);
-      }
+    nameMap[user.id] = user.fullName;
+    setContacts(allContacts);
+    setGroupPatients(allGroupPatients);
+    setContactNames(nameMap);
+    if (allContacts.length > 0 && !selectedContact) {
+      setSelectedContact(allContacts[0].id);
+    }
+    if (allGroupPatients.length > 0 && !selectedGroupPatient) {
+      setSelectedGroupPatient(allGroupPatients[0].id);
     }
     setLoading(false);
   };
 
-  const loadMessages = async () => {
+  const loadDirectMessages = async () => {
     if (!user || !selectedContact) return;
     const { data } = await supabase
       .from('messages')
       .select('*')
+      .eq('conversation_type', 'direct')
       .or(`and(sender_id.eq.${user.id},recipient_id.eq.${selectedContact}),and(sender_id.eq.${selectedContact},recipient_id.eq.${user.id})`)
       .order('created_at', { ascending: true })
       .limit(100);
 
     if (data) {
       setMessages(data as Message[]);
-      // Mark unread messages as read
       const unread = data.filter(m => m.recipient_id === user.id && !m.is_read);
       if (unread.length > 0) {
-        await supabase
-          .from('messages')
-          .update({ is_read: true, read_at: new Date().toISOString() })
-          .in('id', unread.map(m => m.id));
+        await supabase.from('messages').update({ is_read: true, read_at: new Date().toISOString() }).in('id', unread.map(m => m.id));
       }
     }
   };
 
+  const loadGroupMessages = async () => {
+    if (!user || !selectedGroupPatient) return;
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_type', 'group')
+      .eq('patient_id', selectedGroupPatient)
+      .order('created_at', { ascending: true })
+      .limit(200);
+
+    if (data) {
+      setMessages(data as Message[]);
+    }
+  };
+
   const handleSend = async () => {
-    if (!newMessage.trim() || !user || !selectedContact) return;
+    if (!newMessage.trim() || !user) return;
     setSending(true);
 
-    const patientId = user.role === 'patient' ? user.id : selectedContact;
-
-    const { error } = await supabase.from('messages').insert({
-      sender_id: user.id,
-      recipient_id: selectedContact,
-      patient_id: patientId,
-      content: newMessage.trim(),
-      message_type: 'text',
-      tag: selectedTag !== 'general' ? selectedTag : null,
-    });
-
-    if (!error) {
-      setNewMessage('');
+    if (chatMode === 'direct' && selectedContact) {
+      const patientId = user.role === 'patient' ? user.id : selectedContact;
+      await supabase.from('messages').insert({
+        sender_id: user.id,
+        recipient_id: selectedContact,
+        patient_id: patientId,
+        content: newMessage.trim(),
+        message_type: 'text',
+        tag: selectedTag !== 'general' ? selectedTag : null,
+        conversation_type: 'direct',
+      });
+    } else if (chatMode === 'group' && selectedGroupPatient) {
+      await supabase.from('messages').insert({
+        sender_id: user.id,
+        recipient_id: user.id, // self for group
+        patient_id: selectedGroupPatient,
+        content: newMessage.trim(),
+        message_type: 'text',
+        tag: selectedTag !== 'general' ? selectedTag : null,
+        conversation_type: 'group',
+        conversation_id: `team-${selectedGroupPatient}`,
+      });
     }
+
+    setNewMessage('');
     setSending(false);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user || !selectedContact) return;
+    if (!file || !user) return;
 
     const ext = file.name.split('.').pop();
     const path = `messages/${user.id}/${Date.now()}.${ext}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('clinical-photos')
-      .upload(path, file);
-
+    const { error: uploadError } = await supabase.storage.from('clinical-photos').upload(path, file);
     if (uploadError) return;
 
     const { data: urlData } = supabase.storage.from('clinical-photos').getPublicUrl(path);
     const isImage = file.type.startsWith('image/');
-    const patientId = user.role === 'patient' ? user.id : selectedContact;
 
-    await supabase.from('messages').insert({
-      sender_id: user.id,
-      recipient_id: selectedContact,
-      patient_id: patientId,
-      content: isImage ? '📷 Image' : `📎 ${file.name}`,
-      message_type: isImage ? 'image' : 'file',
-      tag: selectedTag !== 'general' ? selectedTag : null,
-      attachment_url: urlData.publicUrl,
-      attachment_type: file.type,
-    });
+    if (chatMode === 'direct' && selectedContact) {
+      const patientId = user.role === 'patient' ? user.id : selectedContact;
+      await supabase.from('messages').insert({
+        sender_id: user.id, recipient_id: selectedContact, patient_id: patientId,
+        content: isImage ? '📷 Image' : `📎 ${file.name}`,
+        message_type: isImage ? 'image' : 'file',
+        tag: selectedTag !== 'general' ? selectedTag : null,
+        attachment_url: urlData.publicUrl, attachment_type: file.type,
+        conversation_type: 'direct',
+      });
+    } else if (chatMode === 'group' && selectedGroupPatient) {
+      await supabase.from('messages').insert({
+        sender_id: user.id, recipient_id: user.id, patient_id: selectedGroupPatient,
+        content: isImage ? '📷 Image' : `📎 ${file.name}`,
+        message_type: isImage ? 'image' : 'file',
+        tag: selectedTag !== 'general' ? selectedTag : null,
+        attachment_url: urlData.publicUrl, attachment_type: file.type,
+        conversation_type: 'group', conversation_id: `team-${selectedGroupPatient}`,
+      });
+    }
   };
 
   const tagInfo = MESSAGE_TAGS.find(t => t.value === selectedTag);
@@ -215,78 +319,111 @@ const SecureMessaging: React.FC = () => {
     );
   }
 
+  const roleEmoji: Record<string, string> = { doctor: '👨‍⚕️', nurse: '👩‍⚕️', dietician: '🥗', caregiver: '🤝', patient: '🩺', admin: '🛡️' };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <MessageSquare className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-bold text-foreground">
-          {language === 'en' ? 'Secure Messages' : 'सुरक्षित सन्देशहरू'}
-        </h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-bold text-foreground">
+            {language === 'en' ? 'Secure Messages' : 'सुरक्षित सन्देशहरू'}
+          </h2>
+        </div>
+        {/* Chat Mode Toggle */}
+        <div className="flex gap-1 bg-muted/50 p-1 rounded-full">
+          <button
+            onClick={() => { setChatMode('direct'); setMessages([]); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${chatMode === 'direct' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
+          >
+            💬 Direct
+          </button>
+          <button
+            onClick={() => { setChatMode('group'); setMessages([]); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${chatMode === 'group' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
+          >
+            👥 Care Team
+          </button>
+        </div>
       </div>
 
-      {contacts.length === 0 ? (
+      {contacts.length === 0 && groupPatients.length === 0 ? (
         <Card className="rounded-2xl border-border/40">
           <CardContent className="p-8 text-center">
             <MessageSquare className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
-              {language === 'en'
-                ? 'No contacts yet. Connect with a doctor to start messaging.'
-                : 'अहिलेसम्म कुनै सम्पर्क छैन।'}
+              {language === 'en' ? 'No contacts yet. Connect with your care team to start messaging.' : 'अहिलेसम्म कुनै सम्पर्क छैन।'}
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="flex flex-col md:flex-row gap-4 h-[calc(100vh-280px)] min-h-[400px]">
-          {/* Contact List */}
+          {/* Sidebar */}
           <div className="w-full md:w-64 shrink-0 space-y-1.5 overflow-y-auto">
-            {contacts.map(contact => {
-              const unreadCount = messages.filter(m => m.sender_id === contact.id && !m.is_read).length;
-              return (
+            {chatMode === 'direct' ? (
+              contacts.map(contact => (
                 <button
                   key={contact.id}
-                  onClick={() => setSelectedContact(contact.id)}
+                  onClick={() => { setSelectedContact(contact.id); setMessages([]); }}
                   className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${
-                    selectedContact === contact.id
-                      ? 'bg-primary/10 border border-primary/20'
-                      : 'bg-card hover:bg-muted/50 border border-border/30'
+                    selectedContact === contact.id ? 'bg-primary/10 border border-primary/20' : 'bg-card hover:bg-muted/50 border border-border/30'
                   }`}
                 >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-                    {contact.name.charAt(0)}
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm">
+                    {roleEmoji[contact.role] || '👤'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{contact.name}</p>
                     <p className="text-[10px] text-muted-foreground capitalize">{contact.role}</p>
                   </div>
-                  {unreadCount > 0 && (
-                    <Badge className="bg-destructive text-destructive-foreground text-[10px] h-5 min-w-5 justify-center">
-                      {unreadCount}
-                    </Badge>
-                  )}
                 </button>
-              );
-            })}
+              ))
+            ) : (
+              groupPatients.map(gp => (
+                <button
+                  key={gp.id}
+                  onClick={() => { setSelectedGroupPatient(gp.id); setMessages([]); }}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${
+                    selectedGroupPatient === gp.id ? 'bg-primary/10 border border-primary/20' : 'bg-card hover:bg-muted/50 border border-border/30'
+                  }`}
+                >
+                  <div className="w-9 h-9 rounded-full bg-[hsl(var(--lavender))]/15 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-[hsl(var(--lavender))]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{gp.name}</p>
+                    <p className="text-[10px] text-muted-foreground">Group Chat</p>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
 
           {/* Chat Area */}
           <Card className="flex-1 rounded-2xl border-border/30 flex flex-col overflow-hidden">
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground text-sm">
-                  {language === 'en' ? 'No messages yet. Start the conversation!' : 'अहिलेसम्म कुनै सन्देश छैन।'}
+                  {chatMode === 'group'
+                    ? (language === 'en' ? 'No group messages yet. All care team members can see messages here.' : 'अहिलेसम्म कुनै समूह सन्देश छैन।')
+                    : (language === 'en' ? 'No messages yet. Start the conversation!' : 'अहिलेसम्म कुनै सन्देश छैन।')
+                  }
                 </div>
               )}
               {messages.map(msg => {
                 const isMine = msg.sender_id === user?.id;
                 const tag = MESSAGE_TAGS.find(t => t.value === msg.tag);
+                const senderName = contactNames[msg.sender_id] || 'Unknown';
                 return (
                   <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[80%] rounded-2xl p-3 ${
-                      isMine
-                        ? 'bg-primary text-primary-foreground rounded-br-md'
-                        : 'bg-muted/60 text-foreground rounded-bl-md'
+                      isMine ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-muted/60 text-foreground rounded-bl-md'
                     }`}>
+                      {chatMode === 'group' && !isMine && (
+                        <p className={`text-[10px] font-bold ${isMine ? 'text-primary-foreground/70' : 'text-primary'} mb-1`}>
+                          {senderName}
+                        </p>
+                      )}
                       {tag && (
                         <span className={`text-[10px] font-semibold ${isMine ? 'text-primary-foreground/70' : 'text-muted-foreground'} block mb-1`}>
                           {tag.emoji} {tag.label}
@@ -311,18 +448,14 @@ const SecureMessaging: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
+            {/* Input */}
             <div className="border-t border-border/30 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <Select value={selectedTag} onValueChange={setSelectedTag}>
-                  <SelectTrigger className="w-32 h-8 rounded-lg text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger className="w-32 h-8 rounded-lg text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {MESSAGE_TAGS.map(t => (
-                      <SelectItem key={t.value} value={t.value} className="text-xs">
-                        {t.emoji} {t.label}
-                      </SelectItem>
+                      <SelectItem key={t.value} value={t.value} className="text-xs">{t.emoji} {t.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -346,12 +479,7 @@ const SecureMessaging: React.FC = () => {
                   placeholder={language === 'en' ? 'Type a message...' : 'सन्देश लेख्नुहोस्...'}
                   className="flex-1 rounded-xl h-9"
                 />
-                <Button
-                  onClick={handleSend}
-                  disabled={!newMessage.trim() || sending}
-                  size="icon"
-                  className="rounded-xl h-9 w-9 shrink-0"
-                >
+                <Button onClick={handleSend} disabled={!newMessage.trim() || sending} size="icon" className="rounded-xl h-9 w-9 shrink-0">
                   {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </Button>
               </div>

@@ -170,6 +170,39 @@ export type Database = {
         }
         Relationships: []
       }
+      dietician_patient_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          dietician_id: string
+          id: string
+          patient_id: string
+          request_reason: string | null
+          requested_by: string | null
+          status: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          dietician_id: string
+          id?: string
+          patient_id: string
+          request_reason?: string | null
+          requested_by?: string | null
+          status?: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          dietician_id?: string
+          id?: string
+          patient_id?: string
+          request_reason?: string | null
+          requested_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       doctor_patient_assignments: {
         Row: {
           assigned_at: string
@@ -522,6 +555,8 @@ export type Database = {
           attachment_type: string | null
           attachment_url: string | null
           content: string
+          conversation_id: string | null
+          conversation_type: string
           created_at: string
           id: string
           is_read: boolean
@@ -537,6 +572,8 @@ export type Database = {
           attachment_type?: string | null
           attachment_url?: string | null
           content: string
+          conversation_id?: string | null
+          conversation_type?: string
           created_at?: string
           id?: string
           is_read?: boolean
@@ -552,6 +589,8 @@ export type Database = {
           attachment_type?: string | null
           attachment_url?: string | null
           content?: string
+          conversation_id?: string | null
+          conversation_type?: string
           created_at?: string
           id?: string
           is_read?: boolean

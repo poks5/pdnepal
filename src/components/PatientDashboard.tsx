@@ -19,6 +19,7 @@ import LabDataManagement from './LabDataManagement';
 import DashboardOverview from './dashboard/DashboardOverview';
 import AnalyticsDashboard from './analytics/AnalyticsDashboard';
 import MyDoctor from './MyDoctor';
+import MyDietician from './MyDietician';
 import LearningCenter from './learning/LearningCenter';
 import { formatExchangeForHistory } from '@/utils/exchangeFormatters';
 import SecureMessaging from './SecureMessaging';
@@ -34,6 +35,7 @@ const settingsSubItems = [
   { id: 'caregiver', icon: Users, label: 'Caregivers', description: 'Manage caregivers', emoji: '🤝', gradient: 'from-[hsl(var(--peach))]/10 to-[hsl(var(--coral))]/8' },
   { id: 'supplier', icon: Package, label: 'Suppliers', description: 'Supply management', emoji: '📦', gradient: 'from-[hsl(var(--lavender))]/10 to-primary/8' },
   { id: 'my-doctor', icon: Stethoscope, label: 'My Doctor', description: 'Doctor connection', emoji: '👨‍⚕️', gradient: 'from-[hsl(var(--mint))]/10 to-[hsl(var(--sky))]/8' },
+  { id: 'my-dietician', icon: Stethoscope, label: 'My Dietician', description: 'Nutrition guidance', emoji: '🥗', gradient: 'from-[hsl(var(--peach))]/10 to-[hsl(var(--mint))]/8' },
 ];
 
 const PatientDashboard: React.FC = () => {
@@ -230,6 +232,7 @@ const PatientDashboard: React.FC = () => {
         {settingsView === 'caregiver' && <CaregiverDetails />}
         {settingsView === 'supplier' && <SupplierDetails />}
         {settingsView === 'my-doctor' && <MyDoctor />}
+        {settingsView === 'my-dietician' && <MyDietician />}
       </div>
     );
   };
