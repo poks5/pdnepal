@@ -59,7 +59,7 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
   const patientNav = [
     { icon: Home, label: t('home'), id: 'overview', emoji: '🏠' },
     { icon: Activity, label: t('exchanges'), id: 'exchanges', emoji: '💧' },
-    { icon: BookOpen, label: t('learningCenter'), id: 'learning', emoji: '📖' },
+    { icon: MessageSquare, label: t('messages') || 'Messages', id: 'messages', emoji: '💬' },
     { icon: BarChart, label: t('analytics'), id: 'analytics', emoji: '📊' },
     { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
