@@ -13,7 +13,7 @@ const TrendAnalysis: React.FC = () => {
 
   const daysBack = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 90;
 
-  const { ufData, drainColorData, exchangeCountData, weightData, painData, stats, alerts } = useMemo(() => {
+  const { ufData, drainColorData, exchangeCountData, weightData, painData, bpData, stats, alerts } = useMemo(() => {
     const cutoff = new Date(Date.now() - daysBack * 86400000);
     const filtered = exchangeLogs.filter(l => new Date(l.timestamp) >= cutoff);
 
