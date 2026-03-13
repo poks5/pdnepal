@@ -232,6 +232,7 @@ const PatientDashboard: React.FC = () => {
         {settingsView === 'caregiver' && <CaregiverDetails />}
         {settingsView === 'supplier' && <SupplierDetails />}
         {settingsView === 'my-doctor' && <MyDoctor />}
+        {settingsView === 'my-dietician' && <MyDietician />}
       </div>
     );
   };
