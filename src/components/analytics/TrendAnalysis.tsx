@@ -113,8 +113,16 @@ const TrendAnalysis: React.FC = () => {
       alerts.push({ type: 'warning', message: `Weight increased by ${weightChange}kg`, tip: 'Monitor fluid intake and UF adequacy' });
     }
 
+    // BP alerts
+    if (bpData.length > 0) {
+      const latest = bpData[bpData.length - 1];
+      if (latest.systolic > 140 || latest.diastolic > 90) {
+        alerts.push({ type: 'alert', message: `BP elevated: ${latest.systolic}/${latest.diastolic}`, tip: 'Monitor fluid intake and consult doctor' });
+      }
+    }
+
     return {
-      ufData, drainColorData, exchangeCountData, weightData, painData,
+      ufData, drainColorData, exchangeCountData, weightData, painData, bpData,
       stats: {
         avg: recentAvg, change, trend: change >= 0 ? 'up' : 'down' as const,
         days: ufData.length, total: filtered.length,
