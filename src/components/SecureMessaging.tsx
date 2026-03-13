@@ -319,78 +319,111 @@ const SecureMessaging: React.FC = () => {
     );
   }
 
+  const roleEmoji: Record<string, string> = { doctor: '👨‍⚕️', nurse: '👩‍⚕️', dietician: '🥗', caregiver: '🤝', patient: '🩺', admin: '🛡️' };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <MessageSquare className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-bold text-foreground">
-          {language === 'en' ? 'Secure Messages' : 'सुरक्षित सन्देशहरू'}
-        </h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-bold text-foreground">
+            {language === 'en' ? 'Secure Messages' : 'सुरक्षित सन्देशहरू'}
+          </h2>
+        </div>
+        {/* Chat Mode Toggle */}
+        <div className="flex gap-1 bg-muted/50 p-1 rounded-full">
+          <button
+            onClick={() => { setChatMode('direct'); setMessages([]); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${chatMode === 'direct' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
+          >
+            💬 Direct
+          </button>
+          <button
+            onClick={() => { setChatMode('group'); setMessages([]); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${chatMode === 'group' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
+          >
+            👥 Care Team
+          </button>
+        </div>
       </div>
 
-      {contacts.length === 0 ? (
+      {contacts.length === 0 && groupPatients.length === 0 ? (
         <Card className="rounded-2xl border-border/40">
           <CardContent className="p-8 text-center">
             <MessageSquare className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
-              {language === 'en'
-                ? 'No contacts yet. Connect with a doctor to start messaging.'
-                : 'अहिलेसम्म कुनै सम्पर्क छैन।'}
+              {language === 'en' ? 'No contacts yet. Connect with your care team to start messaging.' : 'अहिलेसम्म कुनै सम्पर्क छैन।'}
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="flex flex-col md:flex-row gap-4 h-[calc(100vh-280px)] min-h-[400px]">
-          {/* Contact List */}
+          {/* Sidebar */}
           <div className="w-full md:w-64 shrink-0 space-y-1.5 overflow-y-auto">
-            {contacts.map(contact => {
-              const unreadCount = messages.filter(m => m.sender_id === contact.id && !m.is_read).length;
-              return (
+            {chatMode === 'direct' ? (
+              contacts.map(contact => (
                 <button
                   key={contact.id}
-                  onClick={() => setSelectedContact(contact.id)}
+                  onClick={() => { setSelectedContact(contact.id); setMessages([]); }}
                   className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${
-                    selectedContact === contact.id
-                      ? 'bg-primary/10 border border-primary/20'
-                      : 'bg-card hover:bg-muted/50 border border-border/30'
+                    selectedContact === contact.id ? 'bg-primary/10 border border-primary/20' : 'bg-card hover:bg-muted/50 border border-border/30'
                   }`}
                 >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-                    {contact.name.charAt(0)}
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm">
+                    {roleEmoji[contact.role] || '👤'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{contact.name}</p>
                     <p className="text-[10px] text-muted-foreground capitalize">{contact.role}</p>
                   </div>
-                  {unreadCount > 0 && (
-                    <Badge className="bg-destructive text-destructive-foreground text-[10px] h-5 min-w-5 justify-center">
-                      {unreadCount}
-                    </Badge>
-                  )}
                 </button>
-              );
-            })}
+              ))
+            ) : (
+              groupPatients.map(gp => (
+                <button
+                  key={gp.id}
+                  onClick={() => { setSelectedGroupPatient(gp.id); setMessages([]); }}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${
+                    selectedGroupPatient === gp.id ? 'bg-primary/10 border border-primary/20' : 'bg-card hover:bg-muted/50 border border-border/30'
+                  }`}
+                >
+                  <div className="w-9 h-9 rounded-full bg-[hsl(var(--lavender))]/15 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-[hsl(var(--lavender))]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{gp.name}</p>
+                    <p className="text-[10px] text-muted-foreground">Group Chat</p>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
 
           {/* Chat Area */}
           <Card className="flex-1 rounded-2xl border-border/30 flex flex-col overflow-hidden">
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground text-sm">
-                  {language === 'en' ? 'No messages yet. Start the conversation!' : 'अहिलेसम्म कुनै सन्देश छैन।'}
+                  {chatMode === 'group'
+                    ? (language === 'en' ? 'No group messages yet. All care team members can see messages here.' : 'अहिलेसम्म कुनै समूह सन्देश छैन।')
+                    : (language === 'en' ? 'No messages yet. Start the conversation!' : 'अहिलेसम्म कुनै सन्देश छैन।')
+                  }
                 </div>
               )}
               {messages.map(msg => {
                 const isMine = msg.sender_id === user?.id;
                 const tag = MESSAGE_TAGS.find(t => t.value === msg.tag);
+                const senderName = contactNames[msg.sender_id] || 'Unknown';
                 return (
                   <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[80%] rounded-2xl p-3 ${
-                      isMine
-                        ? 'bg-primary text-primary-foreground rounded-br-md'
-                        : 'bg-muted/60 text-foreground rounded-bl-md'
+                      isMine ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-muted/60 text-foreground rounded-bl-md'
                     }`}>
+                      {chatMode === 'group' && !isMine && (
+                        <p className={`text-[10px] font-bold ${isMine ? 'text-primary-foreground/70' : 'text-primary'} mb-1`}>
+                          {senderName}
+                        </p>
+                      )}
                       {tag && (
                         <span className={`text-[10px] font-semibold ${isMine ? 'text-primary-foreground/70' : 'text-muted-foreground'} block mb-1`}>
                           {tag.emoji} {tag.label}
@@ -415,18 +448,14 @@ const SecureMessaging: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
+            {/* Input */}
             <div className="border-t border-border/30 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <Select value={selectedTag} onValueChange={setSelectedTag}>
-                  <SelectTrigger className="w-32 h-8 rounded-lg text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger className="w-32 h-8 rounded-lg text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {MESSAGE_TAGS.map(t => (
-                      <SelectItem key={t.value} value={t.value} className="text-xs">
-                        {t.emoji} {t.label}
-                      </SelectItem>
+                      <SelectItem key={t.value} value={t.value} className="text-xs">{t.emoji} {t.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -450,12 +479,7 @@ const SecureMessaging: React.FC = () => {
                   placeholder={language === 'en' ? 'Type a message...' : 'सन्देश लेख्नुहोस्...'}
                   className="flex-1 rounded-xl h-9"
                 />
-                <Button
-                  onClick={handleSend}
-                  disabled={!newMessage.trim() || sending}
-                  size="icon"
-                  className="rounded-xl h-9 w-9 shrink-0"
-                >
+                <Button onClick={handleSend} disabled={!newMessage.trim() || sending} size="icon" className="rounded-xl h-9 w-9 shrink-0">
                   {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </Button>
               </div>
