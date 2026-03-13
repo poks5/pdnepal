@@ -21,6 +21,7 @@ import AnalyticsDashboard from './analytics/AnalyticsDashboard';
 import MyDoctor from './MyDoctor';
 import LearningCenter from './learning/LearningCenter';
 import { formatExchangeForHistory } from '@/utils/exchangeFormatters';
+import SecureMessaging from './SecureMessaging';
 import { ExchangeData } from '@/hooks/useExchangeForm';
 import { DailyExchangeLog } from '@/types/patient';
 import { useToast } from '@/hooks/use-toast';
