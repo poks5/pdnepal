@@ -304,6 +304,7 @@ const TrendAnalysis: React.FC = () => {
         </CardContent>
       </Card>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Exchange Count Bar Chart */}
         <Card className="rounded-2xl border-border/30 shadow-sm">
           <CardHeader className="pb-2">
