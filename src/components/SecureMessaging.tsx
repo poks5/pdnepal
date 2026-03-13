@@ -21,6 +21,8 @@ interface Message {
   attachment_type: string | null;
   is_read: boolean;
   created_at: string;
+  conversation_type?: string;
+  conversation_id?: string;
 }
 
 interface Contact {
