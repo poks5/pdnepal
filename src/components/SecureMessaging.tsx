@@ -276,31 +276,37 @@ const SecureMessaging: React.FC = () => {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user || !selectedContact) return;
+    if (!file || !user) return;
 
     const ext = file.name.split('.').pop();
     const path = `messages/${user.id}/${Date.now()}.${ext}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('clinical-photos')
-      .upload(path, file);
-
+    const { error: uploadError } = await supabase.storage.from('clinical-photos').upload(path, file);
     if (uploadError) return;
 
     const { data: urlData } = supabase.storage.from('clinical-photos').getPublicUrl(path);
     const isImage = file.type.startsWith('image/');
-    const patientId = user.role === 'patient' ? user.id : selectedContact;
 
-    await supabase.from('messages').insert({
-      sender_id: user.id,
-      recipient_id: selectedContact,
-      patient_id: patientId,
-      content: isImage ? '📷 Image' : `📎 ${file.name}`,
-      message_type: isImage ? 'image' : 'file',
-      tag: selectedTag !== 'general' ? selectedTag : null,
-      attachment_url: urlData.publicUrl,
-      attachment_type: file.type,
-    });
+    if (chatMode === 'direct' && selectedContact) {
+      const patientId = user.role === 'patient' ? user.id : selectedContact;
+      await supabase.from('messages').insert({
+        sender_id: user.id, recipient_id: selectedContact, patient_id: patientId,
+        content: isImage ? '📷 Image' : `📎 ${file.name}`,
+        message_type: isImage ? 'image' : 'file',
+        tag: selectedTag !== 'general' ? selectedTag : null,
+        attachment_url: urlData.publicUrl, attachment_type: file.type,
+        conversation_type: 'direct',
+      });
+    } else if (chatMode === 'group' && selectedGroupPatient) {
+      await supabase.from('messages').insert({
+        sender_id: user.id, recipient_id: user.id, patient_id: selectedGroupPatient,
+        content: isImage ? '📷 Image' : `📎 ${file.name}`,
+        message_type: isImage ? 'image' : 'file',
+        tag: selectedTag !== 'general' ? selectedTag : null,
+        attachment_url: urlData.publicUrl, attachment_type: file.type,
+        conversation_type: 'group', conversation_id: `team-${selectedGroupPatient}`,
+      });
+    }
   };
 
   const tagInfo = MESSAGE_TAGS.find(t => t.value === selectedTag);
