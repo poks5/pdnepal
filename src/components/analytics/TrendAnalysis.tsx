@@ -62,6 +62,25 @@ const TrendAnalysis: React.FC = () => {
       .map(([date, pains]) => ({ date, pain: Math.round((pains.reduce((s, p) => s + p, 0) / pains.length) * 10) / 10 }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    // Blood pressure trend
+    const dailyBP = new Map<string, { sys: number[]; dia: number[] }>();
+    filtered.forEach(log => {
+      if (log.bloodPressureSystolic && log.bloodPressureDiastolic) {
+        const date = new Date(log.timestamp).toISOString().split('T')[0];
+        const prev = dailyBP.get(date) || { sys: [], dia: [] };
+        prev.sys.push(log.bloodPressureSystolic);
+        prev.dia.push(log.bloodPressureDiastolic);
+        dailyBP.set(date, prev);
+      }
+    });
+    const bpData = Array.from(dailyBP.entries())
+      .map(([date, { sys, dia }]) => ({
+        date,
+        systolic: Math.round(sys.reduce((s, v) => s + v, 0) / sys.length),
+        diastolic: Math.round(dia.reduce((s, v) => s + v, 0) / dia.length),
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
     // Drain color distribution
     const colorCounts: Record<string, number> = {};
     filtered.forEach(log => {
