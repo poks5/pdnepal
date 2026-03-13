@@ -276,7 +276,34 @@ const TrendAnalysis: React.FC = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Blood Pressure Trend Chart */}
+      <Card className="rounded-2xl border-border/30 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-bold">🩺 Blood Pressure Trend</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {bpData.length > 0 ? (
+            <ChartContainer config={chartConfig} className="h-[220px] sm:h-[260px]">
+              <LineChart data={bpData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                <XAxis dataKey="date" tickFormatter={v => new Date(v).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} domain={[50, 200]} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ReferenceLine y={140} stroke="hsl(var(--destructive))" strokeDasharray="4 4" strokeOpacity={0.5} label={{ value: 'High', fontSize: 9, fill: 'hsl(var(--destructive))' }} />
+                <ReferenceLine y={90} stroke="hsl(var(--mint))" strokeDasharray="4 4" strokeOpacity={0.5} label={{ value: 'Normal', fontSize: 9, fill: 'hsl(var(--mint))' }} />
+                <Line type="monotone" dataKey="systolic" stroke="hsl(var(--coral))" strokeWidth={2.5} dot={{ r: 3 }} name="Systolic" />
+                <Line type="monotone" dataKey="diastolic" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} name="Diastolic" />
+              </LineChart>
+            </ChartContainer>
+          ) : (
+            <div className="text-center py-8">
+              <span className="text-3xl">🩺</span>
+              <p className="text-sm text-muted-foreground mt-2">No blood pressure data yet. Record BP in your exchanges to track trends.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
         {/* Exchange Count Bar Chart */}
         <Card className="rounded-2xl border-border/30 shadow-sm">
           <CardHeader className="pb-2">
