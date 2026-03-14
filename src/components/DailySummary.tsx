@@ -162,7 +162,7 @@ const DailySummary: React.FC = () => {
           </button>
           <div className="flex items-center gap-3 mb-2">
             <Sun className="w-7 h-7 text-yellow-300" />
-            <h2 className="text-xl font-bold">{greeting}, Doctor</h2>
+            <h2 className="text-xl font-bold">{greeting}, {user?.role === 'dietician' ? 'Dietician' : 'Doctor'}</h2>
           </div>
           <p className="text-sm text-primary-foreground/80">
             Here's your daily patient summary — {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
