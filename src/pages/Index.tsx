@@ -41,6 +41,7 @@ const AppContent: React.FC = () => {
     switch (effectiveRole) {
       case 'patient': return <PatientDashboard />;
       case 'doctor': return <DoctorDashboard />;
+      case 'dietician': return <DieticianDashboard />;
       case 'caregiver': return <CaregiverDashboard />;
       case 'admin':
       case 'coordinator': return <AdminDashboard />;
