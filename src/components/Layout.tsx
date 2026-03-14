@@ -85,8 +85,15 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
     { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
 
+  const dieticianNav = [
+    { icon: Home, label: 'Patients', id: 'patients', emoji: '🏠' },
+    { icon: Bell, label: 'Alerts', id: 'alerts', emoji: '🔔' },
+    { icon: Settings, label: 'More', id: 'more', emoji: '⚙️' },
+  ];
+
   const navRole = viewRole ?? user?.role;
-  const navItems = navRole === 'doctor' || navRole === 'nurse' || navRole === 'dietician' ? doctorNav
+  const navItems = navRole === 'dietician' ? dieticianNav
+    : navRole === 'doctor' || navRole === 'nurse' ? doctorNav
     : navRole === 'admin' || navRole === 'coordinator' ? adminNav
     : patientNav;
 
