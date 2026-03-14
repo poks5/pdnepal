@@ -29,7 +29,13 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
   const { user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const defaultTab = (() => {
+    const r = viewRole ?? user?.role;
+    if (r === 'dietician' || r === 'doctor' || r === 'nurse') return 'patients';
+    if (r === 'admin' || r === 'coordinator') return 'overview';
+    return 'overview';
+  })();
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [badgeCounts, setBadgeCounts] = useState<Record<string, number>>({});
 
   const roleLabel: Record<string, string> = {
