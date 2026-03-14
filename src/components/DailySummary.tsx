@@ -49,13 +49,18 @@ const DailySummary: React.FC = () => {
     setOpen(true);
 
     try {
-      const assignmentTable = user.role === 'dietician' ? 'dietician_patient_assignments' : 'doctor_patient_assignments';
-      const assignmentIdCol = user.role === 'dietician' ? 'dietician_id' : 'doctor_id';
-      const { data: assignments } = await supabase
-        .from(assignmentTable)
-        .select('patient_id')
-        .eq(assignmentIdCol, user.id)
-        .eq('status', 'active');
+      const isDietician = user.role === 'dietician';
+      const { data: assignments } = isDietician
+        ? await supabase
+            .from('dietician_patient_assignments')
+            .select('patient_id')
+            .eq('dietician_id', user.id)
+            .eq('status', 'active')
+        : await supabase
+            .from('doctor_patient_assignments')
+            .select('patient_id')
+            .eq('doctor_id', user.id)
+            .eq('status', 'active');
 
       const patientIds = assignments?.map(a => a.patient_id) || [];
       const totalPatients = patientIds.length;
