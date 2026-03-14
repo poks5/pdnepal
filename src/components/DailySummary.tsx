@@ -49,10 +49,12 @@ const DailySummary: React.FC = () => {
     setOpen(true);
 
     try {
+      const assignmentTable = user.role === 'dietician' ? 'dietician_patient_assignments' : 'doctor_patient_assignments';
+      const assignmentIdCol = user.role === 'dietician' ? 'dietician_id' : 'doctor_id';
       const { data: assignments } = await supabase
-        .from('doctor_patient_assignments')
+        .from(assignmentTable)
         .select('patient_id')
-        .eq('doctor_id', user.id)
+        .eq(assignmentIdCol, user.id)
         .eq('status', 'active');
 
       const patientIds = assignments?.map(a => a.patient_id) || [];
