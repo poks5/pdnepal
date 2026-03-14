@@ -7,6 +7,7 @@ import LandingPage from '@/components/LandingPage';
 import Layout from '@/components/Layout';
 import PatientDashboard from '@/components/PatientDashboard';
 import DoctorDashboard from '@/components/DoctorDashboard';
+import DieticianDashboard from '@/components/DieticianDashboard';
 import CaregiverDashboard from '@/components/CaregiverDashboard';
 import AdminDashboard from '@/components/AdminDashboard';
 import RoleSwitcher from '@/components/RoleSwitcher';
@@ -40,6 +41,7 @@ const AppContent: React.FC = () => {
     switch (effectiveRole) {
       case 'patient': return <PatientDashboard />;
       case 'doctor': return <DoctorDashboard />;
+      case 'dietician': return <DieticianDashboard />;
       case 'caregiver': return <CaregiverDashboard />;
       case 'admin':
       case 'coordinator': return <AdminDashboard />;

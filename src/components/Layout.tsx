@@ -38,6 +38,8 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
     caregiver: 'Caregiver',
     admin: 'Admin',
     coordinator: 'Coordinator',
+    dietician: 'Dietician',
+    nurse: 'Nurse',
   };
 
   const roleEmoji: Record<string, string> = {
@@ -46,6 +48,8 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
     caregiver: '🤝',
     admin: '🛡️',
     coordinator: '📋',
+    dietician: '🥗',
+    nurse: '👩‍⚕️',
   };
 
   const roleColor: Record<string, string> = {
@@ -54,6 +58,8 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
     caregiver: 'bg-[hsl(var(--peach))]/15 text-[hsl(var(--coral))]',
     admin: 'bg-destructive/10 text-destructive',
     coordinator: 'bg-[hsl(var(--lavender))]/15 text-[hsl(var(--lavender))]',
+    dietician: 'bg-[hsl(var(--peach))]/15 text-[hsl(var(--peach))]',
+    nurse: 'bg-[hsl(var(--mint))]/15 text-[hsl(var(--mint))]',
   };
 
   const patientNav = [
@@ -79,8 +85,15 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
     { icon: Settings, label: t('settings'), id: 'settings', emoji: '⚙️' },
   ];
 
+  const dieticianNav = [
+    { icon: Home, label: 'Patients', id: 'patients', emoji: '🏠' },
+    { icon: Bell, label: 'Alerts', id: 'alerts', emoji: '🔔' },
+    { icon: Settings, label: 'More', id: 'more', emoji: '⚙️' },
+  ];
+
   const navRole = viewRole ?? user?.role;
-  const navItems = navRole === 'doctor' || navRole === 'nurse' || navRole === 'dietician' ? doctorNav
+  const navItems = navRole === 'dietician' ? dieticianNav
+    : navRole === 'doctor' || navRole === 'nurse' ? doctorNav
     : navRole === 'admin' || navRole === 'coordinator' ? adminNav
     : patientNav;
 
