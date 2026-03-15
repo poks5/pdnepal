@@ -36,9 +36,21 @@ const ClinicalPhotoUpload: React.FC<ClinicalPhotoUploadProps> = ({
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const getPublicUrl = (path: string) => {
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    return data.publicUrl;
+  const getSignedUrl = async (path: string): Promise<string> => {
+    const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) return path;
+    return data.signedUrl;
+  };
+
+  const getStoragePath = (fullUrl: string): string => {
+    // Extract storage path from full URL or return as-is if already a path
+    try {
+      const url = new URL(fullUrl);
+      const match = url.pathname.match(/\/object\/(?:public|sign)\/clinical-photos\/(.+)/);
+      return match ? decodeURIComponent(match[1]) : fullUrl;
+    } catch {
+      return fullUrl;
+    }
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
