@@ -92,6 +92,9 @@ const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }
         </div>
 
         <TabsContent value="overview">
+          {/* Centralized PD Progress */}
+          <PDProgressIndicator completed={todayExchangeCount} prescribed={dailyExchanges} className="mb-6" />
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardHeader><CardTitle>Weekly UF</CardTitle></CardHeader>
@@ -105,7 +108,7 @@ const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }
               <CardHeader><CardTitle>Adherence</CardTitle></CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-primary">{patient.adherence}%</div>
-                <p className="text-sm text-muted-foreground">Last 7 days</p>
+                <p className="text-sm text-muted-foreground">Last 7 days ({dailyExchanges}/day prescribed)</p>
                 <Progress value={patient.adherence} className="mt-2" />
               </CardContent>
             </Card>
