@@ -101,12 +101,17 @@ const PatientDashboard: React.FC = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user, language, toast]);
 
+  // Use centralized prescription
+  const { dailyExchanges: dailyTarget } = usePrescription(user?.id);
+
   // Compute real today's progress from exchange logs
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayLogs = exchangeLogs.filter(log => new Date(log.timestamp) >= today);
-  const dailyTarget = 4; // from PD settings or default
-  const exchangeTimes = ['06:00', '12:00', '18:00', '22:00'];
+  const exchangeTimes = Array.from({ length: dailyTarget }, (_, i) => {
+    const h = Math.round(6 + (i * (16 / Math.max(dailyTarget - 1, 1))));
+    return `${h.toString().padStart(2, '0')}:00`;
+  });
   const nextPendingIdx = todayLogs.length < exchangeTimes.length ? todayLogs.length : exchangeTimes.length - 1;
   const todayExchanges = {
     completed: todayLogs.length,
