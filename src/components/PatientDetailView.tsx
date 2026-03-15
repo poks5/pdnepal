@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ArrowLeft, AlertTriangle, FileText, Users, Package, TrendingUp, Droplets, Plus, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import LabDataManagement from '@/components/LabDataManagement';
+import PDProgressIndicator from '@/components/dashboard/PDProgressIndicator';
+import { usePrescription } from '@/hooks/usePrescription';
 
 interface PatientDetailViewProps {
   patient: any;
@@ -25,6 +27,7 @@ interface ExchangeRow {
 }
 
 const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }) => {
+  const { dailyExchanges } = usePrescription(patient.id);
   const [selectedTab, setSelectedTab] = useState('overview');
   const [showLabDialog, setShowLabDialog] = useState(false);
   const [exchanges, setExchanges] = useState<ExchangeRow[]>([]);
@@ -52,6 +55,11 @@ const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }
   }, [patient.id]);
 
   const complications = exchanges.filter(e => e.drain_color === 'cloudy');
+  
+  // Today's progress using centralized prescription
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayExchangeCount = exchanges.filter(e => new Date(e.created_at) >= todayStart).length;
 
   return (
     <div className="space-y-6">
@@ -84,6 +92,9 @@ const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }
         </div>
 
         <TabsContent value="overview">
+          {/* Centralized PD Progress */}
+          <PDProgressIndicator completed={todayExchangeCount} prescribed={dailyExchanges} className="mb-6" />
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardHeader><CardTitle>Weekly UF</CardTitle></CardHeader>
@@ -97,7 +108,7 @@ const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }
               <CardHeader><CardTitle>Adherence</CardTitle></CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-primary">{patient.adherence}%</div>
-                <p className="text-sm text-muted-foreground">Last 7 days</p>
+                <p className="text-sm text-muted-foreground">Last 7 days ({dailyExchanges}/day prescribed)</p>
                 <Progress value={patient.adherence} className="mt-2" />
               </CardContent>
             </Card>

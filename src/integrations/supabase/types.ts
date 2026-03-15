@@ -748,6 +748,54 @@ export type Database = {
         }
         Relationships: []
       }
+      pd_prescriptions: {
+        Row: {
+          active_from: string
+          active_to: string | null
+          created_at: string
+          created_by: string
+          daily_exchanges: number
+          dialysate_type: string | null
+          dwell_time_hours: number | null
+          fill_volume_ml: number
+          glucose_concentration: string | null
+          id: string
+          notes: string | null
+          patient_id: string
+          updated_at: string
+        }
+        Insert: {
+          active_from?: string
+          active_to?: string | null
+          created_at?: string
+          created_by: string
+          daily_exchanges?: number
+          dialysate_type?: string | null
+          dwell_time_hours?: number | null
+          fill_volume_ml?: number
+          glucose_concentration?: string | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          updated_at?: string
+        }
+        Update: {
+          active_from?: string
+          active_to?: string | null
+          created_at?: string
+          created_by?: string
+          daily_exchanges?: number
+          dialysate_type?: string | null
+          dwell_time_hours?: number | null
+          fill_volume_ml?: number
+          glucose_concentration?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pd_settings: {
         Row: {
           batch_number: string | null

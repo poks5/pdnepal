@@ -122,6 +122,23 @@ const DoctorDashboard: React.FC = () => {
           .gte('created_at', sevenDaysAgo.toISOString())
           .order('created_at', { ascending: false });
 
+        // Fetch active prescriptions for all patients
+        const today = new Date().toISOString().split('T')[0];
+        const { data: prescriptions } = await supabase
+          .from('pd_prescriptions' as any)
+          .select('patient_id, daily_exchanges')
+          .in('patient_id', patientIds)
+          .lte('active_from', today)
+          .or(`active_to.is.null,active_to.gte.${today}`);
+
+        const prescriptionMap = new Map<string, number>();
+        (prescriptions || []).forEach((p: any) => {
+          // Keep the most recent prescription per patient
+          if (!prescriptionMap.has(p.patient_id)) {
+            prescriptionMap.set(p.patient_id, p.daily_exchanges);
+          }
+        });
+
         const mapped: RealPatient[] = (profiles || []).map(profile => {
           const patientLogs = (recentLogs || []).filter(l => l.patient_id === profile.user_id);
           const weeklyUF = patientLogs.reduce((sum, l) => sum + (l.ultrafiltration_ml || 0), 0);
@@ -131,12 +148,14 @@ const DoctorDashboard: React.FC = () => {
           let age = 0;
           if (profile.date_of_birth) {
             const dob = new Date(profile.date_of_birth);
-            const today = new Date();
-            age = today.getFullYear() - dob.getFullYear();
-            if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) age--;
+            const today_date = new Date();
+            age = today_date.getFullYear() - dob.getFullYear();
+            if (today_date.getMonth() < dob.getMonth() || (today_date.getMonth() === dob.getMonth() && today_date.getDate() < dob.getDate())) age--;
           }
 
-          const adherence = Math.min(100, Math.round((patientLogs.length / 28) * 100));
+          const dailyTarget = prescriptionMap.get(profile.user_id) || 4;
+          const weeklyTarget = dailyTarget * 7;
+          const adherence = Math.min(100, Math.round((patientLogs.length / weeklyTarget) * 100));
           
           let status = 'good';
           if (alerts > 0) status = 'attention';
@@ -160,7 +179,7 @@ const DoctorDashboard: React.FC = () => {
             lastExchange,
             alerts,
             status,
-            missedExchanges: Math.max(0, 28 - patientLogs.length),
+            missedExchanges: Math.max(0, weeklyTarget - patientLogs.length),
             weeklyUF,
             hospital: profile.hospital || undefined,
           };

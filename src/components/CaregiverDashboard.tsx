@@ -9,6 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Calendar, AlertTriangle, User, BookOpen, Loader2, RefreshCw } from 'lucide-react';
 import LearningCenter from './learning/LearningCenter';
+import { usePrescription } from '@/hooks/usePrescription';
+import PDProgressIndicator from './dashboard/PDProgressIndicator';
 
 interface AssignedPatient {
   id: string;
@@ -123,7 +125,7 @@ const CaregiverDashboard: React.FC = () => {
     fetchPatientData();
   }, [selectedPatient]);
 
-  const dailyTarget = 4;
+  const { dailyExchanges: dailyTarget } = usePrescription(selectedPatient?.id);
   const completedToday = todayExchanges.length;
   const adherencePercent = Math.round((completedToday / dailyTarget) * 100);
   const weeklyAdherence = Math.min(100, Math.round((weekExchanges.length / (dailyTarget * 7)) * 100));
