@@ -356,6 +356,15 @@ const PatientProfile: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      {/* App Version */}
+      <Card>
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>PDsathi Version</span>
+            <span className="font-mono">v1.0.0</span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
