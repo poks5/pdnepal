@@ -282,11 +282,13 @@ const UserManagement: React.FC = () => {
       </div>
 
       {/* Role Summary Cards */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-2">
         {[
           { label: 'Total', count: roleCounts.total, icon: <Users className="w-4 h-4" />, color: 'text-foreground' },
           { label: 'Patients', count: roleCounts.patient, icon: <Heart className="w-4 h-4" />, color: 'text-primary' },
           { label: 'Doctors', count: roleCounts.doctor, icon: <Stethoscope className="w-4 h-4" />, color: 'text-emerald-600' },
+          { label: 'Nurses', count: roleCounts.nurse, icon: <UserCheck className="w-4 h-4" />, color: 'text-teal-600' },
+          { label: 'Dieticians', count: roleCounts.dietician, icon: <Heart className="w-4 h-4" />, color: 'text-amber-600' },
           { label: 'Caregivers', count: roleCounts.caregiver, icon: <UserCheck className="w-4 h-4" />, color: 'text-purple-600' },
           { label: 'Coordinators', count: roleCounts.coordinator, icon: <Building2 className="w-4 h-4" />, color: 'text-orange-600' },
           { label: 'Admins', count: roleCounts.admin, icon: <Shield className="w-4 h-4" />, color: 'text-destructive' },
