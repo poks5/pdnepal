@@ -326,6 +326,8 @@ const UserManagement: React.FC = () => {
                 <SelectItem value="all">All Roles</SelectItem>
                 <SelectItem value="patient">Patient</SelectItem>
                 <SelectItem value="doctor">Doctor</SelectItem>
+                <SelectItem value="nurse">PD Nurse</SelectItem>
+                <SelectItem value="dietician">Dietician</SelectItem>
                 <SelectItem value="caregiver">Caregiver</SelectItem>
                 <SelectItem value="coordinator">Coordinator</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
