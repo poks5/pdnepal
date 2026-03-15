@@ -254,6 +254,8 @@ const UserManagement: React.FC = () => {
     total: users.length,
     patient: users.filter(u => u.role === 'patient').length,
     doctor: users.filter(u => u.role === 'doctor').length,
+    nurse: users.filter(u => u.role === 'nurse').length,
+    dietician: users.filter(u => u.role === 'dietician').length,
     caregiver: users.filter(u => u.role === 'caregiver').length,
     coordinator: users.filter(u => u.role === 'coordinator').length,
     admin: users.filter(u => u.role === 'admin').length,
