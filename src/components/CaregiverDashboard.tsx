@@ -9,6 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Calendar, AlertTriangle, User, BookOpen, Loader2, RefreshCw } from 'lucide-react';
 import LearningCenter from './learning/LearningCenter';
+import { usePrescription } from '@/hooks/usePrescription';
+import PDProgressIndicator from './dashboard/PDProgressIndicator';
 
 interface AssignedPatient {
   id: string;
