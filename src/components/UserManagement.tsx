@@ -42,6 +42,8 @@ interface DBUser {
 const ROLE_OPTIONS: { value: AppRole; label: string; icon: React.ReactNode; desc: string }[] = [
   { value: 'patient', label: 'Patient', icon: <Heart className="w-4 h-4" />, desc: 'Personal PD management only' },
   { value: 'doctor', label: 'Doctor', icon: <Stethoscope className="w-4 h-4" />, desc: 'Clinical access to assigned patients' },
+  { value: 'nurse', label: 'PD Nurse', icon: <UserCheck className="w-4 h-4" />, desc: 'Nursing care for PD patients' },
+  { value: 'dietician', label: 'Dietician', icon: <Heart className="w-4 h-4" />, desc: 'Nutrition guidance for patients' },
   { value: 'caregiver', label: 'Caregiver', icon: <Users className="w-4 h-4" />, desc: 'Support access for a patient' },
   { value: 'coordinator', label: 'Coordinator', icon: <Building2 className="w-4 h-4" />, desc: 'Hospital staff management access' },
   { value: 'admin', label: 'Admin', icon: <Shield className="w-4 h-4" />, desc: 'Full system access — assign with caution' },
@@ -235,6 +237,8 @@ const UserManagement: React.FC = () => {
     const styles: Record<string, string> = {
       patient: 'bg-primary/10 text-primary border-primary/20',
       doctor: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+      nurse: 'bg-teal-500/10 text-teal-600 border-teal-500/20',
+      dietician: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
       caregiver: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
       admin: 'bg-destructive/10 text-destructive border-destructive/20',
       coordinator: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
@@ -250,6 +254,8 @@ const UserManagement: React.FC = () => {
     total: users.length,
     patient: users.filter(u => u.role === 'patient').length,
     doctor: users.filter(u => u.role === 'doctor').length,
+    nurse: users.filter(u => u.role === 'nurse').length,
+    dietician: users.filter(u => u.role === 'dietician').length,
     caregiver: users.filter(u => u.role === 'caregiver').length,
     coordinator: users.filter(u => u.role === 'coordinator').length,
     admin: users.filter(u => u.role === 'admin').length,
@@ -276,11 +282,13 @@ const UserManagement: React.FC = () => {
       </div>
 
       {/* Role Summary Cards */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-2">
         {[
           { label: 'Total', count: roleCounts.total, icon: <Users className="w-4 h-4" />, color: 'text-foreground' },
           { label: 'Patients', count: roleCounts.patient, icon: <Heart className="w-4 h-4" />, color: 'text-primary' },
           { label: 'Doctors', count: roleCounts.doctor, icon: <Stethoscope className="w-4 h-4" />, color: 'text-emerald-600' },
+          { label: 'Nurses', count: roleCounts.nurse, icon: <UserCheck className="w-4 h-4" />, color: 'text-teal-600' },
+          { label: 'Dieticians', count: roleCounts.dietician, icon: <Heart className="w-4 h-4" />, color: 'text-amber-600' },
           { label: 'Caregivers', count: roleCounts.caregiver, icon: <UserCheck className="w-4 h-4" />, color: 'text-purple-600' },
           { label: 'Coordinators', count: roleCounts.coordinator, icon: <Building2 className="w-4 h-4" />, color: 'text-orange-600' },
           { label: 'Admins', count: roleCounts.admin, icon: <Shield className="w-4 h-4" />, color: 'text-destructive' },
@@ -318,6 +326,8 @@ const UserManagement: React.FC = () => {
                 <SelectItem value="all">All Roles</SelectItem>
                 <SelectItem value="patient">Patient</SelectItem>
                 <SelectItem value="doctor">Doctor</SelectItem>
+                <SelectItem value="nurse">PD Nurse</SelectItem>
+                <SelectItem value="dietician">Dietician</SelectItem>
                 <SelectItem value="caregiver">Caregiver</SelectItem>
                 <SelectItem value="coordinator">Coordinator</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
