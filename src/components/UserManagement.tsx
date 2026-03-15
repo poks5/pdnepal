@@ -42,6 +42,8 @@ interface DBUser {
 const ROLE_OPTIONS: { value: AppRole; label: string; icon: React.ReactNode; desc: string }[] = [
   { value: 'patient', label: 'Patient', icon: <Heart className="w-4 h-4" />, desc: 'Personal PD management only' },
   { value: 'doctor', label: 'Doctor', icon: <Stethoscope className="w-4 h-4" />, desc: 'Clinical access to assigned patients' },
+  { value: 'nurse', label: 'PD Nurse', icon: <UserCheck className="w-4 h-4" />, desc: 'Nursing care for PD patients' },
+  { value: 'dietician', label: 'Dietician', icon: <Heart className="w-4 h-4" />, desc: 'Nutrition guidance for patients' },
   { value: 'caregiver', label: 'Caregiver', icon: <Users className="w-4 h-4" />, desc: 'Support access for a patient' },
   { value: 'coordinator', label: 'Coordinator', icon: <Building2 className="w-4 h-4" />, desc: 'Hospital staff management access' },
   { value: 'admin', label: 'Admin', icon: <Shield className="w-4 h-4" />, desc: 'Full system access — assign with caution' },
