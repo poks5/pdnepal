@@ -27,6 +27,7 @@ interface ExchangeRow {
 }
 
 const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }) => {
+  const { dailyExchanges } = usePrescription(patient.id);
   const [selectedTab, setSelectedTab] = useState('overview');
   const [showLabDialog, setShowLabDialog] = useState(false);
   const [exchanges, setExchanges] = useState<ExchangeRow[]>([]);
