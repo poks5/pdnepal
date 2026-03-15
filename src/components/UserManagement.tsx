@@ -237,6 +237,8 @@ const UserManagement: React.FC = () => {
     const styles: Record<string, string> = {
       patient: 'bg-primary/10 text-primary border-primary/20',
       doctor: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+      nurse: 'bg-teal-500/10 text-teal-600 border-teal-500/20',
+      dietician: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
       caregiver: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
       admin: 'bg-destructive/10 text-destructive border-destructive/20',
       coordinator: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
