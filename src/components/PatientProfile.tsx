@@ -356,12 +356,34 @@ const PatientProfile: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-      {/* App Version */}
+      {/* App Version & Update */}
       <Card>
         <CardContent className="py-4">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>PDsathi Version</span>
-            <span className="font-mono">v1.0.0</span>
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              <span>PDsathi </span>
+              <span className="font-mono">v1.0.0</span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  const registration = await navigator.serviceWorker?.getRegistration();
+                  if (registration) {
+                    await registration.update();
+                    toast({ title: 'Update check complete', description: 'If a new version is available, the app will update automatically.' });
+                  } else {
+                    toast({ title: 'No service worker', description: 'App is not installed as a PWA.', variant: 'destructive' });
+                  }
+                } catch {
+                  toast({ title: 'Update failed', description: 'Could not check for updates.', variant: 'destructive' });
+                }
+              }}
+            >
+              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+              Check for Updates
+            </Button>
           </div>
         </CardContent>
       </Card>
