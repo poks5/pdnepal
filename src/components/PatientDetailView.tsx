@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ArrowLeft, AlertTriangle, FileText, Users, Package, TrendingUp, Droplets, Plus, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import LabDataManagement from '@/components/LabDataManagement';
+import PDProgressIndicator from '@/components/dashboard/PDProgressIndicator';
+import { usePrescription } from '@/hooks/usePrescription';
 
 interface PatientDetailViewProps {
   patient: any;
