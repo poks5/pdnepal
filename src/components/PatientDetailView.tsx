@@ -55,6 +55,11 @@ const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }
   }, [patient.id]);
 
   const complications = exchanges.filter(e => e.drain_color === 'cloudy');
+  
+  // Today's progress using centralized prescription
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayExchangeCount = exchanges.filter(e => new Date(e.created_at) >= todayStart).length;
 
   return (
     <div className="space-y-6">
