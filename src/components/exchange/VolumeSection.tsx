@@ -137,16 +137,16 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
         />
       </div>
       <div>
-        <Label htmlFor="temperature">Temperature (°C)</Label>
+        <Label htmlFor="temperature">Temperature (°F)</Label>
         <Input
           id="temperature"
           type="number"
           step="0.1"
-          min="34"
-          max="42"
+          min="93"
+          max="108"
           value={formData.temperature ?? ''}
           onChange={(e) => updateField('temperature', e.target.value ? Number(e.target.value) : null)}
-          placeholder="e.g. 36.5"
+          placeholder="e.g. 98.6"
         />
       </div>
     </div>
