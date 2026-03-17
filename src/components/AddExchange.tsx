@@ -17,6 +17,16 @@ interface AddExchangeProps {
   saving?: boolean;
 }
 
+const SectionHeader: React.FC<{ step: number; title: string; icon: string }> = ({ step, title, icon }) => (
+  <div className="flex items-center gap-2 pt-2">
+    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
+      {step}
+    </span>
+    <span className="text-sm font-semibold text-foreground">{icon} {title}</span>
+    <div className="flex-1 h-px bg-border" />
+  </div>
+);
+
 const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = false }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -86,8 +96,12 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
       ) : null}
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* ── Step 1: Time & Type ── */}
+        <SectionHeader step={1} title={t('time') + ' & ' + t('exchangeType')} icon="🕐" />
         <TimeTypeSection formData={formData} updateField={updateField} />
-        {/* Keep vitals and additives in this flow: they are required clinical inputs for every Add Exchange regression fix. */}
+
+        {/* ── Step 2: Volumes & Weight ── */}
+        <SectionHeader step={2} title={t('fillVolume') + ' / ' + t('drainVolume')} icon="💧" />
         <VolumeSection
           formData={formData}
           updateField={updateField}
@@ -95,11 +109,20 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
           isUFAutoCalculated={isUFAutoCalculated}
           setIsUFAutoCalculated={setIsUFAutoCalculated}
         />
+
+        {/* ── Step 3: Assessment ── */}
+        <SectionHeader step={3} title={t('clarity') + ' / ' + t('pain') + ' / ' + t('symptoms')} icon="🔍" />
         <AssessmentSection formData={formData} updateField={updateField} />
+
+        {/* ── Step 4: Additives ── */}
+        <SectionHeader step={4} title="Additives" icon="💉" />
         <AdditiveSection
           additive={formData.additive}
           onChange={(additive) => updateField('additive', additive)}
         />
+
+        {/* ── Step 5: Notes ── */}
+        <SectionHeader step={5} title={t('notes')} icon="📝" />
         <div className="space-y-1.5">
           <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
           <Textarea
