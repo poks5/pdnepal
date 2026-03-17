@@ -50,6 +50,7 @@ const PatientDashboard: React.FC = () => {
   const [savingExchange, setSavingExchange] = useState(false);
   const [settingsView, setSettingsView] = useState<string | null>(null);
   const [learningKey, setLearningKey] = useState(0);
+  const [showSymptomReport, setShowSymptomReport] = useState(false);
   const { toast } = useToast();
 
   // Fetch unread learning assignments count
