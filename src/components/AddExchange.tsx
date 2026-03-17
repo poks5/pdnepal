@@ -17,6 +17,16 @@ interface AddExchangeProps {
   saving?: boolean;
 }
 
+const SectionHeader: React.FC<{ step: number; title: string; icon: string }> = ({ step, title, icon }) => (
+  <div className="flex items-center gap-2 pt-2">
+    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
+      {step}
+    </span>
+    <span className="text-sm font-semibold text-foreground">{icon} {title}</span>
+    <div className="flex-1 h-px bg-border" />
+  </div>
+);
+
 const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = false }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
