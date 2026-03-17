@@ -10,6 +10,7 @@ import { useExchangeForm, ExchangeData } from '@/hooks/useExchangeForm';
 import { TimeTypeSection } from '@/components/exchange/TimeTypeSection';
 import { VolumeSection } from '@/components/exchange/VolumeSection';
 import { AssessmentSection } from '@/components/exchange/AssessmentSection';
+import { AdditiveSection, AdditiveData } from '@/components/exchange/AdditiveSection';
 
 interface AddExchangeProps {
   onSave: (data: ExchangeData) => Promise<void> | void;
