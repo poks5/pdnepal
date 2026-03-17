@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Droplets, AlertTriangle, Scale } from 'lucide-react';
+import { Calendar, Clock, Droplets, AlertTriangle, Scale, Heart, Thermometer } from 'lucide-react';
 
 interface Exchange {
   id: string;
