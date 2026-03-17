@@ -283,6 +283,18 @@ const PatientDashboard: React.FC = () => {
           <DashboardOverview todayExchanges={todayExchanges} weeklyStats={weeklyStats} recentExchanges={recentExchanges} allExchangeLogs={exchangeLogs} onAddExchange={() => setShowAddExchange(true)} />
         </TabsContent>
         <TabsContent value="exchanges"><ExchangeHistory exchanges={formattedExchanges} /></TabsContent>
+        <TabsContent value="medications">
+          <div className="space-y-6">
+            <Button
+              onClick={() => setShowSymptomReport(true)}
+              variant="outline"
+              className="w-full h-12 rounded-xl border-destructive/30 text-destructive hover:bg-destructive/5 font-semibold gap-2"
+            >
+              <AlertTriangle className="w-4 h-4" /> Report PD Problem
+            </Button>
+            <MedicationLog />
+          </div>
+        </TabsContent>
         <TabsContent value="analytics"><AnalyticsDashboard /></TabsContent>
         <TabsContent value="messages"><SecureMessaging /></TabsContent>
         <TabsContent value="lab-data"><LabDataManagement /></TabsContent>
@@ -293,6 +305,12 @@ const PatientDashboard: React.FC = () => {
       <Dialog open={showAddExchange} onOpenChange={setShowAddExchange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto rounded-2xl">
           <AddExchange onSave={handleSaveExchange} onCancel={() => setShowAddExchange(false)} saving={savingExchange} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showSymptomReport} onOpenChange={setShowSymptomReport}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto rounded-2xl">
+          <SymptomReport onClose={() => setShowSymptomReport(false)} />
         </DialogContent>
       </Dialog>
     </div>
