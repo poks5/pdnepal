@@ -141,7 +141,7 @@ const PatientDashboard: React.FC = () => {
     if (!user) return;
     setSavingExchange(true);
     try {
-      const { error } = await supabase.from('exchange_logs').insert({
+      const { data: inserted, error } = await supabase.from('exchange_logs').insert({
         patient_id: user.id,
         recorded_by: user.id,
         dwell_start: new Date().toISOString(),
@@ -157,11 +157,24 @@ const PatientDashboard: React.FC = () => {
         blood_pressure_systolic: exchangeData.bloodPressureSystolic,
         blood_pressure_diastolic: exchangeData.bloodPressureDiastolic,
         temperature: exchangeData.temperature,
-      });
+      }).select('id').single();
       if (error) throw error;
 
+      // Save additive if one was used
+      if (exchangeData.additive?.additiveType !== 'none' && exchangeData.additive?.drugName && inserted) {
+        await supabase.from('exchange_additives').insert({
+          exchange_log_id: inserted.id,
+          patient_id: user.id,
+          additive_type: exchangeData.additive.additiveType,
+          drug_name: exchangeData.additive.drugName,
+          dose: exchangeData.additive.dose || null,
+          route: 'IP',
+          reason: exchangeData.additive.reason || null,
+        } as any);
+      }
+
       const newExchangeLog: DailyExchangeLog = {
-        id: `exchange_${Date.now()}`,
+        id: inserted?.id || `exchange_${Date.now()}`,
         patientId: user.id,
         timestamp: new Date().toISOString(),
         drainVolume: exchangeData.drainVolume,
