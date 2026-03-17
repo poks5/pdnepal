@@ -133,6 +133,24 @@ const ExchangeHistory: React.FC<ExchangeHistoryProps> = ({ exchanges = [] }) => 
                         <span className="font-semibold text-foreground">{ex.weightAfterKg}kg</span>
                       </div>
                     )}
+                    {(ex.bloodPressureSystolic != null || ex.bloodPressureDiastolic != null) && (
+                      <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
+                        <span className="text-[10px] text-muted-foreground block flex items-center gap-0.5">
+                          <Heart className="w-2.5 h-2.5" /> BP
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {ex.bloodPressureSystolic ?? '—'}/{ex.bloodPressureDiastolic ?? '—'}
+                        </span>
+                      </div>
+                    )}
+                    {ex.temperature != null && (
+                      <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
+                        <span className="text-[10px] text-muted-foreground block flex items-center gap-0.5">
+                          <Thermometer className="w-2.5 h-2.5" /> Temp
+                        </span>
+                        <span className="font-semibold text-foreground">{ex.temperature}°F</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Clarity & color */}
