@@ -3,6 +3,13 @@ import { useState, useEffect } from 'react';
 import { usePatient } from '@/contexts/PatientContext';
 import { calculateUF } from '@/utils/ufCalculations';
 
+export interface AdditiveData {
+  additiveType: 'none' | 'heparin' | 'antibiotic' | 'other';
+  drugName: string;
+  dose: string;
+  reason: string;
+}
+
 export interface ExchangeData {
   time: string;
   type: 'morning' | 'afternoon' | 'evening' | 'night';
@@ -19,6 +26,7 @@ export interface ExchangeData {
   bloodPressureSystolic: number | null;
   bloodPressureDiastolic: number | null;
   temperature: number | null;
+  additive: AdditiveData;
 }
 
 export const useExchangeForm = () => {
