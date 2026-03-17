@@ -16,6 +16,9 @@ export interface FormattedExchange {
   symptoms?: string[];
   solutionType?: string;
   weightAfterKg?: number | null;
+  bloodPressureSystolic?: number | null;
+  bloodPressureDiastolic?: number | null;
+  temperature?: number | null;
 }
 
 export const formatExchangeForHistory = (log: DailyExchangeLog): FormattedExchange => ({
@@ -33,4 +36,7 @@ export const formatExchangeForHistory = (log: DailyExchangeLog): FormattedExchan
   symptoms: log.symptomTags || [],
   solutionType: log.dialysateStrength || undefined,
   weightAfterKg: log.weightAfterKg ?? null,
+  bloodPressureSystolic: log.bloodPressureSystolic ?? null,
+  bloodPressureDiastolic: log.bloodPressureDiastolic ?? null,
+  temperature: log.temperature ?? null,
 });
