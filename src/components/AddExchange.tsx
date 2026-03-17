@@ -72,7 +72,10 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
           setIsUFAutoCalculated={setIsUFAutoCalculated}
         />
         <AssessmentSection formData={formData} updateField={updateField} />
-
+        <AdditiveSection
+          additive={formData.additive}
+          onChange={(additive) => updateField('additive', additive)}
+        />
         <div className="space-y-1.5">
           <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
           <Textarea
