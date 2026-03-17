@@ -20,6 +20,9 @@ interface Exchange {
   symptoms?: string[];
   solutionType?: string;
   weightAfterKg?: number | null;
+  bloodPressureSystolic?: number | null;
+  bloodPressureDiastolic?: number | null;
+  temperature?: number | null;
 }
 
 interface ExchangeHistoryProps {
