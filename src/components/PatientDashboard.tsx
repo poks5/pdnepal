@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen, MessageSquare } from 'lucide-react';
+import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen, MessageSquare, Pill, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNav } from '@/components/Layout';
@@ -22,6 +22,8 @@ import AnalyticsDashboard from './analytics/AnalyticsDashboard';
 import MyDoctor from './MyDoctor';
 import MyDietician from './MyDietician';
 import LearningCenter from './learning/LearningCenter';
+import MedicationLog from './medical/MedicationLog';
+import SymptomReport from './medical/SymptomReport';
 import { formatExchangeForHistory } from '@/utils/exchangeFormatters';
 import SecureMessaging from './SecureMessaging';
 import { ExchangeData } from '@/hooks/useExchangeForm';
