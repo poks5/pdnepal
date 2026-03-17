@@ -207,6 +207,7 @@ const PatientDashboard: React.FC = () => {
   const mainTabs = [
     { value: 'overview', icon: Calendar, label: t('overview') },
     { value: 'exchanges', icon: Droplets, label: t('exchanges') },
+    { value: 'medications', icon: Pill, label: 'Meds' },
     { value: 'messages', icon: MessageSquare, label: 'Messages' },
     { value: 'analytics', icon: BarChart, label: 'Analytics' },
     { value: 'lab-data', icon: FlaskConical, label: 'Labs' },
