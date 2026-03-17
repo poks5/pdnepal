@@ -104,7 +104,7 @@ const ExchangeHistory: React.FC<ExchangeHistoryProps> = ({ exchanges = [] }) => 
                   </div>
 
                   {/* Stats grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-sm">
                     <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
                       <span className="text-[10px] text-muted-foreground block">{t('drain')}</span>
                       <span className="font-semibold text-foreground">{ex.drainVolume}ml</span>
