@@ -236,6 +236,80 @@ export type Database = {
         }
         Relationships: []
       }
+      drug_catalog: {
+        Row: {
+          category: string
+          common_doses: string[] | null
+          created_at: string
+          drug_name: string
+          id: string
+          is_active: boolean
+          route_options: string[] | null
+        }
+        Insert: {
+          category?: string
+          common_doses?: string[] | null
+          created_at?: string
+          drug_name: string
+          id?: string
+          is_active?: boolean
+          route_options?: string[] | null
+        }
+        Update: {
+          category?: string
+          common_doses?: string[] | null
+          created_at?: string
+          drug_name?: string
+          id?: string
+          is_active?: boolean
+          route_options?: string[] | null
+        }
+        Relationships: []
+      }
+      exchange_additives: {
+        Row: {
+          additive_type: string
+          created_at: string
+          dose: string | null
+          drug_name: string | null
+          exchange_log_id: string
+          id: string
+          patient_id: string
+          reason: string | null
+          route: string | null
+        }
+        Insert: {
+          additive_type?: string
+          created_at?: string
+          dose?: string | null
+          drug_name?: string | null
+          exchange_log_id: string
+          id?: string
+          patient_id: string
+          reason?: string | null
+          route?: string | null
+        }
+        Update: {
+          additive_type?: string
+          created_at?: string
+          dose?: string | null
+          drug_name?: string | null
+          exchange_log_id?: string
+          id?: string
+          patient_id?: string
+          reason?: string | null
+          route?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_additives_exchange_log_id_fkey"
+            columns: ["exchange_log_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exchange_logs: {
         Row: {
           blood_pressure_diastolic: number | null
@@ -549,6 +623,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      medication_logs: {
+        Row: {
+          created_at: string
+          dose: string | null
+          drug_name: string
+          id: string
+          patient_id: string
+          peritonitis_episode_id: string | null
+          reason: string | null
+          route: string
+          taken_at: string
+        }
+        Insert: {
+          created_at?: string
+          dose?: string | null
+          drug_name: string
+          id?: string
+          patient_id: string
+          peritonitis_episode_id?: string | null
+          reason?: string | null
+          route?: string
+          taken_at?: string
+        }
+        Update: {
+          created_at?: string
+          dose?: string | null
+          drug_name?: string
+          id?: string
+          patient_id?: string
+          peritonitis_episode_id?: string | null
+          reason?: string | null
+          route?: string
+          taken_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_logs_peritonitis_episode_id_fkey"
+            columns: ["peritonitis_episode_id"]
+            isOneToOne: false
+            referencedRelation: "peritonitis_episodes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -1197,6 +1315,53 @@ export type Database = {
           version_number?: number
         }
         Relationships: []
+      }
+      symptom_reports: {
+        Row: {
+          created_at: string
+          id: string
+          linked_episode_id: string | null
+          notes: string | null
+          patient_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string
+          status: string
+          symptoms: string[]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          linked_episode_id?: string | null
+          notes?: string | null
+          patient_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          symptoms?: string[]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          linked_episode_id?: string | null
+          notes?: string | null
+          patient_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          symptoms?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "symptom_reports_linked_episode_id_fkey"
+            columns: ["linked_episode_id"]
+            isOneToOne: false
+            referencedRelation: "peritonitis_episodes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       system_config: {
         Row: {
