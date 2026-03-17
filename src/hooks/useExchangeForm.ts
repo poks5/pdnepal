@@ -48,6 +48,7 @@ export const useExchangeForm = () => {
     bloodPressureSystolic: null,
     bloodPressureDiastolic: null,
     temperature: null,
+    additive: { additiveType: 'none', drugName: '', dose: '', reason: '' },
   });
 
   const [previousFillVolume, setPreviousFillVolume] = useState<number | null>(null);
