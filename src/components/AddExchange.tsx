@@ -86,8 +86,12 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
       ) : null}
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* ── Step 1: Time & Type ── */}
+        <SectionHeader step={1} title={t('time') + ' & ' + t('exchangeType')} icon="🕐" />
         <TimeTypeSection formData={formData} updateField={updateField} />
-        {/* Keep vitals and additives in this flow: they are required clinical inputs for every Add Exchange regression fix. */}
+
+        {/* ── Step 2: Volumes & Weight ── */}
+        <SectionHeader step={2} title={t('fillVolume') + ' / ' + t('drainVolume')} icon="💧" />
         <VolumeSection
           formData={formData}
           updateField={updateField}
@@ -95,11 +99,20 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
           isUFAutoCalculated={isUFAutoCalculated}
           setIsUFAutoCalculated={setIsUFAutoCalculated}
         />
+
+        {/* ── Step 3: Assessment ── */}
+        <SectionHeader step={3} title={t('clarity') + ' / ' + t('pain') + ' / ' + t('symptoms')} icon="🔍" />
         <AssessmentSection formData={formData} updateField={updateField} />
+
+        {/* ── Step 4: Additives ── */}
+        <SectionHeader step={4} title="Additives" icon="💉" />
         <AdditiveSection
           additive={formData.additive}
           onChange={(additive) => updateField('additive', additive)}
         />
+
+        {/* ── Step 5: Notes ── */}
+        <SectionHeader step={5} title={t('notes')} icon="📝" />
         <div className="space-y-1.5">
           <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
           <Textarea
