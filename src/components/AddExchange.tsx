@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -10,7 +9,7 @@ import { useExchangeForm, ExchangeData } from '@/hooks/useExchangeForm';
 import { TimeTypeSection } from '@/components/exchange/TimeTypeSection';
 import { VolumeSection } from '@/components/exchange/VolumeSection';
 import { AssessmentSection } from '@/components/exchange/AssessmentSection';
-import { AdditiveSection, AdditiveData } from '@/components/exchange/AdditiveSection';
+import { AdditiveSection } from '@/components/exchange/AdditiveSection';
 
 interface AddExchangeProps {
   onSave: (data: ExchangeData) => Promise<void> | void;
@@ -21,7 +20,15 @@ interface AddExchangeProps {
 const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = false }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { formData, updateField, previousFillVolume, isUFAutoCalculated, setIsUFAutoCalculated } = useExchangeForm();
+  const {
+    formData,
+    updateField,
+    previousFillVolume,
+    recentAdditive,
+    isLoadingReferenceData,
+    isUFAutoCalculated,
+    setIsUFAutoCalculated,
+  } = useExchangeForm();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,8 +69,25 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
         </div>
       )}
 
+      {isLoadingReferenceData ? (
+        <div className="rounded-xl border border-border bg-muted/40 p-3">
+          <p className="text-sm text-muted-foreground">Loading recent exchange references…</p>
+        </div>
+      ) : recentAdditive ? (
+        <div className="rounded-xl border border-border bg-accent/40 p-3">
+          <p className="text-sm font-medium text-foreground">
+            Recently added additive: <strong>{recentAdditive.drugName || recentAdditive.additiveType}</strong>
+            {recentAdditive.dose ? ` • ${recentAdditive.dose}` : ''}
+          </p>
+          {recentAdditive.reason && (
+            <p className="mt-1 text-xs text-muted-foreground">Reason: {recentAdditive.reason}</p>
+          )}
+        </div>
+      ) : null}
+
       <form onSubmit={handleSubmit} className="space-y-5">
         <TimeTypeSection formData={formData} updateField={updateField} />
+        {/* Keep vitals and additives in this flow: they are required clinical inputs for every Add Exchange regression fix. */}
         <VolumeSection
           formData={formData}
           updateField={updateField}

@@ -42,7 +42,7 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
 
   return (
     <div className="space-y-5">
-      {/* Fluid Volumes */}
+      {/* Fluid volumes and vitals are a required part of Add Exchange and should never be removed in later UI edits. */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label htmlFor="solutionType">{t('solutionType') || 'Solution Type'}</Label>
@@ -99,7 +99,7 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
             value={formData.ultrafiltration}
             onChange={(e) => updateField('ultrafiltration', Number(e.target.value))}
             placeholder={isUFAutoCalculated ? t('autoCalculated') : t('autoOrManual')}
-            className={isUFAutoCalculated ? "bg-green-50 border-green-200" : ""}
+            className={isUFAutoCalculated ? 'bg-accent/40 border-border' : ''}
           />
         </div>
         <div>
@@ -116,7 +116,6 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
         </div>
       </div>
 
-      {/* Vitals Section - clearly separated */}
       <div className="border border-border rounded-xl p-4 bg-muted/30">
         <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
           🩺 Vitals
