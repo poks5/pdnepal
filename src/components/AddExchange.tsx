@@ -10,6 +10,7 @@ import { useExchangeForm, ExchangeData } from '@/hooks/useExchangeForm';
 import { TimeTypeSection } from '@/components/exchange/TimeTypeSection';
 import { VolumeSection } from '@/components/exchange/VolumeSection';
 import { AssessmentSection } from '@/components/exchange/AssessmentSection';
+import { AdditiveSection, AdditiveData } from '@/components/exchange/AdditiveSection';
 
 interface AddExchangeProps {
   onSave: (data: ExchangeData) => Promise<void> | void;
@@ -71,7 +72,10 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
           setIsUFAutoCalculated={setIsUFAutoCalculated}
         />
         <AssessmentSection formData={formData} updateField={updateField} />
-
+        <AdditiveSection
+          additive={formData.additive}
+          onChange={(additive) => updateField('additive', additive)}
+        />
         <div className="space-y-1.5">
           <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
           <Textarea

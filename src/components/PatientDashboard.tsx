@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen, MessageSquare } from 'lucide-react';
+import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen, MessageSquare, Pill, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNav } from '@/components/Layout';
@@ -22,6 +23,8 @@ import AnalyticsDashboard from './analytics/AnalyticsDashboard';
 import MyDoctor from './MyDoctor';
 import MyDietician from './MyDietician';
 import LearningCenter from './learning/LearningCenter';
+import MedicationLog from './medical/MedicationLog';
+import SymptomReport from './medical/SymptomReport';
 import { formatExchangeForHistory } from '@/utils/exchangeFormatters';
 import SecureMessaging from './SecureMessaging';
 import { ExchangeData } from '@/hooks/useExchangeForm';
@@ -48,6 +51,7 @@ const PatientDashboard: React.FC = () => {
   const [savingExchange, setSavingExchange] = useState(false);
   const [settingsView, setSettingsView] = useState<string | null>(null);
   const [learningKey, setLearningKey] = useState(0);
+  const [showSymptomReport, setShowSymptomReport] = useState(false);
   const { toast } = useToast();
 
   // Fetch unread learning assignments count
@@ -139,7 +143,7 @@ const PatientDashboard: React.FC = () => {
     if (!user) return;
     setSavingExchange(true);
     try {
-      const { error } = await supabase.from('exchange_logs').insert({
+      const { data: inserted, error } = await supabase.from('exchange_logs').insert({
         patient_id: user.id,
         recorded_by: user.id,
         dwell_start: new Date().toISOString(),
@@ -155,11 +159,24 @@ const PatientDashboard: React.FC = () => {
         blood_pressure_systolic: exchangeData.bloodPressureSystolic,
         blood_pressure_diastolic: exchangeData.bloodPressureDiastolic,
         temperature: exchangeData.temperature,
-      });
+      }).select('id').single();
       if (error) throw error;
 
+      // Save additive if one was used
+      if (exchangeData.additive?.additiveType !== 'none' && exchangeData.additive?.drugName && inserted) {
+        await supabase.from('exchange_additives').insert({
+          exchange_log_id: inserted.id,
+          patient_id: user.id,
+          additive_type: exchangeData.additive.additiveType,
+          drug_name: exchangeData.additive.drugName,
+          dose: exchangeData.additive.dose || null,
+          route: 'IP',
+          reason: exchangeData.additive.reason || null,
+        } as any);
+      }
+
       const newExchangeLog: DailyExchangeLog = {
-        id: `exchange_${Date.now()}`,
+        id: inserted?.id || `exchange_${Date.now()}`,
         patientId: user.id,
         timestamp: new Date().toISOString(),
         drainVolume: exchangeData.drainVolume,
@@ -191,6 +208,7 @@ const PatientDashboard: React.FC = () => {
   const mainTabs = [
     { value: 'overview', icon: Calendar, label: t('overview') },
     { value: 'exchanges', icon: Droplets, label: t('exchanges') },
+    { value: 'medications', icon: Pill, label: 'Meds' },
     { value: 'messages', icon: MessageSquare, label: 'Messages' },
     { value: 'analytics', icon: BarChart, label: 'Analytics' },
     { value: 'lab-data', icon: FlaskConical, label: 'Labs' },
@@ -266,6 +284,18 @@ const PatientDashboard: React.FC = () => {
           <DashboardOverview todayExchanges={todayExchanges} weeklyStats={weeklyStats} recentExchanges={recentExchanges} allExchangeLogs={exchangeLogs} onAddExchange={() => setShowAddExchange(true)} />
         </TabsContent>
         <TabsContent value="exchanges"><ExchangeHistory exchanges={formattedExchanges} /></TabsContent>
+        <TabsContent value="medications">
+          <div className="space-y-6">
+            <Button
+              onClick={() => setShowSymptomReport(true)}
+              variant="outline"
+              className="w-full h-12 rounded-xl border-destructive/30 text-destructive hover:bg-destructive/5 font-semibold gap-2"
+            >
+              <AlertTriangle className="w-4 h-4" /> Report PD Problem
+            </Button>
+            <MedicationLog />
+          </div>
+        </TabsContent>
         <TabsContent value="analytics"><AnalyticsDashboard /></TabsContent>
         <TabsContent value="messages"><SecureMessaging /></TabsContent>
         <TabsContent value="lab-data"><LabDataManagement /></TabsContent>
@@ -276,6 +306,12 @@ const PatientDashboard: React.FC = () => {
       <Dialog open={showAddExchange} onOpenChange={setShowAddExchange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto rounded-2xl">
           <AddExchange onSave={handleSaveExchange} onCancel={() => setShowAddExchange(false)} saving={savingExchange} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showSymptomReport} onOpenChange={setShowSymptomReport}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto rounded-2xl">
+          <SymptomReport onClose={() => setShowSymptomReport(false)} />
         </DialogContent>
       </Dialog>
     </div>
