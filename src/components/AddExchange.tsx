@@ -8,6 +8,7 @@ import { Save, X, Droplets, Loader2 } from 'lucide-react';
 import { useExchangeForm, ExchangeData } from '@/hooks/useExchangeForm';
 import { TimeTypeSection } from '@/components/exchange/TimeTypeSection';
 import { VolumeSection } from '@/components/exchange/VolumeSection';
+import { VitalsSection } from '@/components/exchange/VitalsSection';
 import { AssessmentSection } from '@/components/exchange/AssessmentSection';
 import { AdditiveSection } from '@/components/exchange/AdditiveSection';
 
@@ -39,6 +40,19 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
     isUFAutoCalculated,
     setIsUFAutoCalculated,
   } = useExchangeForm();
+
+  const quickLinks = [
+    { id: 'exchange-section-time', label: t('time') },
+    { id: 'exchange-section-volumes', label: t('fillVolume') },
+    { id: 'exchange-section-vitals', label: 'Vitals' },
+    { id: 'exchange-section-assessment', label: t('clarity') },
+    { id: 'exchange-section-additives', label: 'Additives' },
+    { id: 'exchange-section-notes', label: t('notes') },
+  ];
+
+  const scrollToSection = (sectionId: string) => {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,44 +110,72 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
       ) : null}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* ── Step 1: Time & Type ── */}
-        <SectionHeader step={1} title={t('time') + ' & ' + t('exchangeType')} icon="🕐" />
-        <TimeTypeSection formData={formData} updateField={updateField} />
-
-        {/* ── Step 2: Volumes & Weight ── */}
-        <SectionHeader step={2} title={t('fillVolume') + ' / ' + t('drainVolume')} icon="💧" />
-        <VolumeSection
-          formData={formData}
-          updateField={updateField}
-          previousFillVolume={previousFillVolume}
-          isUFAutoCalculated={isUFAutoCalculated}
-          setIsUFAutoCalculated={setIsUFAutoCalculated}
-        />
-
-        {/* ── Step 3: Assessment ── */}
-        <SectionHeader step={3} title={t('clarity') + ' / ' + t('pain') + ' / ' + t('symptoms')} icon="🔍" />
-        <AssessmentSection formData={formData} updateField={updateField} />
-
-        {/* ── Step 4: Additives ── */}
-        <SectionHeader step={4} title="Additives" icon="💉" />
-        <AdditiveSection
-          additive={formData.additive}
-          onChange={(additive) => updateField('additive', additive)}
-        />
-
-        {/* ── Step 5: Notes ── */}
-        <SectionHeader step={5} title={t('notes')} icon="📝" />
-        <div className="space-y-1.5">
-          <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
-          <Textarea
-            id="notes"
-            value={formData.notes}
-            onChange={(e) => updateField('notes', e.target.value)}
-            placeholder={t('anyConcerns')}
-            rows={3}
-            className="rounded-xl resize-none"
-          />
+        <div className="sticky top-0 z-20 rounded-xl border border-border bg-background/95 p-2 backdrop-blur supports-[backdrop-filter]:bg-background/85">
+          <div className="flex gap-2 overflow-x-auto">
+            {quickLinks.map((link, index) => (
+              <Button
+                key={link.id}
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => scrollToSection(link.id)}
+                className="shrink-0 rounded-full"
+              >
+                <span className="mr-1 text-xs text-muted-foreground">{index + 1}.</span>
+                {link.label}
+              </Button>
+            ))}
+          </div>
         </div>
+
+        <section id="exchange-section-time" className="scroll-mt-24 space-y-3">
+          <SectionHeader step={1} title={t('time') + ' & ' + t('exchangeType')} icon="🕐" />
+          <TimeTypeSection formData={formData} updateField={updateField} />
+        </section>
+
+        <section id="exchange-section-volumes" className="scroll-mt-24 space-y-3">
+          <SectionHeader step={2} title={t('fillVolume') + ' / ' + t('drainVolume')} icon="💧" />
+          <VolumeSection
+            formData={formData}
+            updateField={updateField}
+            previousFillVolume={previousFillVolume}
+            isUFAutoCalculated={isUFAutoCalculated}
+            setIsUFAutoCalculated={setIsUFAutoCalculated}
+          />
+        </section>
+
+        <section id="exchange-section-vitals" className="scroll-mt-24 space-y-3">
+          <SectionHeader step={3} title="Vitals" icon="🩺" />
+          <VitalsSection formData={formData} updateField={updateField} />
+        </section>
+
+        <section id="exchange-section-assessment" className="scroll-mt-24 space-y-3">
+          <SectionHeader step={4} title={t('clarity') + ' / ' + t('pain') + ' / ' + t('symptoms')} icon="🔍" />
+          <AssessmentSection formData={formData} updateField={updateField} />
+        </section>
+
+        <section id="exchange-section-additives" className="scroll-mt-24 space-y-3">
+          <SectionHeader step={5} title="Additives" icon="💉" />
+          <AdditiveSection
+            additive={formData.additive}
+            onChange={(additive) => updateField('additive', additive)}
+          />
+        </section>
+
+        <section id="exchange-section-notes" className="scroll-mt-24 space-y-3">
+          <SectionHeader step={6} title={t('notes')} icon="📝" />
+          <div className="space-y-1.5">
+            <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => updateField('notes', e.target.value)}
+              placeholder={t('anyConcerns')}
+              rows={3}
+              className="rounded-xl resize-none"
+            />
+          </div>
+        </section>
 
         <div className="flex gap-3 pt-2">
           <Button type="submit" disabled={saving} className="flex-1 h-12 rounded-xl font-semibold shadow-md shadow-primary/20 active:scale-[0.98] transition-transform">
