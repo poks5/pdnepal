@@ -121,48 +121,79 @@ export const PatientProvider: React.FC<PatientProviderProps> = ({ children }) =>
     loadPDSettings();
   }, [user]);
 
-  // Load exchange logs from Supabase when user is available
+  // Load exchange logs from backend when user is available
   useEffect(() => {
     if (!user) return;
+
     const loadExchanges = async () => {
       setLoadingExchanges(true);
       try {
-        const { data, error } = await supabase
+        const { data: exchangeRows, error: exchangesError } = await supabase
           .from('exchange_logs')
           .select('*')
           .eq('patient_id', user.id)
           .order('created_at', { ascending: false })
           .limit(200);
-        if (error) throw error;
-        if (data) {
-          const mapped: DailyExchangeLog[] = data.map(row => ({
-            id: row.id,
-            patientId: row.patient_id,
-            timestamp: row.created_at,
-            drainVolume: row.drain_volume_ml ?? 0,
-            fillVolume: row.fill_volume_ml,
-            ultrafiltration: row.ultrafiltration_ml ?? 0,
-            clarity: row.drain_color === 'cloudy' ? 'cloudy' : 'clear',
-            painLevel: row.pain_level ?? 0,
-            dwellTime: 4,
-            dialysateStrength: row.solution_type || 'Dianeal 1.5%',
-            notes: row.notes ?? undefined,
-            exchangeType: row.exchange_type as any,
-            photos: [],
-            symptomTags: (row as any).symptoms ?? [],
-            weightAfterKg: row.weight_after_kg ? Number(row.weight_after_kg) : null,
-            bloodPressureSystolic: row.blood_pressure_systolic ?? null,
-            bloodPressureDiastolic: row.blood_pressure_diastolic ?? null,
-            temperature: row.temperature ? Number(row.temperature) : null,
-          }));
-          setExchangeLogs(mapped);
+
+        if (exchangesError) throw exchangesError;
+
+        if (!exchangeRows || exchangeRows.length === 0) {
+          setExchangeLogs([]);
+          return;
         }
+
+        const exchangeIds = exchangeRows.map((row) => row.id);
+        const { data: additiveRows, error: additivesError } = await supabase
+          .from('exchange_additives')
+          .select('exchange_log_id, additive_type, drug_name, dose, reason, route, created_at')
+          .in('exchange_log_id', exchangeIds)
+          .order('created_at', { ascending: false });
+
+        if (additivesError) throw additivesError;
+
+        const additivesByExchangeId = new Map(
+          (additiveRows ?? []).map((row) => [
+            row.exchange_log_id,
+            {
+              additiveType: row.additive_type as DailyExchangeLog['additive']['additiveType'],
+              drugName: row.drug_name ?? null,
+              dose: row.dose ?? null,
+              reason: row.reason ?? null,
+              route: row.route ?? null,
+            },
+          ])
+        );
+
+        const mapped: DailyExchangeLog[] = exchangeRows.map((row) => ({
+          id: row.id,
+          patientId: row.patient_id,
+          timestamp: row.created_at,
+          drainVolume: row.drain_volume_ml ?? 0,
+          fillVolume: row.fill_volume_ml,
+          ultrafiltration: row.ultrafiltration_ml ?? 0,
+          clarity: row.drain_color === 'cloudy' ? 'cloudy' : 'clear',
+          painLevel: row.pain_level ?? 0,
+          dwellTime: 4,
+          dialysateStrength: row.solution_type || 'Dianeal 1.5%',
+          notes: row.notes ?? undefined,
+          exchangeType: row.exchange_type as DailyExchangeLog['exchangeType'],
+          photos: [],
+          symptomTags: (row as { symptoms?: DailyExchangeLog['symptomTags'] }).symptoms ?? [],
+          weightAfterKg: row.weight_after_kg != null ? Number(row.weight_after_kg) : null,
+          bloodPressureSystolic: row.blood_pressure_systolic ?? null,
+          bloodPressureDiastolic: row.blood_pressure_diastolic ?? null,
+          temperature: row.temperature != null ? Number(row.temperature) : null,
+          additive: additivesByExchangeId.get(row.id) ?? null,
+        }));
+
+        setExchangeLogs(mapped);
       } catch (err) {
-        console.error('Failed to load exchange logs from database:', err);
+        console.error('Failed to load exchange logs from backend:', err);
       } finally {
         setLoadingExchanges(false);
       }
     };
+
     loadExchanges();
   }, [user]);
 
@@ -208,10 +239,8 @@ export const PatientProvider: React.FC<PatientProviderProps> = ({ children }) =>
         updated_by: user.id,
       };
       if (settings.id && settings.id.length > 10) {
-        // Update existing
         await supabase.from('pd_settings').update(dbData).eq('id', settings.id);
       } else {
-        // Insert new
         const { data } = await supabase.from('pd_settings').insert(dbData).select('id').single();
         if (data) setPDSettings(prev => prev ? { ...prev, id: data.id } : prev);
       }

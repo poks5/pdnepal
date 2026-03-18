@@ -293,9 +293,16 @@ const PatientDashboard: React.FC = () => {
         </div>
 
         <TabsContent value="overview">
-          <DashboardOverview todayExchanges={todayExchanges} weeklyStats={weeklyStats} recentExchanges={recentExchanges} allExchangeLogs={exchangeLogs} onAddExchange={() => setShowAddExchange(true)} />
+          <DashboardOverview
+            todayExchanges={todayExchanges}
+            weeklyStats={weeklyStats}
+            recentExchanges={recentExchanges}
+            allExchangeLogs={exchangeLogs}
+            onAddExchange={() => setShowAddExchange(true)}
+            loadingExchanges={loadingExchanges}
+          />
         </TabsContent>
-        <TabsContent value="exchanges"><ExchangeHistory exchanges={formattedExchanges} /></TabsContent>
+        <TabsContent value="exchanges"><ExchangeHistory exchanges={formattedExchanges} loading={loadingExchanges} /></TabsContent>
         <TabsContent value="medications">
           <div className="space-y-6">
             <Button

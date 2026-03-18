@@ -88,6 +88,14 @@ export interface SupplierDetails {
 export type FluidClarity = 'clear' | 'slightly_cloudy' | 'cloudy' | 'very_cloudy';
 export type SymptomTag = 'fever' | 'nausea' | 'abdominal_pain' | 'fatigue' | 'shortness_of_breath' | 'dizziness';
 
+export interface ExchangeAdditiveInfo {
+  additiveType: 'none' | 'heparin' | 'antibiotic' | 'other';
+  drugName?: string | null;
+  dose?: string | null;
+  reason?: string | null;
+  route?: string | null;
+}
+
 export interface DailyExchangeLog {
   id: string;
   patientId: string;
@@ -107,4 +115,5 @@ export interface DailyExchangeLog {
   bloodPressureSystolic?: number | null;
   bloodPressureDiastolic?: number | null;
   temperature?: number | null;
+  additive?: ExchangeAdditiveInfo | null;
 }
