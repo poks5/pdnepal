@@ -5,6 +5,8 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => {
+  const isPreviewLikeMode = mode !== 'production';
+
   return {
     server: {
       host: "::",
@@ -14,7 +16,7 @@ export default defineConfig(({ mode }) => {
       react(),
       mode === 'development' && componentTagger(),
       VitePWA({
-        selfDestroying: true,
+        disable: isPreviewLikeMode,
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'robots.txt'],
         workbox: {
