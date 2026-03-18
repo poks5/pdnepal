@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
@@ -24,7 +23,7 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
   updateField,
   previousFillVolume,
   isUFAutoCalculated,
-  setIsUFAutoCalculated
+  setIsUFAutoCalculated,
 }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -33,17 +32,16 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
     const calculatedUF = calculateUF(formData.drainVolume, previousFillVolume, formData.fillVolume);
     updateField('ultrafiltration', calculatedUF);
     setIsUFAutoCalculated(true);
-    
+
     toast({
       title: t('ufCalculated'),
-      description: getUFCalculationMessage(previousFillVolume)
+      description: getUFCalculationMessage(previousFillVolume),
     });
   };
 
   return (
     <div className="space-y-5">
-      {/* Fluid volumes and vitals are a required part of Add Exchange and should never be removed in later UI edits. */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="solutionType">{t('solutionType') || 'Solution Type'}</Label>
           <Select value={formData.solutionType} onValueChange={(value) => updateField('solutionType', value)}>
@@ -81,14 +79,14 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
           />
         </div>
         <div>
-          <Label htmlFor="ultrafiltration" className="flex items-center justify-between">
+          <Label htmlFor="ultrafiltration" className="flex items-center justify-between gap-2">
             <span>{t('ultrafiltration')}</span>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={manuallyCalculateUF}
-              className="h-6 px-2"
+              className="h-6 px-2 shrink-0"
             >
               <Calculator className="w-3 h-3" />
             </Button>
@@ -102,7 +100,7 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
             className={isUFAutoCalculated ? 'bg-accent/40 border-border' : ''}
           />
         </div>
-        <div>
+        <div className="md:col-span-2">
           <Label htmlFor="weightAfter">{t('postFillWeight')}</Label>
           <Input
             id="weightAfter"
@@ -113,51 +111,6 @@ export const VolumeSection: React.FC<VolumeSectionProps> = ({
             onChange={(e) => updateField('weightAfter', e.target.value ? Number(e.target.value) : null)}
             placeholder={t('weightAfterFill')}
           />
-        </div>
-      </div>
-
-      <div className="border border-border rounded-xl p-4 bg-muted/30">
-        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          🩺 Vitals
-        </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="bpSystolic">BP Systolic (mmHg)</Label>
-            <Input
-              id="bpSystolic"
-              type="number"
-              min="50"
-              max="250"
-              value={formData.bloodPressureSystolic ?? ''}
-              onChange={(e) => updateField('bloodPressureSystolic', e.target.value ? Number(e.target.value) : null)}
-              placeholder="e.g. 120"
-            />
-          </div>
-          <div>
-            <Label htmlFor="bpDiastolic">BP Diastolic (mmHg)</Label>
-            <Input
-              id="bpDiastolic"
-              type="number"
-              min="30"
-              max="150"
-              value={formData.bloodPressureDiastolic ?? ''}
-              onChange={(e) => updateField('bloodPressureDiastolic', e.target.value ? Number(e.target.value) : null)}
-              placeholder="e.g. 80"
-            />
-          </div>
-          <div>
-            <Label htmlFor="temperature">Temperature (°F)</Label>
-            <Input
-              id="temperature"
-              type="number"
-              step="0.1"
-              min="93"
-              max="108"
-              value={formData.temperature ?? ''}
-              onChange={(e) => updateField('temperature', e.target.value ? Number(e.target.value) : null)}
-              placeholder="e.g. 98.6"
-            />
-          </div>
         </div>
       </div>
     </div>
