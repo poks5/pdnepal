@@ -46,7 +46,7 @@ const PatientDashboard: React.FC = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { activeTab, setActiveTab, setBadgeCounts } = useNav();
-  const { exchangeLogs, addExchangeLog } = usePatient();
+  const { exchangeLogs, addExchangeLog, loadingExchanges } = usePatient();
   const [showAddExchange, setShowAddExchange] = useState(false);
   const [savingExchange, setSavingExchange] = useState(false);
   const [settingsView, setSettingsView] = useState<string | null>(null);
@@ -96,7 +96,6 @@ const PatientDashboard: React.FC = () => {
             title: language === 'en' ? '📚 New Learning Module Assigned' : '📚 नयाँ सिकाइ मोड्युल तोकियो',
             description: title,
           });
-          // Force LearningCenter to refetch
           setLearningKey(k => k + 1);
         }
       )
@@ -105,10 +104,8 @@ const PatientDashboard: React.FC = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user, language, toast]);
 
-  // Use centralized prescription
   const { dailyExchanges: dailyTarget } = usePrescription(user?.id);
 
-  // Compute real today's progress from exchange logs
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayLogs = exchangeLogs.filter(log => new Date(log.timestamp) >= today);
@@ -123,7 +120,6 @@ const PatientDashboard: React.FC = () => {
     nextTime: todayLogs.length >= dailyTarget ? 'Done ✅' : exchangeTimes[nextPendingIdx] || '—',
   };
 
-  // Compute real weekly stats
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const weekLogs = exchangeLogs.filter(log => new Date(log.timestamp) >= sevenDaysAgo);
@@ -141,8 +137,20 @@ const PatientDashboard: React.FC = () => {
 
   const handleSaveExchange = async (exchangeData: ExchangeData) => {
     if (!user) return;
+
     setSavingExchange(true);
     try {
+      const ultrafiltration = exchangeData.ultrafiltration || (exchangeData.drainVolume - exchangeData.fillVolume);
+      const additivePayload = exchangeData.additive?.additiveType !== 'none' && exchangeData.additive?.drugName
+        ? {
+            additiveType: exchangeData.additive.additiveType,
+            drugName: exchangeData.additive.drugName,
+            dose: exchangeData.additive.dose || null,
+            reason: exchangeData.additive.reason || null,
+            route: 'IP' as const,
+          }
+        : null;
+
       const { data: inserted, error } = await supabase.from('exchange_logs').insert({
         patient_id: user.id,
         recorded_by: user.id,
@@ -151,6 +159,7 @@ const PatientDashboard: React.FC = () => {
         solution_type: exchangeData.solutionType || 'Dianeal 1.5%',
         fill_volume_ml: exchangeData.fillVolume,
         drain_volume_ml: exchangeData.drainVolume,
+        ultrafiltration_ml: ultrafiltration,
         drain_color: exchangeData.clarity,
         pain_level: exchangeData.pain,
         notes: exchangeData.notes || null,
@@ -162,17 +171,18 @@ const PatientDashboard: React.FC = () => {
       }).select('id').single();
       if (error) throw error;
 
-      // Save additive if one was used
-      if (exchangeData.additive?.additiveType !== 'none' && exchangeData.additive?.drugName && inserted) {
-        await supabase.from('exchange_additives').insert({
+      if (additivePayload && inserted) {
+        const { error: additiveError } = await supabase.from('exchange_additives').insert({
           exchange_log_id: inserted.id,
           patient_id: user.id,
-          additive_type: exchangeData.additive.additiveType,
-          drug_name: exchangeData.additive.drugName,
-          dose: exchangeData.additive.dose || null,
-          route: 'IP',
-          reason: exchangeData.additive.reason || null,
-        } as any);
+          additive_type: additivePayload.additiveType,
+          drug_name: additivePayload.drugName,
+          dose: additivePayload.dose,
+          route: additivePayload.route,
+          reason: additivePayload.reason,
+        } as const);
+
+        if (additiveError) throw additiveError;
       }
 
       const newExchangeLog: DailyExchangeLog = {
@@ -181,7 +191,7 @@ const PatientDashboard: React.FC = () => {
         timestamp: new Date().toISOString(),
         drainVolume: exchangeData.drainVolume,
         fillVolume: exchangeData.fillVolume,
-        ultrafiltration: exchangeData.ultrafiltration || (exchangeData.drainVolume - exchangeData.fillVolume),
+        ultrafiltration,
         clarity: exchangeData.clarity === 'clear' ? 'clear' : 'cloudy',
         painLevel: exchangeData.pain,
         dwellTime: 4,
@@ -189,12 +199,14 @@ const PatientDashboard: React.FC = () => {
         notes: exchangeData.notes,
         exchangeType: exchangeData.type,
         photos: [],
-        symptomTags: exchangeData.symptoms as any,
+        symptomTags: exchangeData.symptoms as DailyExchangeLog['symptomTags'],
         weightAfterKg: exchangeData.weightAfter,
         bloodPressureSystolic: exchangeData.bloodPressureSystolic,
         bloodPressureDiastolic: exchangeData.bloodPressureDiastolic,
         temperature: exchangeData.temperature,
+        additive: additivePayload,
       };
+
       addExchangeLog(newExchangeLog);
       setShowAddExchange(false);
       toast({ title: 'Exchange saved', description: 'Your exchange has been recorded securely.' });
