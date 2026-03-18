@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Save, X, Droplets, Loader2 } from 'lucide-react';
+import { Save, X, Droplets, Loader2, ChevronDown, Check } from 'lucide-react';
 import { useExchangeForm, ExchangeData } from '@/hooks/useExchangeForm';
 import { TimeTypeSection } from '@/components/exchange/TimeTypeSection';
 import { VolumeSection } from '@/components/exchange/VolumeSection';
@@ -18,14 +18,40 @@ interface AddExchangeProps {
   saving?: boolean;
 }
 
-const SectionHeader: React.FC<{ step: number; title: string; icon: string }> = ({ step, title, icon }) => (
-  <div className="flex items-center gap-2 pt-2">
-    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
-      {step}
-    </span>
-    <span className="text-sm font-semibold text-foreground">{icon} {title}</span>
-    <div className="flex-1 h-px bg-border" />
-  </div>
+interface CollapsibleSectionProps {
+  step: number;
+  title: string;
+  icon: string;
+  id: string;
+  open: boolean;
+  onToggle: () => void;
+  filled?: boolean;
+  children: React.ReactNode;
+}
+
+const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
+  step, title, icon, id, open, onToggle, filled, children,
+}) => (
+  <section id={id} className="scroll-mt-16 rounded-xl border border-border overflow-hidden transition-all">
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center gap-2 p-3 bg-muted/30 hover:bg-muted/50 transition-colors text-left"
+    >
+      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
+        {filled ? <Check className="w-3.5 h-3.5" /> : step}
+      </span>
+      <span className="text-sm font-semibold text-foreground flex-1">{icon} {title}</span>
+      <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+    </button>
+    <div
+      className={`transition-all duration-200 ease-in-out overflow-hidden ${open ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}
+    >
+      <div className="p-3 pt-2 space-y-3">
+        {children}
+      </div>
+    </div>
+  </section>
 );
 
 const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = false }) => {
@@ -41,18 +67,24 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
     setIsUFAutoCalculated,
   } = useExchangeForm();
 
-  const quickLinks = [
-    { id: 'exchange-section-time', label: t('time') },
-    { id: 'exchange-section-volumes', label: t('fillVolume') },
-    { id: 'exchange-section-vitals', label: 'Vitals' },
-    { id: 'exchange-section-assessment', label: t('clarity') },
-    { id: 'exchange-section-additives', label: 'Additives' },
-    { id: 'exchange-section-notes', label: t('notes') },
-  ];
+  // Sections 1 & 2 open by default (required fields), rest collapsed
+  const [openSections, setOpenSections] = useState<Set<number>>(() => new Set([1, 2]));
 
-  const scrollToSection = (sectionId: string) => {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const toggle = (step: number) => {
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(step)) next.delete(step);
+      else next.add(step);
+      return next;
+    });
   };
+
+  const hasBP = formData.bloodPressureSystolic != null || formData.bloodPressureDiastolic != null;
+  const hasTemp = formData.temperature != null;
+  const hasVitals = hasBP || hasTemp;
+  const hasAssessment = formData.clarity !== 'clear' || formData.pain > 0 || formData.symptoms.length > 0;
+  const hasAdditive = formData.additive?.additiveType !== 'none';
+  const hasNotes = !!formData.notes;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,32 +141,20 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="sticky top-0 z-20 rounded-xl border border-border bg-background/95 p-2 backdrop-blur supports-[backdrop-filter]:bg-background/85">
-          <div className="flex gap-2 overflow-x-auto">
-            {quickLinks.map((link, index) => (
-              <Button
-                key={link.id}
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => scrollToSection(link.id)}
-                className="shrink-0 rounded-full"
-              >
-                <span className="mr-1 text-xs text-muted-foreground">{index + 1}.</span>
-                {link.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <section id="exchange-section-time" className="scroll-mt-24 space-y-3">
-          <SectionHeader step={1} title={t('time') + ' & ' + t('exchangeType')} icon="🕐" />
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <CollapsibleSection
+          step={1} title={t('time') + ' & ' + t('exchangeType')} icon="🕐"
+          id="exchange-section-time" open={openSections.has(1)} onToggle={() => toggle(1)}
+          filled={!!formData.time}
+        >
           <TimeTypeSection formData={formData} updateField={updateField} />
-        </section>
+        </CollapsibleSection>
 
-        <section id="exchange-section-volumes" className="scroll-mt-24 space-y-3">
-          <SectionHeader step={2} title={t('fillVolume') + ' / ' + t('drainVolume')} icon="💧" />
+        <CollapsibleSection
+          step={2} title={t('fillVolume') + ' / ' + t('drainVolume')} icon="💧"
+          id="exchange-section-volumes" open={openSections.has(2)} onToggle={() => toggle(2)}
+          filled={formData.drainVolume > 0 && formData.fillVolume > 0}
+        >
           <VolumeSection
             formData={formData}
             updateField={updateField}
@@ -142,28 +162,40 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
             isUFAutoCalculated={isUFAutoCalculated}
             setIsUFAutoCalculated={setIsUFAutoCalculated}
           />
-        </section>
+        </CollapsibleSection>
 
-        <section id="exchange-section-vitals" className="scroll-mt-24 space-y-3">
-          <SectionHeader step={3} title="Vitals" icon="🩺" />
+        <CollapsibleSection
+          step={3} title="Vitals" icon="🩺"
+          id="exchange-section-vitals" open={openSections.has(3)} onToggle={() => toggle(3)}
+          filled={hasVitals}
+        >
           <VitalsSection formData={formData} updateField={updateField} />
-        </section>
+        </CollapsibleSection>
 
-        <section id="exchange-section-assessment" className="scroll-mt-24 space-y-3">
-          <SectionHeader step={4} title={t('clarity') + ' / ' + t('pain') + ' / ' + t('symptoms')} icon="🔍" />
+        <CollapsibleSection
+          step={4} title={t('clarity') + ' / ' + t('pain') + ' / ' + t('symptoms')} icon="🔍"
+          id="exchange-section-assessment" open={openSections.has(4)} onToggle={() => toggle(4)}
+          filled={hasAssessment}
+        >
           <AssessmentSection formData={formData} updateField={updateField} />
-        </section>
+        </CollapsibleSection>
 
-        <section id="exchange-section-additives" className="scroll-mt-24 space-y-3">
-          <SectionHeader step={5} title="Additives" icon="💉" />
+        <CollapsibleSection
+          step={5} title="Additives" icon="💉"
+          id="exchange-section-additives" open={openSections.has(5)} onToggle={() => toggle(5)}
+          filled={hasAdditive}
+        >
           <AdditiveSection
             additive={formData.additive}
             onChange={(additive) => updateField('additive', additive)}
           />
-        </section>
+        </CollapsibleSection>
 
-        <section id="exchange-section-notes" className="scroll-mt-24 space-y-3">
-          <SectionHeader step={6} title={t('notes')} icon="📝" />
+        <CollapsibleSection
+          step={6} title={t('notes')} icon="📝"
+          id="exchange-section-notes" open={openSections.has(6)} onToggle={() => toggle(6)}
+          filled={hasNotes}
+        >
           <div className="space-y-1.5">
             <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
             <Textarea
@@ -175,7 +207,7 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
               className="rounded-xl resize-none"
             />
           </div>
-        </section>
+        </CollapsibleSection>
 
         <div className="flex gap-3 pt-2">
           <Button type="submit" disabled={saving} className="flex-1 h-12 rounded-xl font-semibold shadow-md shadow-primary/20 active:scale-[0.98] transition-transform">
