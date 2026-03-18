@@ -24,6 +24,7 @@ interface DashboardOverviewProps {
   recentExchanges: DailyExchangeLog[];
   allExchangeLogs: DailyExchangeLog[];
   onAddExchange: () => void;
+  loadingExchanges?: boolean;
 }
 
 const DashboardOverview: React.FC<DashboardOverviewProps> = ({
@@ -31,7 +32,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   weeklyStats,
   recentExchanges,
   allExchangeLogs,
-  onAddExchange
+  onAddExchange,
+  loadingExchanges = false,
 }) => {
   const { user } = useAuth();
   const { t } = useLanguage();
@@ -42,7 +44,6 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
   return (
     <div className="space-y-5">
-      {/* Greeting banner with illustration */}
       <div className="relative overflow-hidden rounded-3xl gradient-hero p-5 sm:p-6 text-primary-foreground shadow-xl">
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8" />
@@ -52,15 +53,13 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <p className="text-lg sm:text-xl font-bold">{greetingEmoji} {t(greetingKey)}{firstName ? `, ${firstName}` : ''}</p>
             <p className="text-sm opacity-85 mt-1">{t('pdJourneyGreat')}</p>
             {(() => {
-              // Compute real consecutive day streak
               const logDates = new Set(allExchangeLogs.map(e => new Date(e.timestamp).toDateString()));
-              // Also check all exchanges passed down from parent — use broader exchange list
               let streak = 0;
               const d = new Date();
               for (let i = 0; i < 365; i++) {
                 if (logDates.has(d.toDateString())) {
                   streak++;
-                } else if (i > 0) break; // allow today to be missing (day not over)
+                } else if (i > 0) break;
                 d.setDate(d.getDate() - 1);
               }
               return streak > 0 ? (
@@ -88,9 +87,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       />
 
       <QuickActions />
-
       <HealthTips />
-
       <WeightUFTracker />
 
       <WeeklyStats
@@ -99,7 +96,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         missedExchanges={weeklyStats.missedExchanges}
       />
 
-      <RecentExchanges exchanges={recentExchanges} />
+      <RecentExchanges exchanges={recentExchanges} loading={loadingExchanges} />
     </div>
   );
 };

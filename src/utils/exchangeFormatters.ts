@@ -1,5 +1,5 @@
 
-import { DailyExchangeLog } from '@/types/patient';
+import { DailyExchangeLog, ExchangeAdditiveInfo } from '@/types/patient';
 
 export interface FormattedExchange {
   id: string;
@@ -19,6 +19,7 @@ export interface FormattedExchange {
   bloodPressureSystolic?: number | null;
   bloodPressureDiastolic?: number | null;
   temperature?: number | null;
+  additive?: ExchangeAdditiveInfo | null;
 }
 
 export const formatExchangeForHistory = (log: DailyExchangeLog): FormattedExchange => ({
@@ -39,4 +40,5 @@ export const formatExchangeForHistory = (log: DailyExchangeLog): FormattedExchan
   bloodPressureSystolic: log.bloodPressureSystolic ?? null,
   bloodPressureDiastolic: log.bloodPressureDiastolic ?? null,
   temperature: log.temperature ?? null,
+  additive: log.additive ?? null,
 });
