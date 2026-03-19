@@ -28,7 +28,7 @@ interface UnifiedSymptomEntry {
 
 const SymptomTracker: React.FC = () => {
   const { toast } = useToast();
-  const { user, activeRole } = useAuth();
+  const { user } = useAuth();
   const [form, setForm] = useState({ pain: 0, nausea: 0, fatigue: 0, breathlessness: 0, fever: false, temperature: 0 });
   const [notes, setNotes] = useState('');
   const [history, setHistory] = useState<UnifiedSymptomEntry[]>([]);
@@ -37,10 +37,10 @@ const SymptomTracker: React.FC = () => {
 
   const targetPatient = useMemo(() => {
     if (!user) return null;
-    if (activeRole === 'patient') return user.id;
+    if (user.role === 'patient') return user.id;
     const ctx = (user as any).viewingPatientId;
     return ctx || user.id;
-  }, [user, activeRole]);
+  }, [user]);
 
   const calcSeverity = (s: { pain: number; nausea: number; fatigue: number; breathlessness: number; fever: boolean }): 'mild' | 'moderate' | 'severe' => {
     const max = Math.max(s.pain, s.nausea, s.fatigue, s.breathlessness);
