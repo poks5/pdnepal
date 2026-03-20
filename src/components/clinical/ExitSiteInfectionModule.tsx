@@ -31,6 +31,8 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
   const [infections, setInfections] = useState<ExitSiteInfection[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [analyzingPhoto, setAnalyzingPhoto] = useState<string | null>(null);
+  const [aiResults, setAiResults] = useState<Record<string, AIAnalysis>>({});
   const [form, setForm] = useState({
     date_onset: '', symptoms: [] as string[], organism: '', antibiotic: '',
     route: '', duration_days: '', notes: '', photo_urls: [] as string[],
