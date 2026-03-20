@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,9 +20,13 @@ import CatheterRegistry from '../clinical/CatheterRegistry';
 import FluidRegistry from '../clinical/FluidRegistry';
 import { usePatient } from '@/contexts/PatientContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos' | 'timeline' | 'peritonitis' | 'exit_site' | 'center_analytics' | 'catheter_registry' | 'fluid_registry';
+
+// Sections only visible to clinical staff (doctor, nurse, admin, coordinator)
+const CLINICAL_ONLY_SECTIONS: Section[] = ['peritonitis', 'exit_site', 'catheter_registry', 'fluid_registry', 'center_analytics', 'timeline'];
 
 const sectionDefs = [
   { id: 'timeline' as const, labelKey: 'pdTimeline', emoji: '🗓️', icon: TrendingUp, color: 'from-primary/20 to-primary/5', descKey: 'pdTimelineDesc' },
