@@ -242,6 +242,48 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
                     }}
                   />
                 )}
+                {/* AI Analysis Button */}
+                {inf.photo_urls && inf.photo_urls.length > 0 && !inf.resolved && (
+                  <div className="mt-2 space-y-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full text-xs h-7 gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                      onClick={() => analyzePhoto(inf.id, inf.photo_urls[0])}
+                      disabled={analyzingPhoto === inf.id}
+                    >
+                      {analyzingPhoto === inf.id ? (
+                        <><Loader2 className="w-3 h-3 animate-spin" /> Analyzing...</>
+                      ) : (
+                        <><Sparkles className="w-3 h-3" /> AI Analyze Photo</>
+                      )}
+                    </Button>
+                    {aiResults[inf.id] && (
+                      <Card className="rounded-xl border-border/40 bg-muted/30">
+                        <CardContent className="p-3 space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <Badge className={`text-[10px] border-0 rounded-full ${getAssessmentColor(aiResults[inf.id].assessment)}`}>
+                              🤖 {aiResults[inf.id].assessment.replace('_', ' ')}
+                            </Badge>
+                            <Badge variant="outline" className="text-[9px] rounded-full">
+                              {aiResults[inf.id].confidence} confidence
+                            </Badge>
+                          </div>
+                          {aiResults[inf.id].observed_signs.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {aiResults[inf.id].observed_signs.map(s => (
+                                <Badge key={s} variant="outline" className="text-[9px] rounded-full bg-destructive/5">{s}</Badge>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground">{aiResults[inf.id].details}</p>
+                          <p className="text-xs font-medium text-foreground">📋 {aiResults[inf.id].recommendation}</p>
+                          <p className="text-[9px] text-muted-foreground italic">⚕️ AI screening aid only — not a clinical diagnosis</p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
                 {!inf.resolved && (
                   <Button size="sm" variant="outline" className="mt-2 rounded-full text-xs h-7" onClick={() => markResolved(inf.id)}>
                     <CheckCircle className="w-3 h-3 mr-1" /> {t('markResolved')}
