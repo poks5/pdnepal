@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import AppVersionBadge from "@/components/AppVersionBadge";
 import Index from "./pages/Index";
 import Install from "./pages/Install";
 import ResetPassword from "./pages/ResetPassword";
