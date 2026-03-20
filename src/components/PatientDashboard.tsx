@@ -159,7 +159,7 @@ const PatientDashboard: React.FC = () => {
         solution_type: exchangeData.solutionType || 'Dianeal 1.5%',
         fill_volume_ml: exchangeData.fillVolume,
         drain_volume_ml: exchangeData.drainVolume,
-        ultrafiltration_ml: ultrafiltration,
+        // ultrafiltration_ml is a generated column — do not insert
         drain_color: exchangeData.clarity,
         pain_level: exchangeData.pain,
         notes: exchangeData.notes || null,
