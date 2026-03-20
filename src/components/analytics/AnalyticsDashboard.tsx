@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,9 +20,13 @@ import CatheterRegistry from '../clinical/CatheterRegistry';
 import FluidRegistry from '../clinical/FluidRegistry';
 import { usePatient } from '@/contexts/PatientContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
 type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos' | 'timeline' | 'peritonitis' | 'exit_site' | 'center_analytics' | 'catheter_registry' | 'fluid_registry';
+
+// Sections only visible to clinical staff (doctor, nurse, admin, coordinator)
+const CLINICAL_ONLY_SECTIONS: Section[] = ['peritonitis', 'exit_site', 'catheter_registry', 'fluid_registry', 'center_analytics', 'timeline'];
 
 const sectionDefs = [
   { id: 'timeline' as const, labelKey: 'pdTimeline', emoji: '🗓️', icon: TrendingUp, color: 'from-primary/20 to-primary/5', descKey: 'pdTimelineDesc' },
@@ -43,6 +47,18 @@ const AnalyticsDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState<Section>('hub');
   const { exchangeLogs } = usePatient();
   const { t } = useLanguage();
+  const { user } = useAuth();
+
+  const isClinicalStaff = useMemo(() => {
+    if (!user) return false;
+    const clinicalRoles = ['doctor', 'nurse', 'admin', 'coordinator'];
+    return clinicalRoles.includes(user.role) || user.roles?.some(r => clinicalRoles.includes(r));
+  }, [user]);
+
+  const visibleSections = useMemo(() => {
+    if (isClinicalStaff) return sectionDefs;
+    return sectionDefs.filter(s => !CLINICAL_ONLY_SECTIONS.includes(s.id));
+  }, [isClinicalStaff]);
 
   const totalExchanges = exchangeLogs.length;
   const avgUF = totalExchanges > 0
@@ -111,7 +127,7 @@ const AnalyticsDashboard: React.FC = () => {
 
       {/* Section Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {sectionDefs.map(({ id, labelKey, emoji, icon: Icon, color, descKey }) => (
+        {visibleSections.map(({ id, labelKey, emoji, icon: Icon, color, descKey }) => (
           <button
             key={id}
             onClick={() => setActiveSection(id)}

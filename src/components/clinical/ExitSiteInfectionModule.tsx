@@ -10,9 +10,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ExitSiteInfection } from '@/types/clinical';
-import { Plus, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, CheckCircle, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import ClinicalPhotoUpload from './ClinicalPhotoUpload';
+
+interface AIAnalysis {
+  assessment: string;
+  observed_signs: string[];
+  recommendation: string;
+  confidence: string;
+  details: string;
+}
 
 const exitSymptoms = ['redness', 'swelling', 'discharge', 'crusting', 'tenderness', 'warmth'];
 
@@ -23,6 +31,8 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
   const [infections, setInfections] = useState<ExitSiteInfection[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [analyzingPhoto, setAnalyzingPhoto] = useState<string | null>(null);
+  const [aiResults, setAiResults] = useState<Record<string, AIAnalysis>>({});
   const [form, setForm] = useState({
     date_onset: '', symptoms: [] as string[], organism: '', antibiotic: '',
     route: '', duration_days: '', notes: '', photo_urls: [] as string[],
@@ -86,6 +96,39 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
     }).eq('id', id);
     toast({ title: '✅', description: t('markedResolved') });
     loadData();
+  };
+
+  const analyzePhoto = async (infectionId: string, photoUrl: string) => {
+    setAnalyzingPhoto(infectionId);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-exit-site-photo', {
+        body: { photoUrl },
+      });
+      if (error) throw error;
+      if (data?.analysis) {
+        setAiResults(prev => ({ ...prev, [infectionId]: data.analysis }));
+        const level = data.analysis.assessment;
+        toast({
+          title: level === 'normal' ? '✅ Exit site looks normal' : '⚠️ AI detected concerns',
+          description: data.analysis.recommendation,
+          variant: level === 'severe_concern' ? 'destructive' : 'default',
+        });
+      }
+    } catch (err: any) {
+      toast({ title: 'AI Analysis Failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setAnalyzingPhoto(null);
+    }
+  };
+
+  const getAssessmentColor = (assessment: string) => {
+    switch (assessment) {
+      case 'normal': return 'bg-[hsl(var(--mint))]/15 text-[hsl(var(--mint))]';
+      case 'mild_concern': return 'bg-[hsl(var(--peach))]/15 text-[hsl(var(--coral))]';
+      case 'moderate_concern': return 'bg-destructive/15 text-destructive';
+      case 'severe_concern': return 'bg-destructive/20 text-destructive font-bold';
+      default: return 'bg-muted text-muted-foreground';
+    }
   };
 
   return (
@@ -198,6 +241,48 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
                       loadData();
                     }}
                   />
+                )}
+                {/* AI Analysis Button */}
+                {inf.photo_urls && inf.photo_urls.length > 0 && !inf.resolved && (
+                  <div className="mt-2 space-y-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full text-xs h-7 gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                      onClick={() => analyzePhoto(inf.id, inf.photo_urls[0])}
+                      disabled={analyzingPhoto === inf.id}
+                    >
+                      {analyzingPhoto === inf.id ? (
+                        <><Loader2 className="w-3 h-3 animate-spin" /> Analyzing...</>
+                      ) : (
+                        <><Sparkles className="w-3 h-3" /> AI Analyze Photo</>
+                      )}
+                    </Button>
+                    {aiResults[inf.id] && (
+                      <Card className="rounded-xl border-border/40 bg-muted/30">
+                        <CardContent className="p-3 space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <Badge className={`text-[10px] border-0 rounded-full ${getAssessmentColor(aiResults[inf.id].assessment)}`}>
+                              🤖 {aiResults[inf.id].assessment.replace('_', ' ')}
+                            </Badge>
+                            <Badge variant="outline" className="text-[9px] rounded-full">
+                              {aiResults[inf.id].confidence} confidence
+                            </Badge>
+                          </div>
+                          {aiResults[inf.id].observed_signs.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {aiResults[inf.id].observed_signs.map(s => (
+                                <Badge key={s} variant="outline" className="text-[9px] rounded-full bg-destructive/5">{s}</Badge>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground">{aiResults[inf.id].details}</p>
+                          <p className="text-xs font-medium text-foreground">📋 {aiResults[inf.id].recommendation}</p>
+                          <p className="text-[9px] text-muted-foreground italic">⚕️ AI screening aid only — not a clinical diagnosis</p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                 )}
                 {!inf.resolved && (
                   <Button size="sm" variant="outline" className="mt-2 rounded-full text-xs h-7" onClick={() => markResolved(inf.id)}>
