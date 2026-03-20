@@ -3,7 +3,10 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-const CACHE_RESET_VERSION = '2026-03-18-add-exchange-ui-fix';
+const CACHE_RESET_VERSION = '2026-03-20-force-update-badge';
+
+// Expose build version globally so components can read it
+(window as any).__APP_BUILD_VERSION__ = CACHE_RESET_VERSION;
 const PREVIEW_HOST_PATTERNS = [/lovableproject\.com$/i, /lovable\.app$/i, /-preview--/i];
 
 const shouldForceCacheReset = () => {
