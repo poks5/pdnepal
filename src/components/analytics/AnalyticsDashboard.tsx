@@ -47,6 +47,18 @@ const AnalyticsDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState<Section>('hub');
   const { exchangeLogs } = usePatient();
   const { t } = useLanguage();
+  const { user } = useAuth();
+
+  const isClinicalStaff = useMemo(() => {
+    if (!user) return false;
+    const clinicalRoles = ['doctor', 'nurse', 'admin', 'coordinator'];
+    return clinicalRoles.includes(user.role) || user.roles?.some(r => clinicalRoles.includes(r));
+  }, [user]);
+
+  const visibleSections = useMemo(() => {
+    if (isClinicalStaff) return sectionDefs;
+    return sectionDefs.filter(s => !CLINICAL_ONLY_SECTIONS.includes(s.id));
+  }, [isClinicalStaff]);
 
   const totalExchanges = exchangeLogs.length;
   const avgUF = totalExchanges > 0
