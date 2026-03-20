@@ -98,6 +98,39 @@ const ExitSiteInfectionModule: React.FC<{ patientId?: string }> = ({ patientId }
     loadData();
   };
 
+  const analyzePhoto = async (infectionId: string, photoUrl: string) => {
+    setAnalyzingPhoto(infectionId);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-exit-site-photo', {
+        body: { photoUrl },
+      });
+      if (error) throw error;
+      if (data?.analysis) {
+        setAiResults(prev => ({ ...prev, [infectionId]: data.analysis }));
+        const level = data.analysis.assessment;
+        toast({
+          title: level === 'normal' ? '✅ Exit site looks normal' : '⚠️ AI detected concerns',
+          description: data.analysis.recommendation,
+          variant: level === 'severe_concern' ? 'destructive' : 'default',
+        });
+      }
+    } catch (err: any) {
+      toast({ title: 'AI Analysis Failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setAnalyzingPhoto(null);
+    }
+  };
+
+  const getAssessmentColor = (assessment: string) => {
+    switch (assessment) {
+      case 'normal': return 'bg-[hsl(var(--mint))]/15 text-[hsl(var(--mint))]';
+      case 'mild_concern': return 'bg-[hsl(var(--peach))]/15 text-[hsl(var(--coral))]';
+      case 'moderate_concern': return 'bg-destructive/15 text-destructive';
+      case 'severe_concern': return 'bg-destructive/20 text-destructive font-bold';
+      default: return 'bg-muted text-muted-foreground';
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
