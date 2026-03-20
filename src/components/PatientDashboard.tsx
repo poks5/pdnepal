@@ -210,6 +210,55 @@ const PatientDashboard: React.FC = () => {
       addExchangeLog(newExchangeLog);
       setShowAddExchange(false);
       toast({ title: 'Exchange saved', description: 'Your exchange has been recorded securely.' });
+
+      // ── Smart Auto-Linking: detect concerning patterns ──
+      const isCloudy = exchangeData.clarity !== 'clear';
+      const hasPain = exchangeData.pain >= 4;
+      const hasFever = exchangeData.symptoms?.includes('fever');
+      const hasAbdPain = exchangeData.symptoms?.includes('abdominal_pain');
+      const hasNausea = exchangeData.symptoms?.includes('nausea');
+      const concerningSymptoms = [hasFever && 'fever', hasAbdPain && 'abdominal pain', hasNausea && 'nausea', hasPain && `pain ${exchangeData.pain}/10`].filter(Boolean);
+
+      if (isCloudy && concerningSymptoms.length > 0) {
+        // Possible peritonitis — create clinical alert for doctor
+        try {
+          await supabase.from('clinical_alerts').insert({
+            patient_id: user.id,
+            alert_type: 'peritonitis_risk',
+            severity: (isCloudy && hasFever) ? 'high' : 'medium',
+            title: '⚠️ Possible Peritonitis Alert',
+            message: `Cloudy effluent with ${concerningSymptoms.join(', ')} detected during ${exchangeData.type} exchange.`,
+            details: JSON.stringify({
+              exchange_id: inserted?.id,
+              clarity: exchangeData.clarity,
+              pain_level: exchangeData.pain,
+              symptoms: exchangeData.symptoms,
+              temperature: exchangeData.temperature,
+            }),
+            related_record_id: inserted?.id,
+          });
+          toast({
+            title: '🔔 Clinical Alert Created',
+            description: 'Your doctor has been notified about the concerning symptoms. They may follow up.',
+          });
+        } catch (alertErr) {
+          console.error('Failed to create clinical alert:', alertErr);
+        }
+      } else if (isCloudy) {
+        // Cloudy but no other symptoms — mild alert
+        try {
+          await supabase.from('clinical_alerts').insert({
+            patient_id: user.id,
+            alert_type: 'cloudy_effluent',
+            severity: 'low',
+            title: '💧 Cloudy Effluent Noted',
+            message: `Cloudy drain observed during ${exchangeData.type} exchange. Monitor for additional symptoms.`,
+            related_record_id: inserted?.id,
+          });
+        } catch (alertErr) {
+          console.error('Failed to create cloudy alert:', alertErr);
+        }
+      }
     } catch (err: any) {
       toast({ title: 'Error saving exchange', description: err.message, variant: 'destructive' });
     } finally {
