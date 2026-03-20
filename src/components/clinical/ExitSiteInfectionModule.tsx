@@ -10,9 +10,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ExitSiteInfection } from '@/types/clinical';
-import { Plus, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, CheckCircle, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import ClinicalPhotoUpload from './ClinicalPhotoUpload';
+
+interface AIAnalysis {
+  assessment: string;
+  observed_signs: string[];
+  recommendation: string;
+  confidence: string;
+  details: string;
+}
 
 const exitSymptoms = ['redness', 'swelling', 'discharge', 'crusting', 'tenderness', 'warmth'];
 
