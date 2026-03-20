@@ -127,7 +127,7 @@ const AnalyticsDashboard: React.FC = () => {
 
       {/* Section Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {sectionDefs.map(({ id, labelKey, emoji, icon: Icon, color, descKey }) => (
+        {visibleSections.map(({ id, labelKey, emoji, icon: Icon, color, descKey }) => (
           <button
             key={id}
             onClick={() => setActiveSection(id)}
