@@ -11,8 +11,16 @@ const AppVersionBadge: React.FC = () => {
   const [stale, setStale] = useState(false);
 
   useEffect(() => {
-    // Check if a new service worker is waiting
     if (!('serviceWorker' in navigator)) return;
+
+    const checkForUpdates = async () => {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) return;
+      try { await reg.update(); } catch {}
+      if (reg.waiting) setStale(true);
+    };
+
+    // Initial check + listen for future installs
     navigator.serviceWorker.getRegistration().then((reg) => {
       if (reg?.waiting) setStale(true);
       reg?.addEventListener('updatefound', () => {
@@ -24,6 +32,10 @@ const AppVersionBadge: React.FC = () => {
         });
       });
     });
+
+    // Periodic check every 30 minutes
+    const interval = setInterval(checkForUpdates, 30 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const forceUpdate = async () => {
