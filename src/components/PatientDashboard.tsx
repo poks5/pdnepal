@@ -298,6 +298,31 @@ const PatientDashboard: React.FC = () => {
               <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
             </button>
           ))}
+
+          {/* Mobile version info */}
+          <div className="mt-6 p-4 rounded-2xl bg-muted/40 border border-border/30 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground">App Version</p>
+              <p className="text-xs font-mono text-foreground">{((window as any).__APP_BUILD_VERSION__ || 'unknown').slice(0, 20)}</p>
+            </div>
+            <button
+              onClick={async () => {
+                if ('serviceWorker' in navigator) {
+                  const regs = await navigator.serviceWorker.getRegistrations();
+                  await Promise.all(regs.map((r) => r.unregister()));
+                }
+                if ('caches' in window) {
+                  const keys = await caches.keys();
+                  await Promise.all(keys.map((k) => caches.delete(k)));
+                }
+                window.location.reload();
+              }}
+              className="flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Force Update
+            </button>
+          </div>
         </div>
       );
     }
