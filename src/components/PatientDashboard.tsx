@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen, MessageSquare, Pill, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen, MessageSquare, Pill, AlertTriangle, RefreshCw, Share2 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import pdsathiLogo from '@/assets/pdsathi-logo.png';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -299,8 +301,37 @@ const PatientDashboard: React.FC = () => {
             </button>
           ))}
 
+          {/* Share PDsathi */}
+          <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-primary/5 via-card to-[hsl(var(--mint))]/5 border border-border/30 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="bg-white p-2.5 rounded-xl shadow-inner border border-border/20 shrink-0">
+                <QRCodeSVG value="https://pdnepal.lovable.app" size={90} bgColor="#ffffff" fgColor="#1a1a2e" level="M" imageSettings={{ src: pdsathiLogo, x: undefined, y: undefined, height: 22, width: 22, excavate: true }} />
+              </div>
+              <div className="text-center sm:text-left space-y-2 flex-1">
+                <h4 className="font-bold text-sm text-foreground">{t('sharePDsathi')}</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">{t('shareDescription')}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold text-xs"
+                  onClick={async () => {
+                    const url = 'https://pdnepal.lovable.app';
+                    if (navigator.share) {
+                      await navigator.share({ title: 'PDsathi – PD Companion', text: 'Track your Peritoneal Dialysis with PDsathi.', url });
+                    } else {
+                      await navigator.clipboard.writeText(url);
+                      toast({ title: 'Link copied! 📋', description: 'PDsathi link copied to clipboard.' });
+                    }
+                  }}
+                >
+                  <Share2 className="w-3.5 h-3.5" /> {t('shareAppLink')}
+                </Button>
+              </div>
+            </div>
+          </div>
+
           {/* Mobile version info */}
-          <div className="mt-6 p-4 rounded-2xl bg-muted/40 border border-border/30 flex items-center justify-between">
+          <div className="mt-4 p-4 rounded-2xl bg-muted/40 border border-border/30 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-muted-foreground">App Version</p>
               <p className="text-xs font-mono text-foreground">{((window as any).__APP_BUILD_VERSION__ || 'unknown').slice(0, 20)}</p>
