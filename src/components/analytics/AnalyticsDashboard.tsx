@@ -24,7 +24,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 
-type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos' | 'timeline' | 'peritonitis' | 'exit_site' | 'center_analytics' | 'catheter_registry' | 'fluid_registry';
+type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptoms' | 'photos' | 'timeline' | 'peritonitis' | 'exit_site' | 'center_analytics' | 'catheter_registry' | 'fluid_registry' | 'adequacy';
 
 // Sections only visible to clinical staff (doctor, nurse, admin, coordinator)
 const CLINICAL_ONLY_SECTIONS: Section[] = ['peritonitis', 'exit_site', 'catheter_registry', 'fluid_registry', 'center_analytics', 'timeline'];
