@@ -304,7 +304,12 @@ const DoctorDashboard: React.FC = () => {
         <TabsContent value="alerts"><AlertCenter /></TabsContent>
         <TabsContent value="labs"><LabOverview patients={patients} onViewPatientLabs={handleViewPatientLabs} /></TabsContent>
         <TabsContent value="plans"><PlansTab patients={patients} onManagePlan={handleManagePlan} /></TabsContent>
-        <TabsContent value="more">{renderMoreContent()}</TabsContent>
+        <TabsContent value="more">
+          {renderMoreContent()}
+          <div className="mt-6">
+            <SharePDsathiCard />
+          </div>
+        </TabsContent>
       </Tabs>
 
       <Dialog open={showPlanEditor} onOpenChange={setShowPlanEditor}>

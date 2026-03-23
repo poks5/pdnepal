@@ -384,6 +384,10 @@ const CaregiverDashboard: React.FC = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      <div className="mt-6">
+        <SharePDsathiCard />
+      </div>
     </div>
   );
 };
