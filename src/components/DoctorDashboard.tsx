@@ -305,6 +305,12 @@ const DoctorDashboard: React.FC = () => {
         </TabsContent>
         <TabsContent value="alerts"><AlertCenter /></TabsContent>
         <TabsContent value="labs"><LabOverview patients={patients} onViewPatientLabs={handleViewPatientLabs} /></TabsContent>
+        <TabsContent value="adequacy">
+          <PDAdequacy
+            patientIds={patients.map(p => p.id)}
+            patientNames={new Map(patients.map(p => [p.id, p.name]))}
+          />
+        </TabsContent>
         <TabsContent value="plans"><PlansTab patients={patients} onManagePlan={handleManagePlan} /></TabsContent>
         <TabsContent value="more">
           {renderMoreContent()}
