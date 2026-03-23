@@ -265,7 +265,6 @@ const DoctorDashboard: React.FC = () => {
         {moreView === 'preview-education' && <LearningCenter />}
         {moreView === 'communication' && <SecureMessaging />}
         {moreView === 'export' && <ExportTools />}
-        {moreView === 'export' && <ExportTools />}
       </div>
     );
   };
