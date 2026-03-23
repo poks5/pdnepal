@@ -30,6 +30,7 @@ type Section = 'hub' | 'trends' | 'alerts' | 'export' | 'medications' | 'symptom
 const CLINICAL_ONLY_SECTIONS: Section[] = ['peritonitis', 'exit_site', 'catheter_registry', 'fluid_registry', 'center_analytics', 'timeline'];
 
 const sectionDefs = [
+  { id: 'adequacy' as const, labelKey: 'pdAdequacy', emoji: '🎯', icon: Activity, color: 'from-accent/20 to-accent/5', descKey: 'pdAdequacyDesc' },
   { id: 'timeline' as const, labelKey: 'pdTimeline', emoji: '🗓️', icon: TrendingUp, color: 'from-primary/20 to-primary/5', descKey: 'pdTimelineDesc' },
   { id: 'peritonitis' as const, labelKey: 'peritonitisTracker', emoji: '🦠', icon: AlertTriangle, color: 'from-destructive/15 to-destructive/5', descKey: 'peritonitisDesc' },
   { id: 'exit_site' as const, labelKey: 'exitSiteInfections', emoji: '⚠️', icon: AlertTriangle, color: 'from-[hsl(var(--coral))]/15 to-[hsl(var(--peach))]/5', descKey: 'exitSiteDesc' },
