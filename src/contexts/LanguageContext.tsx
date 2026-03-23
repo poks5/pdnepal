@@ -239,7 +239,10 @@ const translations: Translations = {
   anyConcerns: { en: 'Any concerns, symptoms, or observations...', ne: 'कुनै चिन्ता, लक्षण, वा अवलोकन...' },
   ufCalculated: { en: 'UF Calculated', ne: 'UF गणना भयो' },
 
-  // ── PD Timeline ──
+  // ── PD Adequacy ──
+  pdAdequacy: { en: 'PD Adequacy', ne: 'PD पर्याप्तता' },
+  pdAdequacyDesc: { en: 'Kt/V, creatinine clearance & UF adequacy', ne: 'Kt/V, क्रिएटिनिन क्लियरेन्स र UF पर्याप्तता' },
+
   pdTimeline: { en: 'PD Timeline', ne: 'PD समयरेखा' },
   pdTimelineDesc: { en: 'Your complete peritoneal dialysis journey', ne: 'तपाईंको सम्पूर्ण पेरिटोनियल डायलिसिस यात्रा' },
   addEvent: { en: 'Add Event', ne: 'घटना थप्नुहोस्' },

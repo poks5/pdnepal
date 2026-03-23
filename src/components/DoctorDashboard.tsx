@@ -20,7 +20,8 @@ import DoctorLearningAssignments from '@/components/learning/DoctorLearningAssig
 import DailySummary from '@/components/DailySummary';
 import LearningCenter from '@/components/learning/LearningCenter';
 import SharePDsathiCard from '@/components/SharePDsathiCard';
-import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings, BookOpen } from 'lucide-react';
+import PDAdequacy from '@/components/analytics/PDAdequacy';
+import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings, BookOpen, Activity } from 'lucide-react';
 
 export interface RealPatient {
   id: string;
@@ -216,6 +217,7 @@ const DoctorDashboard: React.FC = () => {
     { value: 'patients', icon: Users, label: 'Patients', badge: 0 },
     { value: 'alerts', icon: AlertTriangle, label: 'Alerts', badge: totalAlerts },
     { value: 'labs', icon: FileText, label: 'Labs', badge: pendingLabCount },
+    { value: 'adequacy', icon: Activity, label: 'Adequacy', badge: 0 },
     { value: 'plans', icon: ClipboardList, label: 'Plans', badge: 0 },
     { value: 'more', icon: Settings, label: 'More', badge: pendingCount },
   ];
@@ -303,6 +305,12 @@ const DoctorDashboard: React.FC = () => {
         </TabsContent>
         <TabsContent value="alerts"><AlertCenter /></TabsContent>
         <TabsContent value="labs"><LabOverview patients={patients} onViewPatientLabs={handleViewPatientLabs} /></TabsContent>
+        <TabsContent value="adequacy">
+          <PDAdequacy
+            patientIds={patients.map(p => p.id)}
+            patientNames={new Map(patients.map(p => [p.id, p.name]))}
+          />
+        </TabsContent>
         <TabsContent value="plans"><PlansTab patients={patients} onManagePlan={handleManagePlan} /></TabsContent>
         <TabsContent value="more">
           {renderMoreContent()}
