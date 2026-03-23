@@ -13,6 +13,7 @@ import MedicationTracker from '../medical/MedicationTracker';
 import SymptomTracker from '../medical/SymptomTracker';
 import PhotoDocumentation from '../medical/PhotoDocumentation';
 import PDTimeline from '../clinical/PDTimeline';
+import PDAdequacy from './PDAdequacy';
 import PeritonitisModule from '../clinical/PeritonitisModule';
 import ExitSiteInfectionModule from '../clinical/ExitSiteInfectionModule';
 import CenterAnalytics from '../clinical/CenterAnalytics';
