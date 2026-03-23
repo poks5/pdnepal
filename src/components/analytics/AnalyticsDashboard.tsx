@@ -90,6 +90,7 @@ const AnalyticsDashboard: React.FC = () => {
         {activeSection === 'center_analytics' && <CenterAnalytics />}
         {activeSection === 'catheter_registry' && <CatheterRegistry />}
         {activeSection === 'fluid_registry' && <FluidRegistry />}
+        {activeSection === 'adequacy' && <PDAdequacy patientId={user?.id} />}
       </div>
     );
   }
