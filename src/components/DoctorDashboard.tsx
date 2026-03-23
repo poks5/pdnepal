@@ -217,6 +217,7 @@ const DoctorDashboard: React.FC = () => {
     { value: 'patients', icon: Users, label: 'Patients', badge: 0 },
     { value: 'alerts', icon: AlertTriangle, label: 'Alerts', badge: totalAlerts },
     { value: 'labs', icon: FileText, label: 'Labs', badge: pendingLabCount },
+    { value: 'adequacy', icon: Activity, label: 'Adequacy', badge: 0 },
     { value: 'plans', icon: ClipboardList, label: 'Plans', badge: 0 },
     { value: 'more', icon: Settings, label: 'More', badge: pendingCount },
   ];
