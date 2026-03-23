@@ -20,7 +20,8 @@ import DoctorLearningAssignments from '@/components/learning/DoctorLearningAssig
 import DailySummary from '@/components/DailySummary';
 import LearningCenter from '@/components/learning/LearningCenter';
 import SharePDsathiCard from '@/components/SharePDsathiCard';
-import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings, BookOpen } from 'lucide-react';
+import PDAdequacy from '@/components/analytics/PDAdequacy';
+import { Users, AlertTriangle, MessageSquare, Download, ClipboardList, FileText, UserPlus, Loader2, ChevronRight, Settings, BookOpen, Activity } from 'lucide-react';
 
 export interface RealPatient {
   id: string;
