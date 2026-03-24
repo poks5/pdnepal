@@ -757,6 +757,125 @@ const UserManagement: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* === Add User Dialog === */}
+      <Dialog open={addUserDialog} onOpenChange={setAddUserDialog}>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-primary" />
+              Add New User
+            </DialogTitle>
+            <DialogDescription>
+              Create a new user account with a specific role. The user will be email-verified automatically.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Full Name *</Label>
+                <Input
+                  value={addForm.full_name}
+                  onChange={e => setAddForm(f => ({ ...f, full_name: e.target.value }))}
+                  className="h-10 rounded-xl"
+                  placeholder="Dr. Ram Sharma"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Email (Login ID) *</Label>
+                <Input
+                  type="email"
+                  value={addForm.email}
+                  onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))}
+                  className="h-10 rounded-xl"
+                  placeholder="user@example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Password *</Label>
+                <Input
+                  type="password"
+                  value={addForm.password}
+                  onChange={e => setAddForm(f => ({ ...f, password: e.target.value }))}
+                  className="h-10 rounded-xl"
+                  placeholder="Min 6 characters"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Role *</Label>
+                <Select value={addForm.role} onValueChange={v => setAddForm(f => ({ ...f, role: v as AppRole }))}>
+                  <SelectTrigger className="h-10 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROLE_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Phone</Label>
+                <Input
+                  value={addForm.phone}
+                  onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))}
+                  className="h-10 rounded-xl"
+                  placeholder="+977-9xxxxxxxxx"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Hospital / Clinic</Label>
+                <Input
+                  value={addForm.hospital}
+                  onChange={e => setAddForm(f => ({ ...f, hospital: e.target.value }))}
+                  className="h-10 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Language</Label>
+                <Select value={addForm.language} onValueChange={v => setAddForm(f => ({ ...f, language: v }))}>
+                  <SelectTrigger className="h-10 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="ne">नेपाली</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {(addForm.role === 'admin' || addForm.role === 'coordinator') && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-destructive/5 border border-destructive/20">
+                <Shield className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
+                <p className="text-xs text-destructive">
+                  {addForm.role === 'admin'
+                    ? 'Admin role grants full system access. Assign with caution.'
+                    : 'Coordinator role grants hospital-level management access.'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setAddUserDialog(false)} className="rounded-xl">Cancel</Button>
+            <Button
+              onClick={handleAddUser}
+              disabled={actionLoading || !addForm.email.trim() || !addForm.password.trim() || !addForm.full_name.trim() || addForm.password.length < 6}
+              className="rounded-xl"
+            >
+              {actionLoading ? (
+                <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Creating...</span>
+              ) : (
+                <span className="flex items-center gap-2"><UserPlus className="w-4 h-4" /> Create User</span>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
