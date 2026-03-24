@@ -93,28 +93,44 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data: profiles, error: profileErr } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, phone, hospital, language, created_at, center_id, address, date_of_birth, emergency_contact_name, emergency_contact_phone, specialization');
-      if (profileErr) throw profileErr;
+      const [profilesRes, rolesRes, centersRes, emailsRes] = await Promise.all([
+        supabase.from('profiles').select('user_id, full_name, phone, hospital, language, created_at, center_id, address, date_of_birth, emergency_contact_name, emergency_contact_phone, specialization'),
+        supabase.from('user_roles').select('user_id, role'),
+        supabase.from('centers').select('id, name'),
+        supabase.functions.invoke('admin-users', { method: 'GET', headers: {}, body: undefined as any }).catch(() => ({ data: null })) as Promise<any>,
+      ]);
 
-      const { data: roles, error: roleErr } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-      if (roleErr) throw roleErr;
+      if (profilesRes.error) throw profilesRes.error;
+      if (rolesRes.error) throw rolesRes.error;
 
-      const { data: centers } = await supabase
-        .from('centers')
-        .select('id, name');
+      // Try to get emails from edge function
+      let emailMap: Record<string, string> = {};
+      try {
+        // Use fetch directly for GET with query params
+        const { data: session } = await supabase.auth.getSession();
+        const token = session?.session?.access_token;
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const resp = await fetch(`${supabaseUrl}/functions/v1/admin-users?action=list-emails`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        });
+        if (resp.ok) {
+          const result = await resp.json();
+          emailMap = result.emailMap || {};
+        }
+      } catch { /* emails not available, continue */ }
 
       const roleMap = new Map<string, AppRole>();
-      (roles || []).forEach(r => roleMap.set(r.user_id, r.role));
+      (rolesRes.data || []).forEach(r => roleMap.set(r.user_id, r.role));
 
       const centerMap = new Map<string, string>();
-      (centers || []).forEach(c => centerMap.set(c.id, c.name));
+      (centersRes.data || []).forEach(c => centerMap.set(c.id, c.name));
 
-      const mapped: DBUser[] = (profiles || []).map(p => ({
+      const mapped: DBUser[] = (profilesRes.data || []).map(p => ({
         user_id: p.user_id,
+        email: emailMap[p.user_id] || '',
         full_name: p.full_name,
         phone: p.phone,
         hospital: p.hospital,
