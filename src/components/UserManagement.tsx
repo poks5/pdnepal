@@ -79,6 +79,16 @@ const UserManagement: React.FC = () => {
     emergency_contact_name: '',
     emergency_contact_phone: '',
   });
+  // Add user form
+  const [addForm, setAddForm] = useState({
+    email: '',
+    password: '',
+    full_name: '',
+    phone: '',
+    hospital: '',
+    role: 'patient' as AppRole,
+    language: 'en',
+  });
 
   const fetchUsers = async () => {
     setLoading(true);
