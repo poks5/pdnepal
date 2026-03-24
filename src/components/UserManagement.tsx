@@ -24,6 +24,7 @@ type AppRole = Database['public']['Enums']['app_role'];
 
 interface DBUser {
   user_id: string;
+  email: string;
   full_name: string;
   phone: string | null;
   hospital: string | null;
@@ -63,6 +64,7 @@ const UserManagement: React.FC = () => {
   const [editDialog, setEditDialog] = useState(false);
   const [detailDialog, setDetailDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
+  const [addUserDialog, setAddUserDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<DBUser | null>(null);
   const [newRole, setNewRole] = useState<AppRole>('patient');
 
@@ -77,32 +79,58 @@ const UserManagement: React.FC = () => {
     emergency_contact_name: '',
     emergency_contact_phone: '',
   });
+  // Add user form
+  const [addForm, setAddForm] = useState({
+    email: '',
+    password: '',
+    full_name: '',
+    phone: '',
+    hospital: '',
+    role: 'patient' as AppRole,
+    language: 'en',
+  });
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data: profiles, error: profileErr } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, phone, hospital, language, created_at, center_id, address, date_of_birth, emergency_contact_name, emergency_contact_phone, specialization');
-      if (profileErr) throw profileErr;
+      const [profilesRes, rolesRes, centersRes, emailsRes] = await Promise.all([
+        supabase.from('profiles').select('user_id, full_name, phone, hospital, language, created_at, center_id, address, date_of_birth, emergency_contact_name, emergency_contact_phone, specialization'),
+        supabase.from('user_roles').select('user_id, role'),
+        supabase.from('centers').select('id, name'),
+        supabase.functions.invoke('admin-users', { method: 'GET', headers: {}, body: undefined as any }).catch(() => ({ data: null })) as Promise<any>,
+      ]);
 
-      const { data: roles, error: roleErr } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-      if (roleErr) throw roleErr;
+      if (profilesRes.error) throw profilesRes.error;
+      if (rolesRes.error) throw rolesRes.error;
 
-      const { data: centers } = await supabase
-        .from('centers')
-        .select('id, name');
+      // Try to get emails from edge function
+      let emailMap: Record<string, string> = {};
+      try {
+        // Use fetch directly for GET with query params
+        const { data: session } = await supabase.auth.getSession();
+        const token = session?.session?.access_token;
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const resp = await fetch(`${supabaseUrl}/functions/v1/admin-users?action=list-emails`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        });
+        if (resp.ok) {
+          const result = await resp.json();
+          emailMap = result.emailMap || {};
+        }
+      } catch { /* emails not available, continue */ }
 
       const roleMap = new Map<string, AppRole>();
-      (roles || []).forEach(r => roleMap.set(r.user_id, r.role));
+      (rolesRes.data || []).forEach(r => roleMap.set(r.user_id, r.role));
 
       const centerMap = new Map<string, string>();
-      (centers || []).forEach(c => centerMap.set(c.id, c.name));
+      (centersRes.data || []).forEach(c => centerMap.set(c.id, c.name));
 
-      const mapped: DBUser[] = (profiles || []).map(p => ({
+      const mapped: DBUser[] = (profilesRes.data || []).map(p => ({
         user_id: p.user_id,
+        email: emailMap[p.user_id] || '',
         full_name: p.full_name,
         phone: p.phone,
         hospital: p.hospital,
@@ -223,10 +251,49 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  // === Add New User ===
+  const handleAddUser = async () => {
+    if (!addForm.email || !addForm.password || !addForm.full_name) return;
+    setActionLoading(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session?.session?.access_token;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const resp = await fetch(`${supabaseUrl}/functions/v1/admin-users?action=create-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: addForm.email,
+          password: addForm.password,
+          fullName: addForm.full_name,
+          phone: addForm.phone || undefined,
+          hospital: addForm.hospital || undefined,
+          role: addForm.role,
+          language: addForm.language,
+        }),
+      });
+      const result = await resp.json();
+      if (!resp.ok) throw new Error(result.error || 'Failed to create user');
+      toast({ title: 'User created', description: `${addForm.full_name} added as ${addForm.role}.` });
+      setAddUserDialog(false);
+      setAddForm({ email: '', password: '', full_name: '', phone: '', hospital: '', role: 'patient', language: 'en' });
+      fetchUsers();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to create user', variant: 'destructive' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // === Filtering ===
   const filteredUsers = users.filter(user => {
     const matchesSearch =
       user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.hospital || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.phone || '').includes(searchTerm);
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
@@ -276,9 +343,14 @@ const UserManagement: React.FC = () => {
           <h2 className="text-lg font-bold text-foreground">User Management</h2>
           <p className="text-xs text-muted-foreground">Manage users, roles, and access control</p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchUsers} className="gap-1.5 rounded-xl">
-          <RefreshCw className="w-3.5 h-3.5" /> Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={fetchUsers} className="gap-1.5 rounded-xl">
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
+          </Button>
+          <Button size="sm" onClick={() => setAddUserDialog(true)} className="gap-1.5 rounded-xl">
+            <UserPlus className="w-3.5 h-3.5" /> Add User
+          </Button>
+        </div>
       </div>
 
       {/* Role Summary Cards */}
@@ -352,9 +424,10 @@ const UserManagement: React.FC = () => {
               <TableHeader>
                 <TableRow className="border-border/40">
                   <TableHead className="text-xs">Name</TableHead>
+                  <TableHead className="text-xs">Login (Email)</TableHead>
                   <TableHead className="text-xs">Role</TableHead>
                   <TableHead className="text-xs hidden sm:table-cell">Hospital</TableHead>
-                  <TableHead className="text-xs hidden sm:table-cell">Phone</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">Phone</TableHead>
                   <TableHead className="text-xs hidden md:table-cell">Joined</TableHead>
                   <TableHead className="text-xs text-right">Actions</TableHead>
                 </TableRow>
@@ -362,7 +435,7 @@ const UserManagement: React.FC = () => {
               <TableBody>
                 {filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
                       No users found
                     </TableCell>
                   </TableRow>
@@ -377,11 +450,14 @@ const UserManagement: React.FC = () => {
                           )}
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <p className="text-xs text-muted-foreground font-mono">{u.email || '—'}</p>
+                      </TableCell>
                       <TableCell>{getRoleBadge(u.role)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">
                         {u.hospital || '—'}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">
+                      <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
                         {u.phone || '—'}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
@@ -454,6 +530,7 @@ const UserManagement: React.FC = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <DetailField label="Full Name" value={selectedUser.full_name} />
+                <DetailField label="Login (Email)" value={selectedUser.email || '—'} />
                 <DetailField label="Role" value={selectedUser.role} />
                 <DetailField label="Phone" value={selectedUser.phone || '—'} />
                 <DetailField label="Language" value={selectedUser.language === 'en' ? 'English' : 'नेपाली'} />
@@ -675,6 +752,125 @@ const UserManagement: React.FC = () => {
                 <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Removing...</span>
               ) : (
                 <span className="flex items-center gap-2"><Trash2 className="w-4 h-4" /> Remove User</span>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* === Add User Dialog === */}
+      <Dialog open={addUserDialog} onOpenChange={setAddUserDialog}>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-primary" />
+              Add New User
+            </DialogTitle>
+            <DialogDescription>
+              Create a new user account with a specific role. The user will be email-verified automatically.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Full Name *</Label>
+                <Input
+                  value={addForm.full_name}
+                  onChange={e => setAddForm(f => ({ ...f, full_name: e.target.value }))}
+                  className="h-10 rounded-xl"
+                  placeholder="Dr. Ram Sharma"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Email (Login ID) *</Label>
+                <Input
+                  type="email"
+                  value={addForm.email}
+                  onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))}
+                  className="h-10 rounded-xl"
+                  placeholder="user@example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Password *</Label>
+                <Input
+                  type="password"
+                  value={addForm.password}
+                  onChange={e => setAddForm(f => ({ ...f, password: e.target.value }))}
+                  className="h-10 rounded-xl"
+                  placeholder="Min 6 characters"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Role *</Label>
+                <Select value={addForm.role} onValueChange={v => setAddForm(f => ({ ...f, role: v as AppRole }))}>
+                  <SelectTrigger className="h-10 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROLE_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Phone</Label>
+                <Input
+                  value={addForm.phone}
+                  onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))}
+                  className="h-10 rounded-xl"
+                  placeholder="+977-9xxxxxxxxx"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Hospital / Clinic</Label>
+                <Input
+                  value={addForm.hospital}
+                  onChange={e => setAddForm(f => ({ ...f, hospital: e.target.value }))}
+                  className="h-10 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Language</Label>
+                <Select value={addForm.language} onValueChange={v => setAddForm(f => ({ ...f, language: v }))}>
+                  <SelectTrigger className="h-10 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="ne">नेपाली</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {(addForm.role === 'admin' || addForm.role === 'coordinator') && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-destructive/5 border border-destructive/20">
+                <Shield className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
+                <p className="text-xs text-destructive">
+                  {addForm.role === 'admin'
+                    ? 'Admin role grants full system access. Assign with caution.'
+                    : 'Coordinator role grants hospital-level management access.'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setAddUserDialog(false)} className="rounded-xl">Cancel</Button>
+            <Button
+              onClick={handleAddUser}
+              disabled={actionLoading || !addForm.email.trim() || !addForm.password.trim() || !addForm.full_name.trim() || addForm.password.length < 6}
+              className="rounded-xl"
+            >
+              {actionLoading ? (
+                <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Creating...</span>
+              ) : (
+                <span className="flex items-center gap-2"><UserPlus className="w-4 h-4" /> Create User</span>
               )}
             </Button>
           </DialogFooter>
