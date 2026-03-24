@@ -251,10 +251,49 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  // === Add New User ===
+  const handleAddUser = async () => {
+    if (!addForm.email || !addForm.password || !addForm.full_name) return;
+    setActionLoading(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session?.session?.access_token;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const resp = await fetch(`${supabaseUrl}/functions/v1/admin-users?action=create-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: addForm.email,
+          password: addForm.password,
+          fullName: addForm.full_name,
+          phone: addForm.phone || undefined,
+          hospital: addForm.hospital || undefined,
+          role: addForm.role,
+          language: addForm.language,
+        }),
+      });
+      const result = await resp.json();
+      if (!resp.ok) throw new Error(result.error || 'Failed to create user');
+      toast({ title: 'User created', description: `${addForm.full_name} added as ${addForm.role}.` });
+      setAddUserDialog(false);
+      setAddForm({ email: '', password: '', full_name: '', phone: '', hospital: '', role: 'patient', language: 'en' });
+      fetchUsers();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to create user', variant: 'destructive' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // === Filtering ===
   const filteredUsers = users.filter(user => {
     const matchesSearch =
       user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.hospital || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.phone || '').includes(searchTerm);
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
