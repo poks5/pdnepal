@@ -64,6 +64,7 @@ const UserManagement: React.FC = () => {
   const [editDialog, setEditDialog] = useState(false);
   const [detailDialog, setDetailDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
+  const [addUserDialog, setAddUserDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<DBUser | null>(null);
   const [newRole, setNewRole] = useState<AppRole>('patient');
 
