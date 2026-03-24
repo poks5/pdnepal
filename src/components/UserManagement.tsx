@@ -343,9 +343,14 @@ const UserManagement: React.FC = () => {
           <h2 className="text-lg font-bold text-foreground">User Management</h2>
           <p className="text-xs text-muted-foreground">Manage users, roles, and access control</p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchUsers} className="gap-1.5 rounded-xl">
-          <RefreshCw className="w-3.5 h-3.5" /> Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={fetchUsers} className="gap-1.5 rounded-xl">
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
+          </Button>
+          <Button size="sm" onClick={() => setAddUserDialog(true)} className="gap-1.5 rounded-xl">
+            <UserPlus className="w-3.5 h-3.5" /> Add User
+          </Button>
+        </div>
       </div>
 
       {/* Role Summary Cards */}
