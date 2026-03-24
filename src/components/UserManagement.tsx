@@ -24,6 +24,7 @@ type AppRole = Database['public']['Enums']['app_role'];
 
 interface DBUser {
   user_id: string;
+  email: string;
   full_name: string;
   phone: string | null;
   hospital: string | null;
