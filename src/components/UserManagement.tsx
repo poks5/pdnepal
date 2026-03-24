@@ -93,11 +93,10 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const [profilesRes, rolesRes, centersRes, emailsRes] = await Promise.all([
+      const [profilesRes, rolesRes, centersRes] = await Promise.all([
         supabase.from('profiles').select('user_id, full_name, phone, hospital, language, created_at, center_id, address, date_of_birth, emergency_contact_name, emergency_contact_phone, specialization'),
         supabase.from('user_roles').select('user_id, role'),
         supabase.from('centers').select('id, name'),
-        supabase.functions.invoke('admin-users', { method: 'GET', headers: {}, body: undefined as any }).catch(() => ({ data: null })) as Promise<any>,
       ]);
 
       if (profilesRes.error) throw profilesRes.error;
