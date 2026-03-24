@@ -530,6 +530,7 @@ const UserManagement: React.FC = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <DetailField label="Full Name" value={selectedUser.full_name} />
+                <DetailField label="Login (Email)" value={selectedUser.email || '—'} />
                 <DetailField label="Role" value={selectedUser.role} />
                 <DetailField label="Phone" value={selectedUser.phone || '—'} />
                 <DetailField label="Language" value={selectedUser.language === 'en' ? 'English' : 'नेपाली'} />
