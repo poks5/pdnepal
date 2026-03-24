@@ -424,9 +424,10 @@ const UserManagement: React.FC = () => {
               <TableHeader>
                 <TableRow className="border-border/40">
                   <TableHead className="text-xs">Name</TableHead>
+                  <TableHead className="text-xs">Login (Email)</TableHead>
                   <TableHead className="text-xs">Role</TableHead>
                   <TableHead className="text-xs hidden sm:table-cell">Hospital</TableHead>
-                  <TableHead className="text-xs hidden sm:table-cell">Phone</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">Phone</TableHead>
                   <TableHead className="text-xs hidden md:table-cell">Joined</TableHead>
                   <TableHead className="text-xs text-right">Actions</TableHead>
                 </TableRow>
@@ -434,7 +435,7 @@ const UserManagement: React.FC = () => {
               <TableBody>
                 {filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
                       No users found
                     </TableCell>
                   </TableRow>
@@ -449,11 +450,14 @@ const UserManagement: React.FC = () => {
                           )}
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <p className="text-xs text-muted-foreground font-mono">{u.email || '—'}</p>
+                      </TableCell>
                       <TableCell>{getRoleBadge(u.role)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">
                         {u.hospital || '—'}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">
+                      <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
                         {u.phone || '—'}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
