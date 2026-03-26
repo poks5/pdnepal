@@ -96,6 +96,18 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
             hemoglobin: newLabData.hemoglobin ?? null,
             glucose: (newLabData as any).glucose ?? null,
             bun: newLabData.urea ?? null,
+            tc: newLabData.tc ?? null,
+            neutrophil: newLabData.neutrophil ?? null,
+            lymphocyte: newLabData.lymphocyte ?? null,
+            platelets: newLabData.platelets ?? null,
+            ipth: newLabData.ipth ?? null,
+            uric_acid: newLabData.uricAcid ?? null,
+            rbs: newLabData.rbs ?? null,
+            fbs: newLabData.fbs ?? null,
+            pp: newLabData.pp ?? null,
+            hba1c: newLabData.hba1c ?? null,
+            peritoneal_fluid_report_url: newLabData.peritonealFluidReport ?? null,
+            pet_test_report_url: newLabData.petTestReport ?? null,
             notes: newLabData.notes ?? null,
           };
         const { error } = await supabase
