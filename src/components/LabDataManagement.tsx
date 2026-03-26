@@ -39,7 +39,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
           .limit(50);
         if (error) throw error;
         
-        const mapped: LabTest[] = (data || []).map(row => ({
+        const mapped: LabTest[] = (data || []).map((row: any) => ({
           id: row.id,
           patientId: row.patient_id,
           testDate: row.test_date,
@@ -53,6 +53,18 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
           hemoglobin: row.hemoglobin ?? undefined,
           glucose: row.glucose ?? undefined,
           urea: row.bun ?? undefined,
+          tc: row.tc ?? undefined,
+          neutrophil: row.neutrophil ?? undefined,
+          lymphocyte: row.lymphocyte ?? undefined,
+          platelets: row.platelets ?? undefined,
+          ipth: row.ipth ?? undefined,
+          uricAcid: row.uric_acid ?? undefined,
+          rbs: row.rbs ?? undefined,
+          fbs: row.fbs ?? undefined,
+          pp: row.pp ?? undefined,
+          hba1c: row.hba1c ?? undefined,
+          peritonealFluidReport: row.peritoneal_fluid_report_url ?? undefined,
+          petTestReport: row.pet_test_report_url ?? undefined,
           notes: row.notes ?? undefined,
           reportedBy: 'lab',
           createdAt: row.created_at,
