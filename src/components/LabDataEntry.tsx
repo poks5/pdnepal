@@ -8,7 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Save, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Calendar, Save, Loader2, Upload, CheckCircle } from 'lucide-react';
 import { LabTest, labRanges } from '@/types/labData';
 
 interface LabDataEntryProps {
@@ -18,7 +20,10 @@ interface LabDataEntryProps {
 
 const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [uploadingPeritoneal, setUploadingPeritoneal] = useState(false);
+  const [uploadingPET, setUploadingPET] = useState(false);
   const [formData, setFormData] = useState<Partial<LabTest>>(
     existingData || {
       testDate: new Date().toISOString().split('T')[0],
@@ -36,7 +41,6 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
   const getParameterStatus = (parameter: string, value: number) => {
     const range = labRanges.find(r => r.parameter === parameter);
     if (!range || !value) return 'normal';
-    
     if (value < range.min) return 'low';
     if (value > range.max) return 'high';
     return 'normal';
@@ -47,6 +51,37 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
       case 'low': return 'bg-blue-100 text-blue-800';
       case 'high': return 'bg-red-100 text-red-800';
       default: return 'bg-green-100 text-green-800';
+    }
+  };
+
+  const uploadFile = async (file: File, reportType: 'peritoneal' | 'pet'): Promise<string | null> => {
+    if (!user) return null;
+    const ext = file.name.split('.').pop();
+    const filePath = `${user.id}/lab-reports/${reportType}_${Date.now()}.${ext}`;
+    const { error } = await supabase.storage
+      .from('clinical-photos')
+      .upload(filePath, file, { upsert: true });
+    if (error) throw error;
+    const { data: urlData } = supabase.storage
+      .from('clinical-photos')
+      .getPublicUrl(filePath);
+    return urlData.publicUrl || filePath;
+  };
+
+  const handleFileUpload = async (file: File, reportType: 'peritoneal' | 'pet') => {
+    const setUploading = reportType === 'peritoneal' ? setUploadingPeritoneal : setUploadingPET;
+    const field: keyof LabTest = reportType === 'peritoneal' ? 'peritonealFluidReport' : 'petTestReport';
+    setUploading(true);
+    try {
+      const url = await uploadFile(file, reportType);
+      if (url) {
+        handleInputChange(field, url);
+        toast({ title: 'Uploaded', description: `${reportType === 'peritoneal' ? 'Peritoneal fluid' : 'PET test'} report uploaded` });
+      }
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -100,7 +135,7 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
             placeholder="Enter value"
             className="flex-1"
           />
-          <span className="text-sm text-gray-500 min-w-[60px]">{unit}</span>
+          <span className="text-sm text-muted-foreground min-w-[60px]">{unit}</span>
         </div>
       </div>
     );
@@ -108,7 +143,7 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Calendar className="w-5 h-5" />
@@ -136,7 +171,7 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
                   id="reportedBy"
                   value={formData.reportedBy || 'patient'}
                   onChange={(e) => handleInputChange('reportedBy', e.target.value)}
-                  className="w-full p-2 border rounded-md"
+                  className="w-full p-2 border rounded-md bg-background text-foreground"
                 >
                   <option value="patient">Patient</option>
                   <option value="doctor">Doctor</option>
@@ -157,14 +192,14 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
         </TabsList>
 
         <TabsContent value="blood-chemistry">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle>Blood Chemistry Parameters</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900">Blood Sugar</h4>
+                  <h4 className="font-medium text-foreground">Blood Sugar</h4>
                   {renderParameterInput('rbs', 'RBS', 'mg/dL')}
                   {renderParameterInput('fbs', 'FBS', 'mg/dL')}
                   {renderParameterInput('pp', 'Post Prandial', 'mg/dL')}
@@ -172,14 +207,14 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
                 </div>
                 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900">Kidney Function</h4>
+                  <h4 className="font-medium text-foreground">Kidney Function</h4>
                   {renderParameterInput('urea', 'Urea', 'mg/dL')}
                   {renderParameterInput('creatinine', 'Creatinine', 'mg/dL')}
                   {renderParameterInput('uricAcid', 'Uric Acid', 'mg/dL')}
                 </div>
                 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900">Electrolytes & Proteins</h4>
+                  <h4 className="font-medium text-foreground">Electrolytes & Proteins</h4>
                   {renderParameterInput('sodium', 'Sodium', 'mEq/L')}
                   {renderParameterInput('potassium', 'Potassium', 'mEq/L')}
                   {renderParameterInput('calcium', 'Calcium', 'mg/dL')}
@@ -192,7 +227,7 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
         </TabsContent>
 
         <TabsContent value="hematology">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle>Hematology Parameters</CardTitle>
             </CardHeader>
@@ -209,7 +244,7 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
         </TabsContent>
 
         <TabsContent value="hormones">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle>Hormone Parameters</CardTitle>
             </CardHeader>
@@ -222,7 +257,7 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
         </TabsContent>
 
         <TabsContent value="reports">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader>
               <CardTitle>Report Uploads</CardTitle>
               <CardDescription>
@@ -230,37 +265,53 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div>
+              <div className="space-y-6">
+                <div className="space-y-2">
                   <Label htmlFor="peritonealFluidReport">Peritoneal Fluid Report</Label>
-                  <Input
-                    id="peritonealFluidReport"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        // In a real app, you'd upload the file and get a URL
-                        handleInputChange('peritonealFluidReport', `uploaded_${file.name}`);
-                      }
-                    }}
-                  />
+                  {formData.peritonealFluidReport && (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Report uploaded</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="peritonealFluidReport"
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      disabled={uploadingPeritoneal}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, 'peritoneal');
+                      }}
+                      className="flex-1"
+                    />
+                    {uploadingPeritoneal && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+                  </div>
                 </div>
                 
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="petTestReport">PET Test Report</Label>
-                  <Input
-                    id="petTestReport"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        // In a real app, you'd upload the file and get a URL
-                        handleInputChange('petTestReport', `uploaded_${file.name}`);
-                      }
-                    }}
-                  />
+                  {formData.petTestReport && (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Report uploaded</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="petTestReport"
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      disabled={uploadingPET}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, 'pet');
+                      }}
+                      className="flex-1"
+                    />
+                    {uploadingPET && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -268,7 +319,7 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
         </TabsContent>
       </Tabs>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle>Additional Notes</CardTitle>
         </CardHeader>
@@ -284,7 +335,7 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
 
       <div className="flex justify-end space-x-4">
         <Button variant="outline" disabled={saving}>Cancel</Button>
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving || uploadingPeritoneal || uploadingPET}>
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           {saving ? 'Saving...' : 'Save Lab Data'}
         </Button>
