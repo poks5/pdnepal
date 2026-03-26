@@ -503,19 +503,31 @@ export type Database = {
           created_at: string
           creatinine: number | null
           entered_by: string
+          fbs: number | null
           glucose: number | null
+          hba1c: number | null
           hemoglobin: number | null
           id: string
+          ipth: number | null
           kt_v: number | null
+          lymphocyte: number | null
+          neutrophil: number | null
           notes: string | null
           patient_id: string
+          peritoneal_fluid_report_url: string | null
           pet_result: string | null
+          pet_test_report_url: string | null
           phosphorus: number | null
+          platelets: number | null
           potassium: number | null
+          pp: number | null
+          rbs: number | null
           sodium: number | null
+          tc: number | null
           test_date: string
           test_type: string
           updated_at: string
+          uric_acid: number | null
           verified_by: string | null
         }
         Insert: {
@@ -525,19 +537,31 @@ export type Database = {
           created_at?: string
           creatinine?: number | null
           entered_by: string
+          fbs?: number | null
           glucose?: number | null
+          hba1c?: number | null
           hemoglobin?: number | null
           id?: string
+          ipth?: number | null
           kt_v?: number | null
+          lymphocyte?: number | null
+          neutrophil?: number | null
           notes?: string | null
           patient_id: string
+          peritoneal_fluid_report_url?: string | null
           pet_result?: string | null
+          pet_test_report_url?: string | null
           phosphorus?: number | null
+          platelets?: number | null
           potassium?: number | null
+          pp?: number | null
+          rbs?: number | null
           sodium?: number | null
+          tc?: number | null
           test_date: string
           test_type: string
           updated_at?: string
+          uric_acid?: number | null
           verified_by?: string | null
         }
         Update: {
@@ -547,19 +571,31 @@ export type Database = {
           created_at?: string
           creatinine?: number | null
           entered_by?: string
+          fbs?: number | null
           glucose?: number | null
+          hba1c?: number | null
           hemoglobin?: number | null
           id?: string
+          ipth?: number | null
           kt_v?: number | null
+          lymphocyte?: number | null
+          neutrophil?: number | null
           notes?: string | null
           patient_id?: string
+          peritoneal_fluid_report_url?: string | null
           pet_result?: string | null
+          pet_test_report_url?: string | null
           phosphorus?: number | null
+          platelets?: number | null
           potassium?: number | null
+          pp?: number | null
+          rbs?: number | null
           sodium?: number | null
+          tc?: number | null
           test_date?: string
           test_type?: string
           updated_at?: string
+          uric_acid?: number | null
           verified_by?: string | null
         }
         Relationships: []
