@@ -39,7 +39,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
           .limit(50);
         if (error) throw error;
         
-        const mapped: LabTest[] = (data || []).map(row => ({
+        const mapped: LabTest[] = (data || []).map((row: any) => ({
           id: row.id,
           patientId: row.patient_id,
           testDate: row.test_date,
@@ -53,6 +53,18 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
           hemoglobin: row.hemoglobin ?? undefined,
           glucose: row.glucose ?? undefined,
           urea: row.bun ?? undefined,
+          tc: row.tc ?? undefined,
+          neutrophil: row.neutrophil ?? undefined,
+          lymphocyte: row.lymphocyte ?? undefined,
+          platelets: row.platelets ?? undefined,
+          ipth: row.ipth ?? undefined,
+          uricAcid: row.uric_acid ?? undefined,
+          rbs: row.rbs ?? undefined,
+          fbs: row.fbs ?? undefined,
+          pp: row.pp ?? undefined,
+          hba1c: row.hba1c ?? undefined,
+          peritonealFluidReport: row.peritoneal_fluid_report_url ?? undefined,
+          petTestReport: row.pet_test_report_url ?? undefined,
           notes: row.notes ?? undefined,
           reportedBy: 'lab',
           createdAt: row.created_at,
@@ -84,6 +96,18 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
             hemoglobin: newLabData.hemoglobin ?? null,
             glucose: (newLabData as any).glucose ?? null,
             bun: newLabData.urea ?? null,
+            tc: newLabData.tc ?? null,
+            neutrophil: newLabData.neutrophil ?? null,
+            lymphocyte: newLabData.lymphocyte ?? null,
+            platelets: newLabData.platelets ?? null,
+            ipth: newLabData.ipth ?? null,
+            uric_acid: newLabData.uricAcid ?? null,
+            rbs: newLabData.rbs ?? null,
+            fbs: newLabData.fbs ?? null,
+            pp: newLabData.pp ?? null,
+            hba1c: newLabData.hba1c ?? null,
+            peritoneal_fluid_report_url: newLabData.peritonealFluidReport ?? null,
+            pet_test_report_url: newLabData.petTestReport ?? null,
             notes: newLabData.notes ?? null,
           };
         const { error } = await supabase
@@ -109,8 +133,20 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
             hemoglobin: newLabData.hemoglobin ?? null,
             glucose: (newLabData as any).glucose ?? null,
             bun: newLabData.urea ?? null,
+            tc: newLabData.tc ?? null,
+            neutrophil: newLabData.neutrophil ?? null,
+            lymphocyte: newLabData.lymphocyte ?? null,
+            platelets: newLabData.platelets ?? null,
+            ipth: newLabData.ipth ?? null,
+            uric_acid: newLabData.uricAcid ?? null,
+            rbs: newLabData.rbs ?? null,
+            fbs: newLabData.fbs ?? null,
+            pp: newLabData.pp ?? null,
+            hba1c: newLabData.hba1c ?? null,
+            peritoneal_fluid_report_url: newLabData.peritonealFluidReport ?? null,
+            pet_test_report_url: newLabData.petTestReport ?? null,
             notes: newLabData.notes ?? null,
-          });
+          } as any);
         if (error) throw error;
         toast({ title: t('success'), description: t('labDataAdded') });
       }
@@ -123,7 +159,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
         .limit(50);
       
       if (data) {
-        setLabData(data.map(row => ({
+        setLabData((data as any[]).map((row: any) => ({
           id: row.id,
           patientId: row.patient_id,
           testDate: row.test_date,
@@ -137,6 +173,18 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
           hemoglobin: row.hemoglobin ?? undefined,
           glucose: row.glucose ?? undefined,
           urea: row.bun ?? undefined,
+          tc: row.tc ?? undefined,
+          neutrophil: row.neutrophil ?? undefined,
+          lymphocyte: row.lymphocyte ?? undefined,
+          platelets: row.platelets ?? undefined,
+          ipth: row.ipth ?? undefined,
+          uricAcid: row.uric_acid ?? undefined,
+          rbs: row.rbs ?? undefined,
+          fbs: row.fbs ?? undefined,
+          pp: row.pp ?? undefined,
+          hba1c: row.hba1c ?? undefined,
+          peritonealFluidReport: row.peritoneal_fluid_report_url ?? undefined,
+          petTestReport: row.pet_test_report_url ?? undefined,
           notes: row.notes ?? undefined,
           reportedBy: 'lab',
           createdAt: row.created_at,
