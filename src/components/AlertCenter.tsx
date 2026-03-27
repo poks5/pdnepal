@@ -91,6 +91,12 @@ const AlertCenter: React.FC = () => {
     }
   };
 
+  const getSeverityTier = (severity: string) => {
+    if (severity === 'critical' || severity === 'high') return '🔴 Critical';
+    if (severity === 'medium') return '🟠 Moderate';
+    return '🟢 Informational';
+  };
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'high_wbc': return <Droplets className="w-4 h-4" />;
@@ -98,18 +104,27 @@ const AlertCenter: React.FC = () => {
       case 'antibiotic_overdue': return <Pill className="w-4 h-4" />;
       case 'no_improvement': return <TrendingDown className="w-4 h-4" />;
       case 'missed_exchange': return <Clock className="w-4 h-4" />;
+      case 'uf_failure_trend': return <TrendingDown className="w-4 h-4" />;
+      case 'fluid_overload_risk': return <Droplets className="w-4 h-4" />;
+      case 'peritonitis_risk': return <AlertTriangle className="w-4 h-4" />;
+      case 'cloudy_effluent': return <Droplets className="w-4 h-4" />;
       default: return <AlertTriangle className="w-4 h-4" />;
     }
   };
 
   const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'high_wbc': return t('highWBC') || 'High WBC';
-      case 'culture_result': return t('cultureResult') || 'Culture Result';
-      case 'antibiotic_overdue': return t('antibioticOverdue') || 'Antibiotic Overdue';
-      case 'no_improvement': return t('noImprovement') || 'No Improvement';
-      default: return type;
-    }
+    const labels: Record<string, string> = {
+      high_wbc: 'High WBC',
+      culture_result: 'Culture Result',
+      antibiotic_overdue: 'Antibiotic Overdue',
+      no_improvement: 'No Improvement',
+      uf_failure_trend: 'UF Failure Trend',
+      fluid_overload_risk: 'Fluid Overload',
+      peritonitis_risk: 'Peritonitis Risk',
+      cloudy_effluent: 'Cloudy Effluent',
+      missed_exchange: 'Missed Exchange',
+    };
+    return labels[type] || type;
   };
 
   const handleAcknowledge = async (alertId: string) => {
@@ -171,9 +186,22 @@ const AlertCenter: React.FC = () => {
         </div>
       </div>
 
+      {/* 3-Tier Severity Legend */}
+      <div className="flex flex-wrap gap-3">
+        <div className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-1.5 rounded-full font-semibold">
+          🔴 Critical — Immediate action
+        </div>
+        <div className="flex items-center gap-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 px-3 py-1.5 rounded-full font-semibold">
+          🟠 Moderate — Review soon
+        </div>
+        <div className="flex items-center gap-1.5 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full font-semibold">
+          🟢 Informational — Monitor
+        </div>
+      </div>
+
       {/* Alert type legend */}
       <div className="flex flex-wrap gap-2">
-        {['high_wbc', 'culture_result', 'antibiotic_overdue', 'no_improvement'].map(type => (
+        {['high_wbc', 'culture_result', 'antibiotic_overdue', 'uf_failure_trend', 'fluid_overload_risk', 'peritonitis_risk'].map(type => (
           <div key={type} className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
             {getTypeIcon(type)}
             <span>{getTypeLabel(type)}</span>
