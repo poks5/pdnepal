@@ -165,7 +165,22 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
             isUFAutoCalculated={isUFAutoCalculated}
             setIsUFAutoCalculated={setIsUFAutoCalculated}
           />
+          {formData.drainVolume > 0 && (
+            <UFInterpretation
+              ultrafiltration={formData.ultrafiltration}
+              drainVolume={formData.drainVolume}
+              fillVolume={formData.fillVolume}
+              todayTotalUF={todayTotalUF}
+              isAutoCalculated={isUFAutoCalculated}
+            />
+          )}
         </CollapsibleSection>
+
+        {/* Quick Symptom Buttons — always visible */}
+        <SymptomQuickInput
+          selected={formData.symptoms}
+          onChange={(symptoms) => updateField('symptoms', symptoms)}
+        />
 
         <CollapsibleSection
           step={3} title="Vitals" icon="🩺"
