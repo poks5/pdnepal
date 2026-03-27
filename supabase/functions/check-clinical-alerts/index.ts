@@ -19,7 +19,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-    // User client for auth check
     const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
       global: { headers: { Authorization: authHeader } }
     })
@@ -28,10 +27,8 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders })
     }
 
-    // Service client for querying across patients
     const admin = createClient(supabaseUrl, serviceKey)
 
-    // Get doctor's assigned patients
     const { data: assignments } = await admin
       .from('doctor_patient_assignments')
       .select('patient_id')
@@ -47,8 +44,8 @@ Deno.serve(async (req) => {
     const now = new Date()
     const fiveDaysAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000)
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
 
-    // Get patient names
     const { data: profiles } = await admin
       .from('profiles')
       .select('user_id, full_name')
@@ -64,7 +61,6 @@ Deno.serve(async (req) => {
 
     for (const ep of episodes || []) {
       if (ep.effluent_wbc > 100) {
-        // Check if alert already exists for this record
         const { data: existing } = await admin
           .from('clinical_alerts')
           .select('id')
@@ -87,7 +83,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      // 4. No improvement after 5 days
+      // No improvement after 5 days
       if (ep.clinical_response !== 'good' && ep.date_onset) {
         const onset = new Date(ep.date_onset)
         const daysSinceOnset = (now.getTime() - onset.getTime()) / (1000 * 60 * 60 * 24)
@@ -123,7 +119,6 @@ Deno.serve(async (req) => {
       .gte('created_at', oneDayAgo.toISOString())
 
     for (const culture of cultures || []) {
-      // Find episode to get patient_id
       const ep = (episodes || []).find(e => e.id === culture.episode_id)
       if (!ep || !patientIds.includes(ep.patient_id)) continue
 
@@ -150,7 +145,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 3. Antibiotic overdue (started but no stop date, > expected duration)
+    // 3. Antibiotic overdue
     const { data: antibiotics } = await admin
       .from('peritonitis_antibiotics')
       .select('id, episode_id, drug_name, start_date, stop_date, dose, frequency')
@@ -163,7 +158,6 @@ Deno.serve(async (req) => {
       const startDate = new Date(abx.start_date)
       const daysSinceStart = (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
 
-      // Standard peritonitis antibiotic course is 14-21 days; alert if > 21
       if (daysSinceStart > 21) {
         const { data: existing } = await admin
           .from('clinical_alerts')
@@ -184,6 +178,89 @@ Deno.serve(async (req) => {
             details: `Started: ${abx.start_date}. Standard course: 14-21 days. Review and update or discontinue.`,
             related_record_id: abx.id,
           })
+        }
+      }
+    }
+
+    // 4. UF Failure Trend (3-day declining/low UF)
+    for (const pid of patientIds) {
+      const { data: recentLogs } = await admin
+        .from('exchange_logs')
+        .select('created_at, ultrafiltration_ml, weight_after_kg')
+        .eq('patient_id', pid)
+        .gte('created_at', threeDaysAgo.toISOString())
+        .order('created_at', { ascending: true })
+
+      if (!recentLogs?.length) continue
+
+      const dailyUF = new Map<string, number>()
+      const dailyWeights = new Map<string, number[]>()
+      for (const l of recentLogs) {
+        const d = new Date(l.created_at).toLocaleDateString('en-CA')
+        dailyUF.set(d, (dailyUF.get(d) || 0) + (l.ultrafiltration_ml || 0))
+        if (l.weight_after_kg != null) {
+          if (!dailyWeights.has(d)) dailyWeights.set(d, [])
+          dailyWeights.get(d)!.push(Number(l.weight_after_kg))
+        }
+      }
+
+      const ufDays = Array.from(dailyUF.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+
+      if (ufDays.length >= 3) {
+        const lowUFDays = ufDays.filter(([_, uf]) => uf < 300)
+        if (lowUFDays.length >= 3) {
+          const { data: existing } = await admin
+            .from('clinical_alerts')
+            .select('id')
+            .eq('patient_id', pid)
+            .eq('alert_type', 'uf_failure_trend')
+            .eq('acknowledged', false)
+            .gte('created_at', threeDaysAgo.toISOString())
+            .limit(1)
+
+          if (!existing?.length) {
+            const avgUF = Math.round(ufDays.reduce((s, [_, v]) => s + v, 0) / ufDays.length)
+            newAlerts.push({
+              patient_id: pid,
+              doctor_id: user.id,
+              alert_type: 'uf_failure_trend',
+              severity: avgUF < 100 ? 'critical' : 'high',
+              title: `UF Failure Trend - ${nameMap[pid] || 'Patient'}`,
+              message: `Daily UF below 300ml for ${lowUFDays.length} consecutive days (avg: ${avgUF}ml).`,
+              details: `Possible UF failure. Consider PET test, review dwell times, or switch to higher glucose concentration.`,
+            })
+          }
+        }
+      }
+
+      // 5. Fluid overload risk (weight gain >2kg over 3 days)
+      const weightDays = Array.from(dailyWeights.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      if (weightDays.length >= 2) {
+        const firstW = weightDays[0][1].reduce((a, b) => a + b, 0) / weightDays[0][1].length
+        const lastW = weightDays[weightDays.length - 1][1].reduce((a, b) => a + b, 0) / weightDays[weightDays.length - 1][1].length
+        const gain = lastW - firstW
+
+        if (gain > 2) {
+          const { data: existing } = await admin
+            .from('clinical_alerts')
+            .select('id')
+            .eq('patient_id', pid)
+            .eq('alert_type', 'fluid_overload_risk')
+            .eq('acknowledged', false)
+            .gte('created_at', threeDaysAgo.toISOString())
+            .limit(1)
+
+          if (!existing?.length) {
+            newAlerts.push({
+              patient_id: pid,
+              doctor_id: user.id,
+              alert_type: 'fluid_overload_risk',
+              severity: gain > 3 ? 'critical' : 'high',
+              title: `Fluid Overload Risk - ${nameMap[pid] || 'Patient'}`,
+              message: `Weight gain of ${gain.toFixed(1)}kg over ${weightDays.length} days detected.`,
+              details: `Weight: ${firstW.toFixed(1)}kg → ${lastW.toFixed(1)}kg. Assess fluid intake, UF adequacy, and consider diuretic adjustment.`,
+            })
+          }
         }
       }
     }
