@@ -116,6 +116,7 @@ const PatientDashboard: React.FC = () => {
     return `${h.toString().padStart(2, '0')}:00`;
   });
   const nextPendingIdx = todayLogs.length < exchangeTimes.length ? todayLogs.length : exchangeTimes.length - 1;
+  const todayTotalUF = todayLogs.reduce((sum, l) => sum + (l.ultrafiltration || 0), 0);
   const todayExchanges = {
     completed: todayLogs.length,
     total: dailyTarget,
