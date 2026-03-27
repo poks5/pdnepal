@@ -11,11 +11,14 @@ import { VolumeSection } from '@/components/exchange/VolumeSection';
 import { VitalsSection } from '@/components/exchange/VitalsSection';
 import { AssessmentSection } from '@/components/exchange/AssessmentSection';
 import { AdditiveSection } from '@/components/exchange/AdditiveSection';
+import UFInterpretation from '@/components/exchange/UFInterpretation';
+import SymptomQuickInput from '@/components/exchange/SymptomQuickInput';
 
 interface AddExchangeProps {
   onSave: (data: ExchangeData) => Promise<void> | void;
   onCancel: () => void;
   saving?: boolean;
+  todayTotalUF?: number;
 }
 
 interface CollapsibleSectionProps {
