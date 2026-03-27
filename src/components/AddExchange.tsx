@@ -57,7 +57,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   </section>
 );
 
-const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = false }) => {
+const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = false, todayTotalUF = 0 }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const {
