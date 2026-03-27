@@ -5,6 +5,7 @@ import RecentExchanges from './RecentExchanges';
 import WeightUFTracker from './WeightUFTracker';
 import HealthTips from './HealthTips';
 import QuickActions from '../QuickActions';
+import PatientTrends from './PatientTrends';
 import { DailyExchangeLog } from '@/types/patient';
 import { useAuth } from '@/contexts/AuthContext';
 import TodayProgress from './TodayProgress';
@@ -89,6 +90,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       <QuickActions />
       <HealthTips />
       <WeightUFTracker />
+
+      <PatientTrends />
 
       <WeeklyStats
         adherence={weeklyStats.adherence}

@@ -11,11 +11,14 @@ import { VolumeSection } from '@/components/exchange/VolumeSection';
 import { VitalsSection } from '@/components/exchange/VitalsSection';
 import { AssessmentSection } from '@/components/exchange/AssessmentSection';
 import { AdditiveSection } from '@/components/exchange/AdditiveSection';
+import UFInterpretation from '@/components/exchange/UFInterpretation';
+import SymptomQuickInput from '@/components/exchange/SymptomQuickInput';
 
 interface AddExchangeProps {
   onSave: (data: ExchangeData) => Promise<void> | void;
   onCancel: () => void;
   saving?: boolean;
+  todayTotalUF?: number;
 }
 
 interface CollapsibleSectionProps {
@@ -54,7 +57,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   </section>
 );
 
-const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = false }) => {
+const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = false, todayTotalUF = 0 }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const {
@@ -162,7 +165,22 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
             isUFAutoCalculated={isUFAutoCalculated}
             setIsUFAutoCalculated={setIsUFAutoCalculated}
           />
+          {formData.drainVolume > 0 && (
+            <UFInterpretation
+              ultrafiltration={formData.ultrafiltration}
+              drainVolume={formData.drainVolume}
+              fillVolume={formData.fillVolume}
+              todayTotalUF={todayTotalUF}
+              isAutoCalculated={isUFAutoCalculated}
+            />
+          )}
         </CollapsibleSection>
+
+        {/* Quick Symptom Buttons — always visible */}
+        <SymptomQuickInput
+          selected={formData.symptoms}
+          onChange={(symptoms) => updateField('symptoms', symptoms)}
+        />
 
         <CollapsibleSection
           step={3} title="Vitals" icon="🩺"

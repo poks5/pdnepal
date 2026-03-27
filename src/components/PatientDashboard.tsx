@@ -116,6 +116,7 @@ const PatientDashboard: React.FC = () => {
     return `${h.toString().padStart(2, '0')}:00`;
   });
   const nextPendingIdx = todayLogs.length < exchangeTimes.length ? todayLogs.length : exchangeTimes.length - 1;
+  const todayTotalUF = todayLogs.reduce((sum, l) => sum + (l.ultrafiltration || 0), 0);
   const todayExchanges = {
     completed: todayLogs.length,
     total: dailyTarget,
@@ -429,7 +430,7 @@ const PatientDashboard: React.FC = () => {
 
       <Dialog open={showAddExchange} onOpenChange={setShowAddExchange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto rounded-2xl">
-          <AddExchange onSave={handleSaveExchange} onCancel={() => setShowAddExchange(false)} saving={savingExchange} />
+          <AddExchange onSave={handleSaveExchange} onCancel={() => setShowAddExchange(false)} saving={savingExchange} todayTotalUF={todayTotalUF} />
         </DialogContent>
       </Dialog>
 
