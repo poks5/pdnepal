@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen, MessageSquare, Pill, AlertTriangle, RefreshCw, Share2 } from 'lucide-react';
+import { Calendar, Droplets, FlaskConical, BarChart, Settings, Stethoscope, Users, Package, FileText, ChevronRight, BookOpen, MessageSquare, Pill, AlertTriangle, RefreshCw, Share2, Download } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import pdsathiLogo from '@/assets/pdsathi-logo.png';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ import LearningCenter from './learning/LearningCenter';
 import MedicationLog from './medical/MedicationLog';
 import SymptomReport from './medical/SymptomReport';
 import { formatExchangeForHistory } from '@/utils/exchangeFormatters';
+import ExportTools from './ExportTools';
 import SecureMessaging from './SecureMessaging';
 import { ExchangeData } from '@/hooks/useExchangeForm';
 import { DailyExchangeLog } from '@/types/patient';
@@ -425,6 +426,7 @@ const PatientDashboard: React.FC = () => {
         <TabsContent value="messages"><SecureMessaging /></TabsContent>
         <TabsContent value="lab-data"><LabDataManagement /></TabsContent>
         <TabsContent value="learning"><LearningCenter key={learningKey} /></TabsContent>
+        <TabsContent value="export"><ExportTools /></TabsContent>
         <TabsContent value="settings">{renderSettingsContent()}</TabsContent>
       </Tabs>
 
