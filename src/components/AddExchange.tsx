@@ -128,6 +128,16 @@ const AddExchange: React.FC<AddExchangeProps> = ({ onSave, onCancel, saving = fa
         </div>
       )}
 
+      {/* Prescription-driven defaults indicator */}
+      {formData.fillVolume > 0 && (
+        <div className="bg-[hsl(var(--mint))]/10 border border-[hsl(var(--mint))]/20 p-3 rounded-xl">
+          <p className="text-xs text-muted-foreground">
+            📋 <span className="font-semibold text-foreground">Rx defaults applied:</span>{' '}
+            Fill {formData.fillVolume}ml · {formData.solutionType}
+          </p>
+        </div>
+      )}
+
       {isLoadingReferenceData ? (
         <div className="rounded-xl border border-border bg-muted/40 p-3">
           <p className="text-sm text-muted-foreground">Loading recent exchange references…</p>
