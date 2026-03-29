@@ -1,208 +1,202 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Download, FileText, Calendar, Users, Droplets, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Download, FileText, Droplets, FlaskConical, AlertTriangle, Loader2 } from 'lucide-react';
 
-const ExportTools: React.FC = () => {
+interface ExportToolsProps {
+  patientId?: string;
+}
+
+const ExportTools: React.FC<ExportToolsProps> = ({ patientId }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isExporting, setIsExporting] = useState<string | null>(null);
 
-  const handleExport = async (type: string, description: string) => {
-    setIsExporting(type);
-    
-    // Simulate export process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // In a real app, this would generate and download the actual file
-    const filename = `${type}_export_${new Date().toISOString().split('T')[0]}.csv`;
-    
-    toast({
-      title: "Export Complete",
-      description: `${description} has been exported as ${filename}`
-    });
-    
-    setIsExporting(null);
+  const targetPatientId = patientId || user?.id;
+
+  const downloadCSV = (filename: string, headers: string[], rows: string[][]) => {
+    const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${(c ?? '').replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportExchangeLogs = async () => {
+    if (!targetPatientId) return;
+    setIsExporting('exchanges');
+    try {
+      const { data, error } = await supabase
+        .from('exchange_logs')
+        .select('*')
+        .eq('patient_id', targetPatientId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+
+      const headers = ['Date', 'Type', 'Solution', 'Fill (ml)', 'Drain (ml)', 'UF (ml)', 'BP Sys', 'BP Dia', 'Temp', 'Weight (kg)', 'Pain', 'Clarity', 'Symptoms', 'Notes'];
+      const rows = (data || []).map((r: any) => [
+        new Date(r.created_at).toLocaleString(),
+        r.exchange_type,
+        r.solution_type,
+        String(r.fill_volume_ml ?? ''),
+        String(r.drain_volume_ml ?? ''),
+        String(r.ultrafiltration_ml ?? ''),
+        String(r.blood_pressure_systolic ?? ''),
+        String(r.blood_pressure_diastolic ?? ''),
+        String(r.temperature ?? ''),
+        String(r.weight_after_kg ?? ''),
+        String(r.pain_level ?? ''),
+        r.drain_color ?? '',
+        (r.symptoms || []).join('; '),
+        r.notes ?? '',
+      ]);
+
+      downloadCSV(`exchange_logs_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+      toast({ title: 'Export complete', description: `${rows.length} exchange records exported.` });
+    } catch (err: any) {
+      toast({ title: 'Export failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsExporting(null);
+    }
+  };
+
+  const exportLabResults = async () => {
+    if (!targetPatientId) return;
+    setIsExporting('labs');
+    try {
+      const { data, error } = await supabase
+        .from('lab_results')
+        .select('*')
+        .eq('patient_id', targetPatientId)
+        .order('test_date', { ascending: false });
+      if (error) throw error;
+
+      const headers = ['Date', 'Type', 'Hemoglobin', 'Creatinine', 'BUN', 'Potassium', 'Sodium', 'Calcium', 'Phosphorus', 'Albumin', 'Kt/V', 'Notes'];
+      const rows = (data || []).map((r: any) => [
+        r.test_date,
+        r.test_type,
+        String(r.hemoglobin ?? ''),
+        String(r.creatinine ?? ''),
+        String(r.bun ?? ''),
+        String(r.potassium ?? ''),
+        String(r.sodium ?? ''),
+        String(r.calcium ?? ''),
+        String(r.phosphorus ?? ''),
+        String(r.albumin ?? ''),
+        String(r.kt_v ?? ''),
+        r.notes ?? '',
+      ]);
+
+      downloadCSV(`lab_results_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+      toast({ title: 'Export complete', description: `${rows.length} lab records exported.` });
+    } catch (err: any) {
+      toast({ title: 'Export failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsExporting(null);
+    }
+  };
+
+  const exportAlerts = async () => {
+    if (!targetPatientId) return;
+    setIsExporting('alerts');
+    try {
+      const { data, error } = await supabase
+        .from('clinical_alerts')
+        .select('*')
+        .eq('patient_id', targetPatientId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+
+      const headers = ['Date', 'Type', 'Severity', 'Title', 'Message', 'Acknowledged'];
+      const rows = (data || []).map((r: any) => [
+        new Date(r.created_at).toLocaleString(),
+        r.alert_type,
+        r.severity,
+        r.title,
+        r.message,
+        r.acknowledged ? 'Yes' : 'No',
+      ]);
+
+      downloadCSV(`clinical_alerts_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+      toast({ title: 'Export complete', description: `${rows.length} alert records exported.` });
+    } catch (err: any) {
+      toast({ title: 'Export failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsExporting(null);
+    }
   };
 
   const exportOptions = [
     {
-      id: 'patient_data',
-      title: 'Patient Data Export',
-      description: 'Complete patient information including demographics, treatment plans, and contact details',
-      icon: <Users className="w-5 h-5" />,
-      badge: 'Demographics',
-      color: 'bg-blue-100 text-blue-800'
+      id: 'exchanges',
+      title: 'Exchange Logs',
+      description: 'Volumes, UF, vitals, symptoms for all recorded exchanges',
+      icon: <Droplets className="w-5 h-5 text-primary" />,
+      badge: 'CSV',
+      action: exportExchangeLogs,
     },
     {
-      id: 'exchange_logs',
-      title: 'Exchange Logs Export',
-      description: 'Detailed dialysis exchange records including volumes, UF rates, and fluid clarity',
-      icon: <Droplets className="w-5 h-5" />,
-      badge: 'Exchanges',
-      color: 'bg-green-100 text-green-800'
+      id: 'labs',
+      title: 'Lab Results',
+      description: 'Blood chemistry, hematology, hormones, and adequacy metrics',
+      icon: <FlaskConical className="w-5 h-5 text-[hsl(var(--lavender))]" />,
+      badge: 'CSV',
+      action: exportLabResults,
     },
     {
-      id: 'lab_results',
-      title: 'Laboratory Results Export',
-      description: 'Comprehensive lab data including blood chemistry, hematology, and hormone levels',
-      icon: <FileText className="w-5 h-5" />,
-      badge: 'Lab Data',
-      color: 'bg-purple-100 text-purple-800'
+      id: 'alerts',
+      title: 'Clinical Alerts',
+      description: 'All clinical alerts with severity, status, and details',
+      icon: <AlertTriangle className="w-5 h-5 text-destructive" />,
+      badge: 'CSV',
+      action: exportAlerts,
     },
-    {
-      id: 'complications',
-      title: 'Complications & Alerts Export',
-      description: 'Medical complications, alerts, and adverse events with severity levels',
-      icon: <AlertTriangle className="w-5 h-5" />,
-      badge: 'Clinical',
-      color: 'bg-red-100 text-red-800'
-    },
-    {
-      id: 'adherence_report',
-      title: 'Adherence Report Export',
-      description: 'Patient compliance metrics, missed exchanges, and treatment adherence statistics',
-      icon: <Calendar className="w-5 h-5" />,
-      badge: 'Adherence',
-      color: 'bg-yellow-100 text-yellow-800'
-    },
-    {
-      id: 'monthly_summary',
-      title: 'Monthly Summary Report',
-      description: 'Comprehensive monthly report including all patient metrics and clinical outcomes',
-      icon: <FileText className="w-5 h-5" />,
-      badge: 'Summary',
-      color: 'bg-indigo-100 text-indigo-800'
-    }
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold">Export Tools</h2>
-        <p className="text-gray-600">Export patient data and reports for analysis and documentation</p>
+        <h2 className="text-lg font-bold text-foreground">📥 Export Data</h2>
+        <p className="text-xs text-muted-foreground">Download clinical data as CSV for analysis or doctor visits</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {exportOptions.map((option) => (
-          <Card key={option.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
+          <Card key={option.id} className="rounded-xl border-border/50 hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-2">
                   {option.icon}
-                  <CardTitle className="text-lg">{option.title}</CardTitle>
+                  <CardTitle className="text-sm font-bold">{option.title}</CardTitle>
                 </div>
-                <Badge className={option.color}>
-                  {option.badge}
-                </Badge>
+                <Badge variant="secondary" className="text-[10px]">{option.badge}</Badge>
               </div>
-              <CardDescription>{option.description}</CardDescription>
+              <CardDescription className="text-xs">{option.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
-                onClick={() => handleExport(option.id, option.title)}
+              <Button
+                onClick={option.action}
                 disabled={isExporting === option.id}
-                className="w-full"
+                className="w-full rounded-xl"
+                size="sm"
               >
                 {isExporting === option.id ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Exporting...
-                  </>
+                  <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Exporting…</>
                 ) : (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Export Data
-                  </>
+                  <><Download className="w-3.5 h-3.5 mr-1.5" /> Export</>
                 )}
               </Button>
             </CardContent>
           </Card>
         ))}
       </div>
-
-      {/* Quick Export Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Export Options</CardTitle>
-          <CardDescription>Common export formats for immediate use</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button 
-              variant="outline" 
-              onClick={() => handleExport('all_patients', 'All Patient Data')}
-              disabled={isExporting === 'all_patients'}
-            >
-              {isExporting === 'all_patients' ? 'Exporting...' : 'All Patients (CSV)'}
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => handleExport('recent_labs', 'Recent Lab Results')}
-              disabled={isExporting === 'recent_labs'}
-            >
-              {isExporting === 'recent_labs' ? 'Exporting...' : 'Recent Labs (CSV)'}
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => handleExport('active_alerts', 'Active Alerts')}
-              disabled={isExporting === 'active_alerts'}
-            >
-              {isExporting === 'active_alerts' ? 'Exporting...' : 'Active Alerts (PDF)'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Export Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Export Settings</CardTitle>
-          <CardDescription>Configure export preferences and formatting options</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Date Range</label>
-                <select className="w-full p-2 border rounded-md">
-                  <option>Last 30 days</option>
-                  <option>Last 3 months</option>
-                  <option>Last 6 months</option>
-                  <option>Last year</option>
-                  <option>All time</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">File Format</label>
-                <select className="w-full p-2 border rounded-md">
-                  <option>CSV (Comma Separated)</option>
-                  <option>Excel (.xlsx)</option>
-                  <option>PDF Report</option>
-                  <option>JSON Data</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" defaultChecked />
-                <span className="text-sm">Include patient identifiers</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" defaultChecked />
-                <span className="text-sm">Include lab reference ranges</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" />
-                <span className="text-sm">Anonymize patient data</span>
-              </label>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

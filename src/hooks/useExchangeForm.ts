@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePatient } from '@/contexts/PatientContext';
+import { usePrescription } from '@/hooks/usePrescription';
 import { calculateUF } from '@/utils/ufCalculations';
 
 export interface AdditiveData {
@@ -32,15 +33,21 @@ export interface ExchangeData {
 export const useExchangeForm = () => {
   const { user, loading: authLoading } = useAuth();
   const { exchangeLogs } = usePatient();
+  const { fillVolume: rxFillVolume, dialysateType, glucoseConcentration, hasPrescription } = usePrescription(user?.id);
+
+  // Derive default solution type from prescription
+  const defaultSolutionType = hasPrescription && dialysateType && glucoseConcentration
+    ? `${dialysateType} ${glucoseConcentration}`
+    : 'Dianeal 1.5%';
 
   const [formData, setFormData] = useState<ExchangeData>({
     time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
     type: 'morning',
     drainVolume: null as unknown as number,
-    fillVolume: 2000,
+    fillVolume: rxFillVolume,
     ultrafiltration: 0,
     weightAfter: null,
-    solutionType: 'Dianeal 1.5%',
+    solutionType: defaultSolutionType,
     clarity: 'clear',
     color: 'normal',
     pain: 0,
@@ -51,6 +58,17 @@ export const useExchangeForm = () => {
     temperature: null,
     additive: { additiveType: 'none', drugName: '', dose: '', reason: '' },
   });
+
+  // Update form defaults when prescription loads
+  useEffect(() => {
+    if (hasPrescription) {
+      setFormData(prev => ({
+        ...prev,
+        fillVolume: prev.fillVolume === 2000 ? rxFillVolume : prev.fillVolume,
+        solutionType: prev.solutionType === 'Dianeal 1.5%' ? defaultSolutionType : prev.solutionType,
+      }));
+    }
+  }, [hasPrescription, rxFillVolume, defaultSolutionType]);
 
   const [previousFillVolume, setPreviousFillVolume] = useState<number | null>(null);
   const [recentAdditive, setRecentAdditive] = useState<AdditiveData | null>(null);
