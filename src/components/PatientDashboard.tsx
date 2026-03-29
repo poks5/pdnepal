@@ -278,6 +278,7 @@ const PatientDashboard: React.FC = () => {
     { value: 'analytics', icon: BarChart, label: 'Analytics' },
     { value: 'lab-data', icon: FlaskConical, label: 'Labs' },
     { value: 'learning', icon: BookOpen, label: t('learningCenter') },
+    { value: 'export', icon: Download, label: 'Export' },
     { value: 'settings', icon: Settings, label: 'Settings' },
   ];
 
