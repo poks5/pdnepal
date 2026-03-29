@@ -1,4 +1,5 @@
 import React, { useState, createContext, useContext } from 'react';
+import OfflineBanner from '@/components/OfflineBanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -106,6 +107,7 @@ const Layout: React.FC<LayoutProps> = ({ children, viewRole }) => {
   return (
     <NavContext.Provider value={{ activeTab, setActiveTab, badgeCounts, setBadgeCounts }}>
       <div className="min-h-screen bg-background">
+        <OfflineBanner />
         {/* Header */}
         <header className="sticky top-0 z-50 bg-card/85 backdrop-blur-2xl border-b border-border/30 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
