@@ -6,6 +6,8 @@ import WeightUFTracker from './WeightUFTracker';
 import HealthTips from './HealthTips';
 import QuickActions from '../QuickActions';
 import PatientTrends from './PatientTrends';
+import AchievementsBadges from './AchievementsBadges';
+import AIWeeklySummary from './AIWeeklySummary';
 import { DailyExchangeLog } from '@/types/patient';
 import { useAuth } from '@/contexts/AuthContext';
 import TodayProgress from './TodayProgress';
@@ -88,6 +90,11 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       />
 
       <QuickActions />
+
+      <AIWeeklySummary allExchangeLogs={allExchangeLogs} />
+
+      <AchievementsBadges allExchangeLogs={allExchangeLogs} />
+
       <HealthTips />
       <WeightUFTracker />
 
