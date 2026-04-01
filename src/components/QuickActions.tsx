@@ -103,7 +103,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onVoiceNote, onBarcodeScann
         <DialogContent><BarcodeScanner onScan={handleBarcodeScan} onCancel={() => setShowBarcodeScanner(false)} /></DialogContent>
       </Dialog>
       <Dialog open={showReminders} onOpenChange={setShowReminders}>
-        <DialogContent className="max-w-2xl"><ReminderSystem /></DialogContent>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto"><SmartReminders /></DialogContent>
       </Dialog>
     </div>
   );
