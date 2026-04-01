@@ -4,7 +4,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Mic, Camera, Clock, Wifi, WifiOff, Sparkles, Bell, Scan } from 'lucide-react';
 import VoiceNote from './VoiceNote';
 import BarcodeScanner from './BarcodeScanner';
-import ReminderSystem from './ReminderSystem';
+import SmartReminders from './SmartReminders';
 import { useOfflineMode } from '@/hooks/useOfflineMode';
 import { useToast } from '@/hooks/use-toast';
 
