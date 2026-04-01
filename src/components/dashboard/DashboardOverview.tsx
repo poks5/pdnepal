@@ -90,6 +90,11 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       />
 
       <QuickActions />
+
+      <AIWeeklySummary allExchangeLogs={allExchangeLogs} />
+
+      <AchievementsBadges allExchangeLogs={allExchangeLogs} />
+
       <HealthTips />
       <WeightUFTracker />
 
