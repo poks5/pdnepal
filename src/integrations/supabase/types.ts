@@ -758,6 +758,42 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_achievements: {
+        Row: {
+          achievement_type: string
+          created_at: string
+          description: string | null
+          earned_at: string
+          icon: string | null
+          id: string
+          metadata: Json | null
+          patient_id: string
+          title: string
+        }
+        Insert: {
+          achievement_type?: string
+          created_at?: string
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          metadata?: Json | null
+          patient_id: string
+          title: string
+        }
+        Update: {
+          achievement_type?: string
+          created_at?: string
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          metadata?: Json | null
+          patient_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       pd_catheters: {
         Row: {
           catheter_brand: string | null
@@ -1349,6 +1385,48 @@ export type Database = {
           record_id?: string
           table_name?: string
           version_number?: number
+        }
+        Relationships: []
+      }
+      reminder_settings: {
+        Row: {
+          created_at: string
+          days_of_week: string[]
+          enabled: boolean
+          id: string
+          is_auto_generated: boolean
+          patient_id: string
+          reminder_time: string
+          reminder_type: string
+          sound_enabled: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          days_of_week?: string[]
+          enabled?: boolean
+          id?: string
+          is_auto_generated?: boolean
+          patient_id: string
+          reminder_time: string
+          reminder_type?: string
+          sound_enabled?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          days_of_week?: string[]
+          enabled?: boolean
+          id?: string
+          is_auto_generated?: boolean
+          patient_id?: string
+          reminder_time?: string
+          reminder_type?: string
+          sound_enabled?: boolean
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
