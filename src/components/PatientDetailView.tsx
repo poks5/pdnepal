@@ -9,7 +9,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, LineChart, Line, ReferenceLine } from 'recharts';
 import {
   ArrowLeft, AlertTriangle, FileText, TrendingUp, Droplets,
-  Plus, Loader2, CheckCircle2, Bell, Scale, Activity, Heart,
+  Plus, Loader2, CheckCircle2, Bell, Scale, Activity, Heart, Calculator,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +17,8 @@ import { useToast } from '@/hooks/use-toast';
 import LabDataManagement from '@/components/LabDataManagement';
 import PDProgressIndicator from '@/components/dashboard/PDProgressIndicator';
 import { usePrescription } from '@/hooks/usePrescription';
+import PETTestEntry from '@/components/clinical/PETTestEntry';
+import KtVCalculator from '@/components/clinical/KtVCalculator';
 
 interface PatientDetailViewProps {
   patient: any;
@@ -290,6 +292,9 @@ const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }
             </TabsTrigger>
             <TabsTrigger value="labs" className="rounded-xl text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <FileText className="w-3.5 h-3.5 mr-1.5" />Labs
+            </TabsTrigger>
+            <TabsTrigger value="adequacy" className="rounded-xl text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Calculator className="w-3.5 h-3.5 mr-1.5" />PET/Kt/V
             </TabsTrigger>
           </TabsList>
         </div>
@@ -571,6 +576,14 @@ const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* PET/Kt/V ADEQUACY */}
+        <TabsContent value="adequacy">
+          <div className="space-y-6">
+            <PETTestEntry patientId={patient.id} />
+            <KtVCalculator patientId={patient.id} />
+          </div>
         </TabsContent>
       </Tabs>
 

@@ -14,6 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      adequacy_calculations: {
+        Row: {
+          age_years: number | null
+          assessment: string | null
+          created_at: string
+          created_by: string
+          daily_urine_volume: number | null
+          dialysate_creatinine: number | null
+          dialysate_urea: number | null
+          dialysate_volume_24h: number | null
+          gender: string | null
+          height_cm: number | null
+          id: string
+          notes: string | null
+          patient_id: string
+          peritoneal_kt_v: number | null
+          residual_renal_kt_v: number | null
+          serum_creatinine: number | null
+          serum_urea: number | null
+          test_date: string
+          total_body_water: number | null
+          updated_at: string
+          urine_creatinine: number | null
+          urine_urea: number | null
+          weekly_creatinine_clearance: number | null
+          weekly_kt_v: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          age_years?: number | null
+          assessment?: string | null
+          created_at?: string
+          created_by: string
+          daily_urine_volume?: number | null
+          dialysate_creatinine?: number | null
+          dialysate_urea?: number | null
+          dialysate_volume_24h?: number | null
+          gender?: string | null
+          height_cm?: number | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          peritoneal_kt_v?: number | null
+          residual_renal_kt_v?: number | null
+          serum_creatinine?: number | null
+          serum_urea?: number | null
+          test_date: string
+          total_body_water?: number | null
+          updated_at?: string
+          urine_creatinine?: number | null
+          urine_urea?: number | null
+          weekly_creatinine_clearance?: number | null
+          weekly_kt_v?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          age_years?: number | null
+          assessment?: string | null
+          created_at?: string
+          created_by?: string
+          daily_urine_volume?: number | null
+          dialysate_creatinine?: number | null
+          dialysate_urea?: number | null
+          dialysate_volume_24h?: number | null
+          gender?: string | null
+          height_cm?: number | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          peritoneal_kt_v?: number | null
+          residual_renal_kt_v?: number | null
+          serum_creatinine?: number | null
+          serum_urea?: number | null
+          test_date?: string
+          total_body_water?: number | null
+          updated_at?: string
+          urine_creatinine?: number | null
+          urine_urea?: number | null
+          weekly_creatinine_clearance?: number | null
+          weekly_kt_v?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
@@ -1253,6 +1337,72 @@ export type Database = {
           route?: string | null
           switch_to_hd?: boolean | null
           symptoms_resolved?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pet_results: {
+        Row: {
+          created_at: string
+          created_by: string
+          dialysate_creatinine_0h: number | null
+          dialysate_creatinine_2h: number | null
+          dialysate_creatinine_4h: number | null
+          dialysate_glucose_0h: number | null
+          dialysate_glucose_2h: number | null
+          dialysate_glucose_4h: number | null
+          dp_creatinine_ratio: number | null
+          dp_glucose_ratio: number | null
+          drain_volume_4h: number | null
+          id: string
+          infused_volume: number | null
+          notes: string | null
+          patient_id: string
+          plasma_creatinine: number | null
+          test_date: string
+          transport_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          dialysate_creatinine_0h?: number | null
+          dialysate_creatinine_2h?: number | null
+          dialysate_creatinine_4h?: number | null
+          dialysate_glucose_0h?: number | null
+          dialysate_glucose_2h?: number | null
+          dialysate_glucose_4h?: number | null
+          dp_creatinine_ratio?: number | null
+          dp_glucose_ratio?: number | null
+          drain_volume_4h?: number | null
+          id?: string
+          infused_volume?: number | null
+          notes?: string | null
+          patient_id: string
+          plasma_creatinine?: number | null
+          test_date: string
+          transport_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          dialysate_creatinine_0h?: number | null
+          dialysate_creatinine_2h?: number | null
+          dialysate_creatinine_4h?: number | null
+          dialysate_glucose_0h?: number | null
+          dialysate_glucose_2h?: number | null
+          dialysate_glucose_4h?: number | null
+          dp_creatinine_ratio?: number | null
+          dp_glucose_ratio?: number | null
+          drain_volume_4h?: number | null
+          id?: string
+          infused_volume?: number | null
+          notes?: string | null
+          patient_id?: string
+          plasma_creatinine?: number | null
+          test_date?: string
+          transport_type?: string | null
           updated_at?: string
         }
         Relationships: []
