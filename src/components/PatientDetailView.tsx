@@ -293,6 +293,9 @@ const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }
             <TabsTrigger value="labs" className="rounded-xl text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <FileText className="w-3.5 h-3.5 mr-1.5" />Labs
             </TabsTrigger>
+            <TabsTrigger value="adequacy" className="rounded-xl text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Calculator className="w-3.5 h-3.5 mr-1.5" />PET/Kt/V
+            </TabsTrigger>
           </TabsList>
         </div>
 
