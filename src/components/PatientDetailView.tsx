@@ -17,6 +17,8 @@ import { useToast } from '@/hooks/use-toast';
 import LabDataManagement from '@/components/LabDataManagement';
 import PDProgressIndicator from '@/components/dashboard/PDProgressIndicator';
 import { usePrescription } from '@/hooks/usePrescription';
+import PETTestEntry from '@/components/clinical/PETTestEntry';
+import KtVCalculator from '@/components/clinical/KtVCalculator';
 
 interface PatientDetailViewProps {
   patient: any;
