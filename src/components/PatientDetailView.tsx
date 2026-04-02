@@ -9,7 +9,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, LineChart, Line, ReferenceLine } from 'recharts';
 import {
   ArrowLeft, AlertTriangle, FileText, TrendingUp, Droplets,
-  Plus, Loader2, CheckCircle2, Bell, Scale, Activity, Heart,
+  Plus, Loader2, CheckCircle2, Bell, Scale, Activity, Heart, Calculator,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
