@@ -577,6 +577,14 @@ const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, onBack }
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* PET/Kt/V ADEQUACY */}
+        <TabsContent value="adequacy">
+          <div className="space-y-6">
+            <PETTestEntry patientId={patient.id} />
+            <KtVCalculator patientId={patient.id} />
+          </div>
+        </TabsContent>
       </Tabs>
 
       <Dialog open={showLabDialog} onOpenChange={setShowLabDialog}>
