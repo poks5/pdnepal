@@ -62,8 +62,9 @@ export function usePrescription(patientId: string | undefined) {
     fetchPrescription();
 
     // Realtime subscription for prescription changes
+    const channelName = `prescription-${patientId}-${Date.now()}`;
     const channel = supabase
-      .channel(`prescription-${patientId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
