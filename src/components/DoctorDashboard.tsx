@@ -278,7 +278,8 @@ const DoctorDashboard: React.FC = () => {
       <DashboardCards patientCount={patients.length} totalAlerts={totalAlerts} totalMissedExchanges={totalMissedExchanges} avgAdherence={avgAdherence} criticalCount={criticalCount} pendingLabCount={pendingLabCount} />
 
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v !== 'more') setMoreView(null); }} className="space-y-4 sm:space-y-6">
-        <div className="overflow-x-auto -mx-4 px-4 no-scrollbar">
+        {/* Tab strip – hidden on mobile, bottom nav handles it */}
+        <div className="hidden md:block overflow-x-auto -mx-4 px-4 no-scrollbar">
           <TabsList className="inline-flex w-max gap-1 bg-muted/50 p-1 rounded-2xl">
             {tabItems.map(({ value, icon: Icon, label, badge }) => (
               <TabsTrigger key={value} value={value} className="relative flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap">

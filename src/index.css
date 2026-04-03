@@ -252,4 +252,24 @@
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
+
+  /* Page transition */
+  .page-transition {
+    animation: pageSlideUp 0.25s ease-out;
+  }
+
+  @keyframes pageSlideUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Native-style pressed state */
+  .native-press {
+    @apply transition-transform duration-100 active:scale-[0.97];
+  }
+
+  /* iOS-style card */
+  .native-card {
+    @apply bg-card rounded-2xl border border-border/30 shadow-sm;
+  }
 }
