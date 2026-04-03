@@ -156,6 +156,19 @@
       font-size: 16px !important;
     }
   }
+
+  /* Native-app feel: prevent text selection on interactive elements */
+  button, [role="button"], nav, .tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+
+  /* Smoother scroll like native apps */
+  * {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @layer utilities {
