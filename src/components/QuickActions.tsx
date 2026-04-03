@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Mic, Camera, Clock, Wifi, WifiOff, Sparkles, Bell, Scan } from 'lucide-react';
+import { Mic, Bell, Scan, Wifi, WifiOff } from 'lucide-react';
 import VoiceNote from './VoiceNote';
 import BarcodeScanner from './BarcodeScanner';
 import SmartReminders from './SmartReminders';
@@ -33,66 +32,41 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onVoiceNote, onBarcodeScann
   };
 
   const actions = [
-    {
-      icon: Mic,
-      label: 'Voice Note',
-      emoji: '🎙️',
-      onClick: () => setShowVoiceNote(true),
-      gradient: 'from-primary/10 to-[hsl(var(--lavender))]/10',
-      iconColor: 'text-primary',
-    },
-    {
-      icon: Scan,
-      label: 'Scan Bag',
-      emoji: '📷',
-      onClick: () => setShowBarcodeScanner(true),
-      gradient: 'from-[hsl(var(--mint))]/10 to-accent/10',
-      iconColor: 'text-[hsl(var(--mint))]',
-    },
-    {
-      icon: Bell,
-      label: 'Reminders',
-      emoji: '⏰',
-      onClick: () => setShowReminders(true),
-      gradient: 'from-[hsl(var(--coral))]/10 to-[hsl(var(--peach))]/10',
-      iconColor: 'text-[hsl(var(--coral))]',
-    },
+    { icon: Mic, label: 'Voice', emoji: '🎙️', onClick: () => setShowVoiceNote(true) },
+    { icon: Scan, label: 'Scan', emoji: '📷', onClick: () => setShowBarcodeScanner(true) },
+    { icon: Bell, label: 'Reminders', emoji: '⏰', onClick: () => setShowReminders(true) },
   ];
 
   return (
-    <div className="space-y-3">
-      {/* Online status - more subtle */}
-      <div className="flex items-center gap-1.5 px-1">
+    <div className="space-y-2">
+      {/* Compact status */}
+      <div className="flex items-center gap-1.5 px-0.5">
         {isOnline
-          ? <><Wifi className="w-3 h-3 text-[hsl(var(--mint))]" /><span className="text-[10px] font-medium text-muted-foreground">Connected</span></>
-          : <><WifiOff className="w-3 h-3 text-destructive" /><span className="text-[10px] font-medium text-muted-foreground">Offline — saved locally</span></>
+          ? <><Wifi className="w-2.5 h-2.5 text-[hsl(var(--mint))]" /><span className="text-[10px] text-muted-foreground">Connected</span></>
+          : <><WifiOff className="w-2.5 h-2.5 text-destructive" /><span className="text-[10px] text-muted-foreground">Offline</span></>
         }
         {hasQueuedActions && (
-          <span className="text-[10px] font-semibold text-[hsl(var(--coral))] ml-auto">
-            {queuedActions.length} pending
-          </span>
+          <span className="text-[10px] font-semibold text-[hsl(var(--coral))] ml-auto">{queuedActions.length} pending</span>
         )}
       </div>
 
-      {/* Action cards */}
-      <div className="grid grid-cols-3 gap-2.5">
-        {actions.map(({ icon: Icon, label, emoji, onClick, gradient, iconColor }) => (
+      {/* Action row – compact native style */}
+      <div className="grid grid-cols-3 gap-2">
+        {actions.map(({ label, emoji, onClick }) => (
           <button
             key={label}
             onClick={onClick}
-            className={`flex flex-col items-center justify-center gap-2 p-4 sm:p-5 rounded-2xl bg-gradient-to-br ${gradient} border border-border/30 shadow-sm hover:shadow-md active:scale-95 transition-all`}
+            className="flex flex-col items-center justify-center gap-1 py-3 rounded-xl native-card native-press"
           >
-            <span className="text-2xl">{emoji}</span>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground">{label}</span>
+            <span className="text-xl">{emoji}</span>
+            <span className="text-[10px] font-semibold text-muted-foreground">{label}</span>
           </button>
         ))}
       </div>
 
       {!isOnline && (
-        <div className="p-3.5 bg-[hsl(var(--peach))]/10 border border-[hsl(var(--coral))]/20 rounded-2xl">
-          <p className="text-xs text-[hsl(var(--coral))] font-medium">
-            📡 You're offline. Data will sync when connection is restored.
-          </p>
+        <div className="p-2.5 bg-[hsl(var(--peach))]/10 border border-[hsl(var(--coral))]/20 rounded-xl">
+          <p className="text-[11px] text-[hsl(var(--coral))] font-medium">📡 Offline — data syncs when reconnected</p>
         </div>
       )}
 
