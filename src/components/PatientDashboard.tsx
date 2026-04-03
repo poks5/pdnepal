@@ -383,13 +383,9 @@ const PatientDashboard: React.FC = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="px-1">
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground">{t('patient_dashboard')}</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">{t('track_dialysis_journey')}</p>
-      </div>
-
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v !== 'settings') setSettingsView(null); }} className="space-y-4 sm:space-y-6">
-        <div className="overflow-x-auto -mx-4 px-4 no-scrollbar">
+        {/* Tab strip – hidden on mobile (bottom nav handles it), visible on desktop */}
+        <div className="hidden md:block overflow-x-auto -mx-4 px-4 no-scrollbar">
           <TabsList className="inline-flex w-max gap-1 bg-muted/50 p-1 rounded-2xl">
             {mainTabs.map(({ value, icon: Icon, label }) => (
               <TabsTrigger key={value} value={value} className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap">
