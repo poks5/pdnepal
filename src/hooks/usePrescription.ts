@@ -62,11 +62,12 @@ export function usePrescription(patientId: string | undefined) {
     fetchPrescription();
 
     // Realtime subscription for prescription changes
-    const channelName = `prescription-${patientId}-${Date.now()}`;
-    const channel = supabase
-      .channel(channelName)
+    // Use random + timestamp to guarantee uniqueness even across StrictMode double-mount
+    const channelName = `prescription-${patientId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const channel = supabase.channel(channelName);
+    channel
       .on(
-        'postgres_changes',
+        'postgres_changes' as any,
         {
           event: '*',
           schema: 'public',
