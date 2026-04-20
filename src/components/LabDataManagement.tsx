@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import LabDataEntry from './LabDataEntry';
 import LabHistory from './LabHistory';
+import LabTrends from './analytics/LabTrends';
 import { LabTest } from '@/types/labData';
 
 interface LabDataManagementProps {
@@ -112,7 +113,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
           };
         const { error } = await supabase
           .from('lab_results')
-          .update(updatePayload)
+          .update(updatePayload as any)
           .eq('id', editingLab.id);
         if (error) throw error;
         toast({ title: t('success'), description: t('labDataUpdated') });
@@ -238,10 +239,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
             <LabHistory labData={labData} onEdit={handleEditLab} />
           </TabsContent>
           <TabsContent value="trends">
-            <div className="text-center py-8">
-              <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">{t('trendAnalysisComingSoon')}</p>
-            </div>
+            <LabTrends labData={labData} />
           </TabsContent>
         </Tabs>
       )}
