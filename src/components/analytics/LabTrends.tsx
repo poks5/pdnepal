@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceArea, ReferenceLine, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceArea, ReferenceLine } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle2, FlaskConical } from 'lucide-react';
 import { LabTest } from '@/types/labData';
 
