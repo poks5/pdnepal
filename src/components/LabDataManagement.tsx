@@ -113,7 +113,7 @@ const LabDataManagement: React.FC<LabDataManagementProps> = ({ patientId }) => {
           };
         const { error } = await supabase
           .from('lab_results')
-          .update(updatePayload)
+          .update(updatePayload as any)
           .eq('id', editingLab.id);
         if (error) throw error;
         toast({ title: t('success'), description: t('labDataUpdated') });
