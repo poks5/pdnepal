@@ -8,3 +8,4 @@ PDsathi helps people on peritoneal dialysis (PD) record daily CAPD/APD exchanges
 
 - [Home](/): Overview of PDsathi, sign in, and app introduction.
 - [Install PDsathi](/install): How to install the PDsathi PWA on Android and iOS devices.
+- [CAPD vs APD Guide](/guides/capd-vs-apd): Detailed comparison of manual (CAPD) and automated (APD) peritoneal dialysis methods, lifestyle differences, and suitability guidance.
