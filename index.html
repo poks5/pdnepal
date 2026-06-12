@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>PDsathi - Peritoneal Dialysis Management System</title>
-    <meta name="description" content="Comprehensive peritoneal dialysis management system for patients, doctors, and caregivers. Track exchanges, monitor health data, and manage PD treatment effectively.">
+    <title>PDsathi — Peritoneal Dialysis Companion for Patients & Care Teams</title>
+    <meta name="description" content="Bilingual PD companion app: log CAPD/APD exchanges, track labs and ultrafiltration, and stay connected with your nephrology care team.">
     <meta name="author" content="PDsathi Team" />
     <meta name="keywords" content="peritoneal dialysis, PD management, medical app, nephrology, patient care" />
     <link rel="canonical" href="https://pdnepal.lovable.app" />
@@ -22,14 +22,16 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://pdnepal.lovable.app" />
-    <meta property="og:title" content="PDsathi - Peritoneal Dialysis Management System">
-    <meta property="og:description" content="Comprehensive peritoneal dialysis management system for patients, doctors, and caregivers. Track exchanges, monitor health data, and manage PD treatment effectively.">
+    <meta property="og:title" content="PDsathi — Peritoneal Dialysis Companion">
+    <meta property="og:description" content="Log CAPD/APD exchanges, track labs and UF, and coordinate with your PD care team.">
     <meta property="og:image" content="https://pdnepal.lovable.app/pwa-512.png">
+    <meta property="og:site_name" content="PDsathi">
+
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="PDsathi - Peritoneal Dialysis Management System">
-    <meta name="twitter:description" content="Comprehensive peritoneal dialysis management system for patients, doctors, and caregivers. Track exchanges, monitor health data, and manage PD treatment effectively.">
+    <meta name="twitter:title" content="PDsathi — Peritoneal Dialysis Companion">
+    <meta name="twitter:description" content="Log CAPD/APD exchanges, track labs and UF, and coordinate with your PD care team.">
     <meta name="twitter:image" content="https://pdnepal.lovable.app/pwa-512.png">
 
     <!-- Additional SEO -->
@@ -41,6 +43,25 @@
 
   <body>
     <div id="root"></div>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "PDsathi",
+          "url": "https://pdnepal.lovable.app",
+          "logo": "https://pdnepal.lovable.app/pwa-512.png"
+        },
+        {
+          "@type": "WebSite",
+          "name": "PDsathi",
+          "url": "https://pdnepal.lovable.app",
+          "description": "Bilingual peritoneal dialysis companion app for patients, caregivers, and clinicians."
+        }
+      ]
+    }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
