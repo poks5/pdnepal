@@ -10,6 +10,7 @@ import AppVersionBadge from "@/components/AppVersionBadge";
 import Index from "./pages/Index";
 import Install from "./pages/Install";
 import ResetPassword from "./pages/ResetPassword";
+import CAPDvsAPD from "./pages/Guides/CAPDvsAPD";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
