@@ -1,0 +1,10 @@
+# PDsathi
+
+> PDsathi is a bilingual (English/Nepali) peritoneal dialysis companion app for patients, caregivers, and clinicians to log exchanges, track labs, and coordinate care.
+
+PDsathi helps people on peritoneal dialysis (PD) record daily CAPD/APD exchanges, monitor ultrafiltration and vitals, capture lab results, and stay connected with their nephrologist and care team. It is delivered as an installable Progressive Web App.
+
+## Pages
+
+- [Home](/): Overview of PDsathi, sign in, and app introduction.
+- [Install PDsathi](/install): How to install the PDsathi PWA on Android and iOS devices.
