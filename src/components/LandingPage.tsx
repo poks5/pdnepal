@@ -83,7 +83,7 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
           <div>
-            <h1 className="text-4xl sm:text-5xl font-black text-foreground tracking-tight">PD<span className="text-primary">sathi</span></h1>
+            <h1 className="text-4xl sm:text-5xl font-black text-foreground tracking-tight">PD<span className="text-primary">sathi</span> <span className="block text-base sm:text-lg font-semibold text-muted-foreground mt-1">{t('appTagline') || 'Your Peritoneal Dialysis Companion'}</span></h1>
             <p className="text-muted-foreground text-sm sm:text-base mt-1 font-medium">{t('appTagline')}</p>
             <p className="text-xs text-muted-foreground/70 mt-1.5 italic">{t('appMotivation')}</p>
           </div>
