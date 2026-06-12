@@ -33,6 +33,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/install" element={<Install />} />
+              <Route path="/guides/capd-vs-apd" element={<CAPDvsAPD />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
