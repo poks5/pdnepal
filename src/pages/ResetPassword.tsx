@@ -6,8 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSEO } from '@/hooks/useSEO';
 
 const ResetPassword: React.FC = () => {
+  useSEO({
+    title: 'Reset Your PDsathi Password',
+    description: 'Securely set a new password for your PDsathi account to continue tracking your peritoneal dialysis care.',
+    path: '/reset-password',
+  });
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);

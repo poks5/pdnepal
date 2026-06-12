@@ -83,7 +83,7 @@ const RegisterForm: React.FC<Props> = ({ onBack }) => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <button type="button" onClick={() => setStep('role')} className="text-muted-foreground hover:text-foreground">
+                  <button type="button" onClick={() => setStep('role')} aria-label="Go back to role selection" className="text-muted-foreground hover:text-foreground">
                     <ArrowLeft className="w-5 h-5" />
                   </button>
                   <span className="text-sm font-medium text-muted-foreground capitalize">
