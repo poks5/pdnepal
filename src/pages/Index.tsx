@@ -4,6 +4,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ExchangePlanProvider } from '@/contexts/ExchangePlanContext';
 import { PatientProvider } from '@/contexts/PatientContext';
 import LandingPage from '@/components/LandingPage';
+import { useSEO } from '@/hooks/useSEO';
 import Layout from '@/components/Layout';
 import PatientDashboard from '@/components/PatientDashboard';
 import DoctorDashboard from '@/components/DoctorDashboard';
@@ -13,6 +14,11 @@ import AdminDashboard from '@/components/AdminDashboard';
 import RoleSwitcher from '@/components/RoleSwitcher';
 
 const AppContent: React.FC = () => {
+  useSEO({
+    title: 'PDsathi — Peritoneal Dialysis Companion for Patients & Care Teams',
+    description: 'Bilingual PD companion app: log CAPD/APD exchanges, track labs and ultrafiltration, and stay connected with your nephrology care team.',
+    path: '/',
+  });
   const { user, isAuthenticated, loading } = useAuth();
   const [viewRole, setViewRole] = useState<UserRole | null>(null);
 

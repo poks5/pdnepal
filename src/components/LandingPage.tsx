@@ -83,7 +83,7 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
           <div>
-            <h1 className="text-4xl sm:text-5xl font-black text-foreground tracking-tight">PD<span className="text-primary">sathi</span></h1>
+            <h1 className="text-4xl sm:text-5xl font-black text-foreground tracking-tight">PD<span className="text-primary">sathi</span> <span className="block text-base sm:text-lg font-semibold text-muted-foreground mt-1">{t('appTagline') || 'Your Peritoneal Dialysis Companion'}</span></h1>
             <p className="text-muted-foreground text-sm sm:text-base mt-1 font-medium">{t('appTagline')}</p>
             <p className="text-xs text-muted-foreground/70 mt-1.5 italic">{t('appMotivation')}</p>
           </div>
@@ -164,12 +164,12 @@ const LandingPage: React.FC = () => {
         </Card>
 
         {/* About Link */}
-        <a href={ABOUT_URL} target="_blank" rel="noopener noreferrer" className="block">
+        <a href={ABOUT_URL} target="_blank" rel="noopener noreferrer" aria-label="Learn how PDsathi peritoneal dialysis tracking works" className="block">
           <Card className="shadow-lg border-border/40 bg-gradient-to-r from-primary/5 via-card to-[hsl(var(--mint))]/5 rounded-3xl hover:shadow-xl transition-shadow cursor-pointer group">
             <CardContent className="p-5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform"><ExternalLink className="w-5 h-5 text-primary" /></div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-foreground text-sm">{t('learnMore')}</h3>
+                <h3 className="font-bold text-foreground text-sm">Learn how PD tracking works</h3>
                 <p className="text-muted-foreground text-xs mt-0.5 truncate">{t('learnMoreDesc')}</p>
               </div>
               <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Download, Smartphone, Share, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSEO } from '@/hooks/useSEO';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -11,6 +12,11 @@ interface BeforeInstallPromptEvent extends Event {
 
 const Install: React.FC = () => {
   const navigate = useNavigate();
+  useSEO({
+    title: 'Install PDsathi — Add the PD Companion App to Your Phone',
+    description: 'Install PDsathi on Android or iOS to log peritoneal dialysis exchanges and labs offline, with quick home-screen access.',
+    path: '/install',
+  });
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
