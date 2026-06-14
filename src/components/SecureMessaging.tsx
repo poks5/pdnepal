@@ -9,6 +9,33 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Send, Paperclip, Image, FileText, AlertCircle, MessageSquare, Loader2, Users } from 'lucide-react';
 
+/**
+ * Renders an attachment using a short-lived signed URL. Supports either a
+ * legacy full URL (existing rows) or a storage path (new rows).
+ */
+const SignedAttachment: React.FC<{ urlOrPath: string; type: 'image' | 'file' }> = ({ urlOrPath, type }) => {
+  const [signed, setSigned] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    const resolve = async () => {
+      if (urlOrPath.startsWith('http')) { if (active) setSigned(urlOrPath); return; }
+      const { data } = await supabase.storage.from('clinical-photos').createSignedUrl(urlOrPath, 300);
+      if (active) setSigned(data?.signedUrl ?? null);
+    };
+    resolve();
+    return () => { active = false; };
+  }, [urlOrPath]);
+  if (!signed) return null;
+  if (type === 'image') {
+    return <img src={signed} alt="Attachment" className="rounded-lg mb-2 max-h-48 object-cover" />;
+  }
+  return (
+    <a href={signed} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 underline text-xs mb-1">
+      <FileText className="w-3 h-3" /> View attachment
+    </a>
+  );
+};
+
 interface Message {
   id: string;
   sender_id: string;
@@ -431,12 +458,10 @@ const SecureMessaging: React.FC = () => {
                         </span>
                       )}
                       {msg.attachment_url && msg.message_type === 'image' && (
-                        <img src={msg.attachment_url} alt="Attachment" className="rounded-lg mb-2 max-h-48 object-cover" />
+                        <SignedAttachment urlOrPath={msg.attachment_url} type="image" />
                       )}
                       {msg.attachment_url && msg.message_type === 'file' && (
-                        <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 underline text-xs mb-1">
-                          <FileText className="w-3 h-3" /> View attachment
-                        </a>
+                        <SignedAttachment urlOrPath={msg.attachment_url} type="file" />
                       )}
                       <p className="text-sm">{msg.content}</p>
                       <p className={`text-[10px] mt-1 ${isMine ? 'text-primary-foreground/50' : 'text-muted-foreground'}`}>
