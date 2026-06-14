@@ -26,16 +26,38 @@ serve(async (req) => {
     if (authError || !user) throw new Error("Unauthorized");
 
     const { photoUrl } = await req.json();
-    if (!photoUrl) throw new Error("photoUrl is required");
+    if (!photoUrl || typeof photoUrl !== 'string') throw new Error("photoUrl is required");
 
-    // Generate signed URL if it's a storage path
-    let imageUrl = photoUrl;
-    if (!photoUrl.startsWith("http")) {
-      const { data: signedData } = await supabase.storage
-        .from("clinical-photos")
-        .createSignedUrl(photoUrl, 600);
-      if (signedData?.signedUrl) imageUrl = signedData.signedUrl;
+    // Reject external/http URLs — only storage paths owned by the caller are allowed.
+    if (photoUrl.startsWith("http://") || photoUrl.startsWith("https://") || photoUrl.includes("..")) {
+      return new Response(JSON.stringify({ error: "Only owned storage paths are accepted" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
+
+    // Enforce ownership: path must start with `${user.id}/`
+    const firstSegment = photoUrl.split("/")[0];
+    if (firstSegment !== user.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Generate a short-lived signed URL using caller-scoped client (RLS enforced)
+    let imageUrl: string;
+    const { data: signedData, error: signErr } = await supabase.storage
+      .from("clinical-photos")
+      .createSignedUrl(photoUrl, 600);
+    if (signErr || !signedData?.signedUrl) {
+      return new Response(JSON.stringify({ error: "Unable to access photo" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    imageUrl = signedData.signedUrl;
+
 
     // Call AI to analyze the image
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

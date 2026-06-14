@@ -57,16 +57,16 @@ const LabDataEntry: React.FC<LabDataEntryProps> = ({ onSave, existingData }) => 
   const uploadFile = async (file: File, reportType: 'peritoneal' | 'pet'): Promise<string | null> => {
     if (!user) return null;
     const ext = file.name.split('.').pop();
+    // Store under the user's own folder so storage RLS authorizes the write.
     const filePath = `${user.id}/lab-reports/${reportType}_${Date.now()}.${ext}`;
     const { error } = await supabase.storage
       .from('clinical-photos')
       .upload(filePath, file, { upsert: true });
     if (error) throw error;
-    const { data: urlData } = supabase.storage
-      .from('clinical-photos')
-      .getPublicUrl(filePath);
-    return urlData.publicUrl || filePath;
+    // Store only the storage path; signed URLs are generated at download time.
+    return filePath;
   };
+
 
   const handleFileUpload = async (file: File, reportType: 'peritoneal' | 'pet') => {
     const setUploading = reportType === 'peritoneal' ? setUploadingPeritoneal : setUploadingPET;

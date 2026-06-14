@@ -29,24 +29,16 @@ const BrowseDoctors: React.FC<BrowseDoctorsProps> = ({ onSelectDoctor, currentDo
     const fetchDoctors = async () => {
       setLoading(true);
       try {
-        // Get all doctor user_ids from user_roles
-        const { data: doctorRoles } = await supabase
-          .from('user_roles')
-          .select('user_id')
-          .eq('role', 'doctor');
-
-        if (!doctorRoles?.length) { setDoctors([]); setLoading(false); return; }
-
-        const doctorIds = doctorRoles.map(r => r.user_id);
-
-        // Fetch profiles for doctors
         const { data: profiles, error } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, hospital, specialization')
-          .in('user_id', doctorIds);
+          .rpc('get_staff_directory', { _role: 'doctor' });
 
         if (error) throw error;
-        setDoctors(profiles || []);
+        setDoctors((profiles || []).map((p: any) => ({
+          user_id: p.user_id,
+          full_name: p.full_name,
+          hospital: p.hospital,
+          specialization: p.specialization,
+        })));
       } catch {
         setDoctors([]);
       } finally {

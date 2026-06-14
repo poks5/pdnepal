@@ -29,20 +29,15 @@ const BrowseDieticians: React.FC<BrowseDieticiansProps> = ({ onSelectDietician, 
     const fetchDieticians = async () => {
       setLoading(true);
       try {
-        const { data: roles } = await supabase
-          .from('user_roles')
-          .select('user_id')
-          .eq('role', 'dietician');
-
-        if (!roles?.length) { setDieticians([]); setLoading(false); return; }
-
-        const ids = roles.map(r => r.user_id);
         const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, hospital, specialization')
-          .in('user_id', ids);
+          .rpc('get_staff_directory', { _role: 'dietician' });
 
-        setDieticians(profiles || []);
+        setDieticians((profiles || []).map((p: any) => ({
+          user_id: p.user_id,
+          full_name: p.full_name,
+          hospital: p.hospital,
+          specialization: p.specialization,
+        })));
       } catch {
         setDieticians([]);
       } finally {
