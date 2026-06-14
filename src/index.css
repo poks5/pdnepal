@@ -225,6 +225,29 @@
     background: var(--gradient-health);
   }
 
+  .gradient-prestige {
+    background: var(--gradient-prestige);
+  }
+
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-emerald { box-shadow: var(--shadow-emerald); }
+  .shadow-gold { box-shadow: var(--shadow-gold); }
+
+  /* Premium hairline divider */
+  .hairline {
+    background: linear-gradient(90deg, transparent, hsl(var(--border)) 20%, hsl(var(--border)) 80%, transparent);
+    height: 1px;
+  }
+
+  /* Subtle noise overlay for glass surfaces */
+  .grain::after {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(hsl(var(--foreground) / 0.04) 1px, transparent 1px);
+    background-size: 3px 3px; opacity: 0.4; mix-blend-mode: overlay;
+    border-radius: inherit;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
