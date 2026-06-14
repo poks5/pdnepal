@@ -136,7 +136,7 @@ const SecureMessaging: React.FC = () => {
 
       if (contactIds.length > 0) {
         const { data: profiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', contactIds);
-        const { data: roles } = await supabase.from('user_roles').select('user_id, role').in('user_id', contactIds);
+        const { data: roles } = await supabase.rpc('get_roles_for_users', { _user_ids: contactIds });
 
         (profiles ?? []).forEach(p => {
           const role = roles?.find(r => r.user_id === p.user_id)?.role || 'patient';
@@ -185,7 +185,7 @@ const SecureMessaging: React.FC = () => {
 
         if (teamIds.length > 0) {
           const { data: teamProfiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', teamIds);
-          const { data: teamRoles } = await supabase.from('user_roles').select('user_id, role').in('user_id', teamIds);
+          const { data: teamRoles } = await supabase.rpc('get_roles_for_users', { _user_ids: teamIds });
           (teamProfiles ?? []).forEach(p => {
             const role = teamRoles?.find(r => r.user_id === p.user_id)?.role || 'patient';
             allContacts.push({ id: p.user_id, name: p.full_name, role });
@@ -279,12 +279,12 @@ const SecureMessaging: React.FC = () => {
     if (!file || !user) return;
 
     const ext = file.name.split('.').pop();
-    const path = `messages/${user.id}/${Date.now()}.${ext}`;
+    // Store under the user's own folder so storage RLS authorizes the write.
+    const path = `${user.id}/messages/${Date.now()}.${ext}`;
 
     const { error: uploadError } = await supabase.storage.from('clinical-photos').upload(path, file);
     if (uploadError) return;
 
-    const { data: urlData } = supabase.storage.from('clinical-photos').getPublicUrl(path);
     const isImage = file.type.startsWith('image/');
 
     if (chatMode === 'direct' && selectedContact) {
@@ -294,7 +294,7 @@ const SecureMessaging: React.FC = () => {
         content: isImage ? '📷 Image' : `📎 ${file.name}`,
         message_type: isImage ? 'image' : 'file',
         tag: selectedTag !== 'general' ? selectedTag : null,
-        attachment_url: urlData.publicUrl, attachment_type: file.type,
+        attachment_url: path, attachment_type: file.type,
         conversation_type: 'direct',
       });
     } else if (chatMode === 'group' && selectedGroupPatient) {
@@ -303,11 +303,12 @@ const SecureMessaging: React.FC = () => {
         content: isImage ? '📷 Image' : `📎 ${file.name}`,
         message_type: isImage ? 'image' : 'file',
         tag: selectedTag !== 'general' ? selectedTag : null,
-        attachment_url: urlData.publicUrl, attachment_type: file.type,
+        attachment_url: path, attachment_type: file.type,
         conversation_type: 'group', conversation_id: `team-${selectedGroupPatient}`,
       });
     }
   };
+
 
   const tagInfo = MESSAGE_TAGS.find(t => t.value === selectedTag);
 
