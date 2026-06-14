@@ -29,22 +29,18 @@ const DoctorSelection: React.FC<DoctorSelectionProps> = ({ onDoctorSelect, onCan
     const fetchDoctors = async () => {
       setLoading(true);
       try {
-        const { data: doctorRoles } = await supabase
-          .from('user_roles')
-          .select('user_id')
-          .eq('role', 'doctor');
+        const { data: profilesData } = await supabase
+          .rpc('get_staff_directory', { _role: 'doctor' });
 
-        if (!doctorRoles?.length) { setDoctors([]); setLoading(false); return; }
-
-        const doctorIds = doctorRoles.map(r => r.user_id);
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, hospital, specialization')
-          .in('user_id', doctorIds);
-
-        setDoctors(profiles || []);
+        const profiles = (profilesData || []).map((p: any) => ({
+          user_id: p.user_id,
+          full_name: p.full_name,
+          hospital: p.hospital,
+          specialization: p.specialization,
+        }));
+        setDoctors(profiles);
         if (selectedDoctorId) {
-          setSelectedDoctor((profiles || []).find(d => d.user_id === selectedDoctorId) || null);
+          setSelectedDoctor(profiles.find(d => d.user_id === selectedDoctorId) || null);
         }
       } catch {
         setDoctors([]);

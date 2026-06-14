@@ -1686,6 +1686,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_roles_for_users: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }[]
+      }
+      get_staff_directory: {
+        Args: { _role: Database["public"]["Enums"]["app_role"] }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          hospital: string
+          language: string
+          phone: string
+          specialization: string[]
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
