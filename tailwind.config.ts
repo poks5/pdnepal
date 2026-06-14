@@ -18,6 +18,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Manrope', 'DM Sans', 'system-ui', 'sans-serif'],
+				display: ['Sora', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -73,6 +77,8 @@ export default {
 				lavender: 'hsl(var(--lavender))',
 				sky: 'hsl(var(--sky))',
 				mint: 'hsl(var(--mint))',
+				gold: 'hsl(var(--gold))',
+				cream: 'hsl(var(--cream))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
