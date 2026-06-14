@@ -54,22 +54,30 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   }
 
   return (
-    <div className="space-y-4 page-transition">
-      {/* Greeting – compact native style */}
-      <div className="rounded-2xl gradient-hero p-4 sm:p-5 text-primary-foreground shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-base sm:text-lg font-bold">{greetingEmoji} {t(greetingKey)}{firstName ? `, ${firstName}` : ''}</p>
-            <p className="text-xs opacity-80 mt-0.5">{t('pdJourneyGreat')}</p>
+    <div className="space-y-5 page-transition max-w-2xl mx-auto">
+      {/* Greeting – prestige emerald → gold */}
+      <div className="relative rounded-[28px] gradient-prestige p-5 sm:p-6 text-primary-foreground shadow-emerald overflow-hidden grain">
+        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-[hsl(var(--gold))]/20 blur-2xl" />
+        <div className="absolute -bottom-20 -left-10 w-48 h-48 rounded-full bg-white/5 blur-2xl" />
+        <div className="relative flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] uppercase tracking-[0.22em] font-medium text-[hsl(var(--cream))]/70">
+              {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+            </p>
+            <h2 className="font-display text-xl sm:text-2xl font-semibold mt-1.5 leading-tight">
+              {greetingEmoji} {t(greetingKey)}{firstName ? `, ${firstName}` : ''}
+            </h2>
+            <p className="text-xs sm:text-sm text-[hsl(var(--cream))]/80 mt-1.5">{t('pdJourneyGreat')}</p>
             {streak > 0 && (
-              <span className="inline-flex items-center bg-white/15 backdrop-blur-sm rounded-full px-2.5 py-0.5 text-[11px] font-semibold mt-2">
+              <span className="inline-flex items-center gap-1.5 bg-[hsl(var(--gold))]/20 backdrop-blur-sm border border-[hsl(var(--gold))]/40 rounded-full px-3 py-1 text-[11px] font-semibold mt-3 text-[hsl(var(--cream))]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--gold))] animate-pulse" />
                 🔥 {streak} {t('dayStreak')}
               </span>
             )}
           </div>
         </div>
       </div>
+
 
       <TodayProgress
         completed={todayExchanges.completed}
