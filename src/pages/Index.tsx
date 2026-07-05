@@ -82,11 +82,11 @@ const AppContent: React.FC<{ locale?: 'en' | 'ne' }> = ({ locale }) => {
   );
 };
 
-const Index: React.FC = () => (
+const Index: React.FC<{ locale?: 'en' | 'ne' }> = ({ locale }) => (
   <LanguageProvider>
     <ExchangePlanProvider>
       <PatientProvider>
-        <AppContent />
+        <AppContent locale={locale} />
       </PatientProvider>
     </ExchangePlanProvider>
   </LanguageProvider>
