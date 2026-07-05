@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
-import { LanguageProvider } from '@/contexts/LanguageContext';
+import { LanguageProvider, useLanguage } from '@/contexts/LanguageContext';
 import { ExchangePlanProvider } from '@/contexts/ExchangePlanContext';
 import { PatientProvider } from '@/contexts/PatientContext';
 import LandingPage from '@/components/LandingPage';
@@ -13,12 +13,24 @@ import CaregiverDashboard from '@/components/CaregiverDashboard';
 import AdminDashboard from '@/components/AdminDashboard';
 import RoleSwitcher from '@/components/RoleSwitcher';
 
-const AppContent: React.FC = () => {
-  useSEO({
-    title: 'PDsathi — Peritoneal Dialysis Companion for Patients & Care Teams',
-    description: 'Bilingual PD companion app: log CAPD/APD exchanges, track labs and ultrafiltration, and stay connected with your nephrology care team.',
-    path: '/',
-  });
+const AppContent: React.FC<{ locale?: 'en' | 'ne' }> = ({ locale }) => {
+  const { setLanguage } = useLanguage();
+  useEffect(() => {
+    if (locale) setLanguage(locale);
+  }, [locale, setLanguage]);
+  useSEO(
+    locale === 'ne'
+      ? {
+          title: 'PDsathi — पेरिटोनियल डायलिसिस साथी बिरामी र स्याहार टोलीका लागि',
+          description: 'द्विभाषिक PD साथी एप: CAPD/APD एक्सचेन्ज लग गर्नुहोस्, ल्याब र अल्ट्राफिल्ट्रेसन ट्र्याक गर्नुहोस्, र आफ्नो नेफ्रोलोजी स्याहार टोलीसँग जोडिनुहोस्।',
+          path: '/ne',
+        }
+      : {
+          title: 'PDsathi — Peritoneal Dialysis Companion for Patients & Care Teams',
+          description: 'Bilingual PD companion app: log CAPD/APD exchanges, track labs and ultrafiltration, and stay connected with your nephrology care team.',
+          path: '/',
+        }
+  );
   const { user, isAuthenticated, loading } = useAuth();
   const [viewRole, setViewRole] = useState<UserRole | null>(null);
 
@@ -70,11 +82,11 @@ const AppContent: React.FC = () => {
   );
 };
 
-const Index: React.FC = () => (
+const Index: React.FC<{ locale?: 'en' | 'ne' }> = ({ locale }) => (
   <LanguageProvider>
     <ExchangePlanProvider>
       <PatientProvider>
-        <AppContent />
+        <AppContent locale={locale} />
       </PatientProvider>
     </ExchangePlanProvider>
   </LanguageProvider>

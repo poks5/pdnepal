@@ -32,6 +32,7 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/ne" element={<Index locale="ne" />} />
               <Route path="/install" element={<Install />} />
               <Route path="/guides/capd-vs-apd" element={<CAPDvsAPD />} />
               <Route path="/reset-password" element={<ResetPassword />} />
