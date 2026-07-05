@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
-import { LanguageProvider } from '@/contexts/LanguageContext';
+import { LanguageProvider, useLanguage } from '@/contexts/LanguageContext';
 import { ExchangePlanProvider } from '@/contexts/ExchangePlanContext';
 import { PatientProvider } from '@/contexts/PatientContext';
 import LandingPage from '@/components/LandingPage';
